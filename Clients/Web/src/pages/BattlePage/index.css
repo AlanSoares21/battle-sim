@@ -1,0 +1,8 @@
+.board {
+    min-height: 10vh;
+    background-color: gray;
+}
+
+.board-container {
+    border: 1px solid red;
+}

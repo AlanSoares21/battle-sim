@@ -1,0 +1,28 @@
+.btn-default {
+    border: 0;
+    max-height: 15vh;
+    width: 100%;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 0;
+    padding-right: 0;
+    overflow-wrap: break-word;
+}
+
+.primary {
+    color: white;
+    background-color: green;
+}
+
+.primary:hover {
+    background-color: lightgreen;
+}
+
+.cancel {
+    color: white;
+    background-color: crimson;
+}
+
+.cancel:hover {
+    background-color: red;
+}

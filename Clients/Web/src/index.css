@@ -1,0 +1,27 @@
+html,
+body {
+  margin: 0px auto;
+  padding: 0;
+  height: 100%;
+}
+
+h1 {
+  margin: 0px;
+}
+
+#root {
+  margin: 0px auto;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}
+
+
+.stack-vertical > * {
+  display: block;
+}
+
+.child-margin10 > * {
+  margin-top: 10px;
+}
