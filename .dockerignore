@@ -1,0 +1,5 @@
+Clients
+*.user
+bin
+obj
+.vscode
