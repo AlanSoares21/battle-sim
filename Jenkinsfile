@@ -8,7 +8,5 @@ pipeline {
 			sh build-server.sh
 			sh build-webclient.sh
 		}
-		stag('deploy') {
-		}
 	}
 }
