@@ -3,13 +3,13 @@ pipeline {
 	stages {
 		stage('Test') {
 			steps {
-				sh 'test.sh'
+				sh './test.sh'
 			}
 		}
 		stage('Build') {
 			steps {
-				sh 'build-server.sh'
-				sh 'build-webclient.sh'
+				sh './build-server.sh'
+				sh './build-webclient.sh'
 			}
 		}
 	}
