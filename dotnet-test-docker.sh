@@ -6,6 +6,7 @@ if [ $? != 0 ]; then
 fi
 Mountpoint=`docker volume inspect --format '{{ .Mountpoint }}' $VolumeName`
 echo "$VolumeName mountpoint: $Mountpoint"
+ls -l $Mountpoint
 echo "Replicating file between $PWD and $Mountpoint"
 mkdir "$Mountpoint/app"
 cp -r "$PWD/Server" "$Mountpoint/app"
