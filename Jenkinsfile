@@ -4,7 +4,7 @@ pipeline {
 		stage('Test') {
 			steps {
 				sh 'whoami'
-				sh './dotnet-test-docker.sh'
+				sh 'sudo ./dotnet-test-docker.sh'
 			}
 		}
 	}
