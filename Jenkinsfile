@@ -1,9 +1,9 @@
 pipeline {
-	agent { docker { image 'mcr.microsoft.com/dotnet/sdk:7.0' } }
+	agent any
 	stages {
 		stage('Test') {
 			steps {
-				sh './dotnet-test.sh'
+				sh './dotnet-test-docker.sh'
 			}
 		}
 	}
