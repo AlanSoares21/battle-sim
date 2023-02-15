@@ -3,9 +3,11 @@ pipeline {
 	stages {
 		stage('Test') {
 			steps {
-				sh 'whoami'
 				sh './dotnet-test-docker.sh'
 			}
+		}
+		stage('Build') {
+			sh './build-server.sh'
 		}
 	}
 }
