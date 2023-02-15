@@ -9,6 +9,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh './build-server.sh'
+				sh './build-webclient.sh'
 			}
 		}
 	}
