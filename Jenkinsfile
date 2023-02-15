@@ -8,8 +8,8 @@ pipeline {
 		}
 		stage('Build') {
 			environment {
-				ApiUrl = ${env.ApiUrl}
-				WsUrl = ${env.WsUrl}
+				ApiUrl = credentials("ApiUrl")
+				WsUrl = credentials("WsUrl")
 			}
 			steps {
 				sh './build-server.sh'
