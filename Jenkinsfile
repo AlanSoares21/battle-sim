@@ -7,7 +7,9 @@ pipeline {
 			}
 		}
 		stage('Build') {
-			sh './build-server.sh'
+			steps {
+				sh './build-server.sh'
+			}
 		}
 	}
 }
