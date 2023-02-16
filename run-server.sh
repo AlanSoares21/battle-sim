@@ -1,3 +1,4 @@
+#!/bin/bash
 EnvFilename=".env.local"
 SecondsAuthTokenExpire=60
 # if env variables are empty, exit

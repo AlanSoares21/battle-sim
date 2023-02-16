@@ -1,3 +1,4 @@
+#!/bin/bash
 DotnetTestsPassedCode=0
 cd Engine/Tests
 dotnet test

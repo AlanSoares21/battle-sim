@@ -1,3 +1,4 @@
+#!/bin/bash
 Imagename="alan26silva/battlesim:webclient"
 ContainerName="battlesim-webclient"
 LocalPort=3003

@@ -1,3 +1,4 @@
+#!/bin/bash
 Dockerfile="docker/server.Dockerfile"
 DockerImage="dotnet-tests-source-code"
 echo "Creating test image $DockerImage"

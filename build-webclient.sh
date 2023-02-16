@@ -1,3 +1,4 @@
+#!/bin/bash
 Dockerfile="./docker/webclient.Dockerfile"
 WebClientImageName="alan26silva/battlesim:webclient"
 # if empty, fill with cli arguments
