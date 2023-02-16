@@ -20,7 +20,7 @@ ContainerName="battlesim-server"
 LocalPort=3002
 # stop the container if already is running
 PreviousContainerId=`docker ps -a -f "name=$ContainerName" --format "{{ .ID }}"`
-if [ -n $PreviousContainerId ]; then
+if [ -n "$PreviousContainerId" ]; then
     echo "Stoping container $PreviousContainerId"
     docker container stop $PreviousContainerId
     docker container rm $PreviousContainerId
