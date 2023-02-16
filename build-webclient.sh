@@ -16,6 +16,8 @@ if [ -z $ApiUrl ]; then
     echo "ApiUrl URL can not be empty"
     exit 127
 fi
+echo "WsUrl: $WsUrl"
+echo "ApiUrl: $ApiUrl"
 # building image
-docker build ./Clients/Web -t $WebClientImageName -f $Dockerfile --build-arg WsSocketUrl=$WsSocketUrl --build-arg ApiUrl=$ApiUrl
+docker build ./Clients/Web -t $WebClientImageName -f $Dockerfile --build-arg WsUrl=$WsUrl --build-arg ApiUrl=$ApiUrl
 exit $?

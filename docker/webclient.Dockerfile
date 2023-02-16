@@ -1,10 +1,10 @@
 FROM node as build
-ARG WsSocketUrl
+ARG WsUrl
 ARG ApiUrl
 WORKDIR /code
 COPY . .
 RUN npm install --all
-ENV REACT_APP_ServerWsUrl $WsSocketUrl
+ENV REACT_APP_ServerWsUrl $WsUrl
 ENV REACT_APP_ServerApiUrl $ApiUrl
 RUN npm run build
 

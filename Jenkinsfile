@@ -16,5 +16,16 @@ pipeline {
 				sh './build-webclient.sh'
 			}
 		}
+		stage('Deploy') {
+			environment {
+				ApiUrl = credentials("ApiUrl")
+				SiteUrl = credentials("SiteUrl")
+				JwtSecret = credentials("JwtSecret")
+			}
+			steps {
+				sh './run-server.sh'
+				sh './run-webclient.sh'
+			}
+		}
 	}
 }
