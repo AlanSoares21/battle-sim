@@ -7,18 +7,15 @@ pipeline {
 			}
 		}
 		stage('Build') {
-			environment {
-				ApiUrl = credentials("ApiUrl")
-				WsUrl = credentials("WsUrl")
-			}
 			steps {
 				sh './build-server.sh'
-				sh './build-webclient.sh'
+				sh './Clients/Web/build-docker-image.sh'
 			}
 		}
 		stage('Deploy') {
 			environment {
 				ApiUrl = credentials("ApiUrl")
+				WsUrl = credentials("WsUrl")
 				SiteUrl = credentials("SiteUrl")
 				JwtSecret = credentials("JwtSecret")
 			}
