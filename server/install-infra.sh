@@ -58,7 +58,7 @@ fi
 enable-docker-to-jenkins
 
 if nginx -v ; then
-	echo "Nginx installed"
+	echo "Nginx is installed"
 else
 	echo "Installing nginx"
 	install-nginx
@@ -66,8 +66,11 @@ else
 fi
 
 # handling nginx configuration
-CopyNginxConfig=$1
-if [ -n $CopyNginxConfig -a $CopyNginxConfig -eq "y"  ]; then
+CopyNginxConfig="n"
+if [ -n $1 ]; then
+	CopyNginxConfig=$1
+fi
+if [ "$CopyNginxConfig" = "y"  ]; then
 	echo "Updating nginx configuration files..."
 	sudo cp -r nginx/* /etc/nginx/
 	echo -e "Nginx configuration files updated \n Run nginx -t to test the cofiguration \n Run nginx -s reload to reload the configuration"
