@@ -1,6 +1,8 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS source-code
 WORKDIR /App
 COPY . ./
+
+FROM source-code AS build-env
 WORKDIR /App/Server/Core
 RUN dotnet restore
 RUN dotnet publish -c Release -o out
