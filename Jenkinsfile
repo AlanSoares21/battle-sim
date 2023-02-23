@@ -9,7 +9,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh './build-server.sh'
-				cd './Clients/Web'
+				sh 'cd Clients/Web'
 				sh './build-docker-image.sh'
 			}
 		}
