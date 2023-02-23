@@ -19,7 +19,8 @@ echo "WsUrl: $WsUrl"
 echo "ApiUrl: $ApiUrl"
 # writing env file
 EnvFile=".env.production.local"
-echo -e "REACT_APP_ServerWsUrl=$WsUrl\nREACT_APP_ServerApiUrl=$ApiUrl" | tee $EnvFile
+SourceFolder="Clients/Web"
+echo -e "REACT_APP_ServerWsUrl=$WsUrl\nREACT_APP_ServerApiUrl=$ApiUrl" | tee "$SourceFolder/$EnvFile"
 
 # removing old containers
 ContainerName="battlesimwebclient"
@@ -39,7 +40,7 @@ PORT=3000
 docker run \
 -dp $PORT:3000 \
 --name $ContainerName \
---env-file $EnvFile \
+--env-file "$SourceFolder/$EnvFile" \
 -v $NodeModulesVolume:/code/node_modules \
 $Image
 exit $?
