@@ -9,7 +9,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh './build-server.sh'
-				sh './build-docker-image.sh'
+				sh './build-webclient.sh'
 			}
 		}
 		stage('Deploy') {
