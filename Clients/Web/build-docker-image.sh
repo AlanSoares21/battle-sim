@@ -2,4 +2,6 @@
 Dockerfile="webclient.Dockerfile"
 Image="battlesim:webclient"
 docker build . -f "$PWD/$Dockerfile" -t $Image
-exit $?
+Result=$?
+echo "Build result: $Result"
+exit $Result

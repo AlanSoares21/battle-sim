@@ -16,7 +16,7 @@ if [ -z $SiteUrl ]; then
 fi
 # write server configs in env file
 echo -e "SecondsAuthTokenExpire=$SecondsAuthTokenExpire\nJwt:Issuer=$ApiUrl\nJwt:Secret=$JwtSecret\nJwt:Audience=$SiteUrl\nAllowedOrigin=$SiteUrl" > $EnvFilename
-Imagename="alan26silva/battlesim:server"
+Imagename="battlesim:server"
 ContainerName="battlesim-server"
 LocalPort=3002
 # stop the container if already is running

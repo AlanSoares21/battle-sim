@@ -1,4 +1,6 @@
 #!/bin/bash
-ServerImageName="alan26silva/battlesim:server"
+ServerImageName="battlesim:server"
 docker build . -t $ServerImageName -f ./docker/server.Dockerfile
-exit $?
+Result=$?
+echo "Build result: $Result"
+exit $Result
