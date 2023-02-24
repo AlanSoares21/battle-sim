@@ -41,6 +41,8 @@ public class CheckNameRouteTests
     [DataRow("-name")]
     [DataRow("çname")]
     [DataRow(" name")]
+    [DataRow("nçame")]
+    [DataRow("na me")]
     public void When_User_Name_Contains_Invalid_Characters_Returns_BadRequest(
         string username
     ) {
