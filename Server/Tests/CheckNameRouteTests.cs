@@ -57,8 +57,13 @@ public class CheckNameRouteTests
     }
 
     [TestMethod]
-    public void When_User_Name_Is_Valid_Return_Ok() {
-        var newUser = new NewUser() { name = "someValidUsername" };
+    [DataRow("someValidUsername")]
+    [DataRow("s2omeValidUsername")]
+    [DataRow("SomeValidUsername")]
+    public void When_User_Name_Is_Valid_Return_Ok(
+        string username
+    ) {
+        var newUser = new NewUser() { name = username };
         IAuthService authService = A.Fake<IAuthService>();
         A.CallTo(() => authService.NameIsBeingUsed(newUser.name)).Returns(false);
         LoginController loginController = CreateTestableLoginController(authService);
