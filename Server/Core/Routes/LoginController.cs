@@ -39,8 +39,12 @@ public class LoginController: ControllerBase
     }
 
     bool ValidNameFormat(string name) {
-        const string startWithLetter = @"\A[a-zA-Z]";
-        return Regex.IsMatch(name, startWithLetter);
+        // starts with letter and contains only letters or numbers
+        const string startsWithLetter = @"\A[a-zA-Z]";
+        const string hasInvalidChars = @"[^a-zA-Z0-9]";
+
+        return Regex.IsMatch(name, startsWithLetter) && 
+            !Regex.IsMatch(name, hasInvalidChars);
     }
 
     BadRequestObjectResult NameHasInvalidCharacters(string name) {
