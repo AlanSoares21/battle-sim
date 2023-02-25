@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BattleSimulator.Server.Auth;
 using BattleSimulator.Server.Models;
+using System.Text.RegularExpressions;
 
 namespace BattleSimulator.Server.Routes;
 
@@ -9,8 +10,8 @@ namespace BattleSimulator.Server.Routes;
 [Route("{controller}")]
 public class LoginController: ControllerBase
 {
-    private ILogger<LoginController> _logger;
-    private IAuthService _authService;
+    ILogger<LoginController> _logger;
+    IAuthService _authService;
     public LoginController(
         ILogger<LoginController> logger,
         IAuthService authService) {
@@ -25,22 +26,39 @@ public class LoginController: ControllerBase
         _logger.LogInformation("New user: {name}", user.name);
         if (string.IsNullOrEmpty(user.name))
             return NameIsEmpty();
+        if (!ValidNameFormat(user.name))
+            return NameHasInvalidCharacters(user.name);
         if (_authService.NameIsBeingUsed(user.name))
             return NameIsBeingUsed(user.name);
         return GenerateJwtToken(user);
     }
 
-    private BadRequestObjectResult NameIsEmpty() {
+    BadRequestObjectResult NameIsEmpty() {
         _logger.LogError("A user tried log in with a empty name.");
         return BadRequest(new ApiError($"Username can't be empty."));
     }
 
-    private BadRequestObjectResult NameIsBeingUsed(string name) {
+    bool ValidNameFormat(string name) {
+        // starts with letter and contains only letters or numbers
+        const string startsWithLetter = @"\A[a-zA-Z]";
+        const string hasInvalidChars = @"[^a-zA-Z0-9]";
+
+        return Regex.IsMatch(name, startsWithLetter) && 
+            !Regex.IsMatch(name, hasInvalidChars);
+    }
+
+    BadRequestObjectResult NameHasInvalidCharacters(string name) {
+        _logger.LogError("The name {name} has invalid characters.",
+            name);
+        return BadRequest(new ApiError($"Name {name} has invalid characters."));
+    }
+
+    BadRequestObjectResult NameIsBeingUsed(string name) {
         _logger.LogError("Name {name} already being used.", name);
         return BadRequest(new ApiError($"Name {name} already being used."));
     }
 
-    private OkObjectResult GenerateJwtToken(NewUser user) {
+    OkObjectResult GenerateJwtToken(NewUser user) {
         var tokenString = _authService.GenerateJwtToken(user.name);
         _logger.LogInformation("New token generated to user {user}.", user.name);
         return Ok(new SuccessLoginResponse() { Token = tokenString });
