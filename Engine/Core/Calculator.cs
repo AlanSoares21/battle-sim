@@ -7,12 +7,14 @@ namespace BattleSimulator.Engine;
 
 public class Calculator : ICalculator
 {
-    public int Damage(int damage, double defenseAbsorption, bool autoAttack, AttackTarget target, IOffensiveAttributes attacker, IDefensiveAttributes defender)
+    public int Damage(
+        int damage, 
+        double defenseAbsorption, 
+        IOffensiveAttributes attacker, 
+        IDefensiveAttributes defender)
     {
-        // reduzindo absorção de dano pela penetração
-        double damageAbsorption = attacker.Penetration >= defenseAbsorption ? 0 : defenseAbsorption - attacker.Penetration;
         // calculando dano
-        double damageTaken = damage  - (damage * damageAbsorption);
+        double damageTaken = damage  - (damage * defenseAbsorption);
         return (int)Math.Round(damageTaken);
     }
 }
