@@ -6,6 +6,6 @@ namespace BattleSimulator.Engine.Interfaces;
 
 public interface IEntity: IStateAttributes, IOffensiveAttributes, IDefensiveAttributes 
 {
-    string Identifier { get; }
+    string Id { get; }
     List<ISkillBase> Skills { get; }
 }

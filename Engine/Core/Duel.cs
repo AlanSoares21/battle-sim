@@ -30,14 +30,14 @@ public class Duel : IBattle
     }
 
     public void Move(IEntity entity, MoveDirection direction) {
-        if (!EntityIsIntheBattle(entity.Identifier))
-            throw new Exception($"The entity {entity.Identifier} is not in the board");
+        if (!EntityIsIntheBattle(entity.Id))
+            throw new Exception($"The entity {entity.Id} is not in the board");
         Coordinate curentCellWithEntity = Board
-            .GetEntityPosition(entity.Identifier);
+            .GetEntityPosition(entity.Id);
         Coordinate targetCell = _GetTargetCellToMove(
             curentCellWithEntity, direction
         );
-        Board.Move(entity.Identifier, targetCell);
+        Board.Move(entity.Id, targetCell);
     }
 
 
@@ -62,9 +62,19 @@ public class Duel : IBattle
     public void AddEntity(IEntity entity, Coordinate position)
     {
         Entities.Add(entity);
-        Board.Place(entity.Identifier, position);
+        Board.Place(entity.Id, position);
     }
 
-    public bool EntityIsIntheBattle(string identifier) => 
-        Board.GetEntities().Contains(identifier);
+    public bool EntityIsIntheBattle(string Id) => 
+        Board.GetEntities().Contains(Id);
+
+    public bool Attack(string targetId, string attackerId) {
+        Coordinate attakcerPosition = Board.GetEntityPosition(attackerId);
+        Coordinate targetPosition = Board.GetEntityPosition(targetId);
+        int xDiff = Math.Abs(targetPosition.X - attakcerPosition.X);
+        if (xDiff > 1)
+            return false;
+        int yDiff = Math.Abs(targetPosition.Y - attakcerPosition.Y);
+        return yDiff <= 1;
+    }
 }
