@@ -1,12 +1,10 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FakeItEasy;
 using System;
 using BattleSimulator.Engine.Interfaces;
 
-namespace BattleSimulator.Engine.Tests;
+namespace BattleSimulator.Engine.Tests.DuelTests;
 
 [TestClass]
-public class DuelTests
+public class FunctionalTests
 {
     [TestMethod]
     public void Places_Entity_On_The_Board() {
