@@ -9,8 +9,8 @@ public class FunctionalTests
     [TestMethod]
     public void Places_Entity_On_The_Board() {
         string entityIdentifier = "id";
-        IEntity entity = FakeEntityWithIdentifier(entityIdentifier);
-        IBattle battle = CreateDuel();
+        IEntity entity = Utils.FakeEntity(entityIdentifier);
+        IBattle battle = Utils.CreateDuel();
         battle.AddEntity(entity);
         Assert.IsTrue(EntityIsInBoard(entityIdentifier, battle.Board));
     }
@@ -25,17 +25,17 @@ public class FunctionalTests
         string secondEntityIdentifier
     ) {
         IEntity firstEntity, secondEntity;
-        firstEntity = FakeEntityWithIdentifier(firstEntityIdentifier);
-        secondEntity = FakeEntityWithIdentifier(secondEntityIdentifier);
-        IBattle battle = CreateDuel();
+        firstEntity = Utils.FakeEntity(firstEntityIdentifier);
+        secondEntity = Utils.FakeEntity(secondEntityIdentifier);
+        IBattle battle = Utils.CreateDuel();
         battle.AddEntity(firstEntity);
         battle.AddEntity(secondEntity);
         Coordinate firstEntityCell = battle
             .Board
-            .GetEntityPosition(firstEntity.Identifier);
+            .GetEntityPosition(firstEntity.Id);
         Coordinate secondEntityCell = battle
             .Board
-            .GetEntityPosition(secondEntity.Identifier);
+            .GetEntityPosition(secondEntity.Id);
         Coordinate oppositeCell = battle
             .Board
             .GetOppositeCoordinate(firstEntityCell);
@@ -50,10 +50,10 @@ public class FunctionalTests
         string thirdEntityIdentifier
     ) {
         IEntity firstEntity, secondEntity, thirdEntity; 
-        firstEntity = FakeEntityWithIdentifier(firstEntityIdentifier);
-        secondEntity = FakeEntityWithIdentifier(secondEntityIdentifier);
-        thirdEntity = FakeEntityWithIdentifier(thirdEntityIdentifier);
-        IBattle battle = CreateDuelWithEntities(
+        firstEntity = Utils.FakeEntity(firstEntityIdentifier);
+        secondEntity = Utils.FakeEntity(secondEntityIdentifier);
+        thirdEntity = Utils.FakeEntity(thirdEntityIdentifier);
+        IBattle battle = Utils.CreateDuelWithEntities(
             firstEntity,
             secondEntity,
             thirdEntity
@@ -75,13 +75,13 @@ public class FunctionalTests
     ) {
         Coordinate middle = new(3, 3);
         string entityIdentifier = "entityOne";
-        IEntity entity = FakeEntityWithIdentifier(entityIdentifier);
-        IBattle battle = CreateDuel();
+        IEntity entity = Utils.FakeEntity(entityIdentifier);
+        IBattle battle = Utils.CreateDuel();
         battle.AddEntity(entity, middle);
         battle.Move(entity, direction);
         Coordinate cell = battle
             .Board
-            .GetEntityPosition(entity.Identifier);
+            .GetEntityPosition(entity.Id);
         Assert.AreEqual(expectedX, cell.X,
             "A coordenada X não está correta");
         Assert.AreEqual(expectedY, cell.Y,
@@ -98,7 +98,7 @@ public class FunctionalTests
     ) {
         const uint boardWidth = 1, boardHeight = 1;
         const string entityIdentifier = "entityOne";
-        IEntity entity = FakeEntityWithIdentifier(entityIdentifier);
+        IEntity entity = Utils.FakeEntity(entityIdentifier);
         IBattle battle = new Duel(
             Guid.NewGuid(),
             new GameBoard(boardWidth, boardHeight)
@@ -113,8 +113,8 @@ public class FunctionalTests
     public void Throws_Excepiton_When_Move_An_Entity_That_Is_Not_In_The_Board() {
         const MoveDirection direction = MoveDirection.Up;
         const string entityIdentifier = "entityOne";
-        IEntity entity = FakeEntityWithIdentifier(entityIdentifier);
-        IBattle battle = CreateDuel();
+        IEntity entity = Utils.FakeEntity(entityIdentifier);
+        IBattle battle = Utils.CreateDuel();
         Assert.ThrowsException<Exception>(() => 
             battle.Move(entity, direction)
         );
@@ -123,39 +123,22 @@ public class FunctionalTests
     [TestMethod]
     public void Return_True_When_Entity_Is_In_Battle() {
         IEntity entityInBattle = 
-            FakeEntityWithIdentifier("entityInBattleId");
-        IBattle battle = CreateDuelWithEntities(entityInBattle);
+            Utils.FakeEntity("entityInBattleId");
+        IBattle battle = Utils.CreateDuelWithEntities(entityInBattle);
         Assert.IsTrue(
-            battle.EntityIsIntheBattle(entityInBattle.Identifier)
+            battle.EntityIsIntheBattle(entityInBattle.Id)
         );
     }
 
     [TestMethod]
     public void Return_False_When_Entity_Is_Not_In_Battle() {
         IEntity entityInBattle, entityNotInBattle; 
-        entityInBattle = FakeEntityWithIdentifier("entityInBattleId");
+        entityInBattle = Utils.FakeEntity("entityInBattleId");
         entityNotInBattle = 
-            FakeEntityWithIdentifier("entityNotInBattleId");
-        IBattle battle = CreateDuelWithEntities(entityInBattle);
+            Utils.FakeEntity("entityNotInBattleId");
+        IBattle battle = Utils.CreateDuelWithEntities(entityInBattle);
         Assert.IsFalse(
-            battle.EntityIsIntheBattle(entityNotInBattle.Identifier)
+            battle.EntityIsIntheBattle(entityNotInBattle.Id)
         );
     }
-
-    IEntity FakeEntityWithIdentifier(string identifier) {
-        IEntity entity = A.Fake<IEntity>();
-        A.CallTo(() => entity.Identifier).Returns(identifier);
-        return entity;
-    }
-
-    IBattle CreateDuelWithEntities(params IEntity[] entities) 
-    {
-        IBattle duel = CreateDuel();
-        foreach (var entity in entities)
-            duel.AddEntity(entity);
-        return duel;
-    }
-
-    IBattle CreateDuel() => 
-        new Duel(Guid.NewGuid(), GameBoard.WithDefaultSize());
 }
