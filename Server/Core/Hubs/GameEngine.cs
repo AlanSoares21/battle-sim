@@ -7,6 +7,7 @@ namespace BattleSimulator.Server.Hubs;
 
 public class GameEngine : IGameEngine
 {
+    ICalculator _gameCalculator;
     IGameHubState _state;
     ILogger<GameEngine> _logger;
     public GameEngine(
@@ -14,6 +15,7 @@ public class GameEngine : IGameEngine
         ILogger<GameEngine> logger) {
         _state = state;
         _logger = logger;
+        _gameCalculator = new Calculator();
     }
     public async Task HandleUserDisconnected(
         CurrentCallerContext caller)
@@ -296,7 +298,7 @@ public class GameEngine : IGameEngine
     }
 
     Duel CreateDuel(Guid battleId) => 
-        new Duel(battleId, GameBoard.WithDefaultSize());
+        new Duel(battleId, GameBoard.WithDefaultSize(), _gameCalculator);
 
     IEntity GetUserEntity(string userId) => new Player(userId);
 

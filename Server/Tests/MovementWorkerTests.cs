@@ -121,7 +121,10 @@ public class MovementWorkerTests
         new BattleCollection();
 
     IBattle NewBattleWithEntity(IEntity entity) {
-        IBattle battle = new Duel(Guid.NewGuid(), GameBoard.WithDefaultSize());
+        IBattle battle = new Duel(
+            Guid.NewGuid(), 
+            GameBoard.WithDefaultSize(),
+            A.Fake<ICalculator>());
         battle.AddEntity(entity);
         return battle;
     }
