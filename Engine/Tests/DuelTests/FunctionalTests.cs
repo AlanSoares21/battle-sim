@@ -101,7 +101,8 @@ public class FunctionalTests
         IEntity entity = Utils.FakeEntity(entityIdentifier);
         IBattle battle = new Duel(
             Guid.NewGuid(),
-            new GameBoard(boardWidth, boardHeight)
+            new GameBoard(boardWidth, boardHeight),
+            A.Fake<ICalculator>()
         );
         battle.AddEntity(entity);
         Assert.ThrowsException<Exception>(() => 

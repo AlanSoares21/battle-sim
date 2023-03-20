@@ -1,5 +1,6 @@
 namespace BattleSimulator.Engine.Interfaces.CharactersAttributes;
 
 public interface IStateAttributes {
-    int Health { get; set; }
+    int HealthRadius { get; set; }
+    Coordinate CurrentHealth { get; set; }
 }

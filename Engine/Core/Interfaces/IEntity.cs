@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 using BattleSimulator.Engine.Interfaces.Skills;
 
@@ -8,4 +9,5 @@ public interface IEntity: IStateAttributes, IOffensiveAttributes, IDefensiveAttr
 {
     string Id { get; }
     List<ISkillBase> Skills { get; }
+    Weapon Weapon { get; set; }
 }

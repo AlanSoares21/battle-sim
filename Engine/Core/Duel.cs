@@ -6,10 +6,12 @@ namespace BattleSimulator.Engine;
 
 public class Duel : IBattle
 {
-    public Duel(Guid battleId, IBoard board) {
+    private ICalculator Calc;
+    public Duel(Guid battleId, IBoard board, ICalculator calculator) {
         this.Board = board;
         this.Entities = new();
         Id = battleId;
+        Calc = calculator;
     }
     public Guid Id { get; private set; }
     public List<IEntity> Entities { get; private set; }
@@ -69,6 +71,13 @@ public class Duel : IBattle
         Board.GetEntities().Contains(Id);
 
     public bool Attack(string targetId, string attackerId) {
+        if (!CanAttack(targetId, attackerId))
+            return false;
+        ExecuteAttack(targetId, attackerId);
+        return true;
+    }
+
+    bool CanAttack(string targetId, string attackerId) {
         Coordinate attakcerPosition = Board.GetEntityPosition(attackerId);
         Coordinate targetPosition = Board.GetEntityPosition(targetId);
         int xDiff = Math.Abs(targetPosition.X - attakcerPosition.X);
@@ -76,5 +85,39 @@ public class Duel : IBattle
             return false;
         int yDiff = Math.Abs(targetPosition.Y - attakcerPosition.Y);
         return yDiff <= 1;
+    }
+
+    void ExecuteAttack(string targetId, string attackerId) {
+        (IEntity target, IEntity attacker) = GetEntities(targetId, attackerId);
+        int damage = Calc
+            .Damage(attacker.Damage, target.DefenseAbsorption, attacker, target);
+        
+        int xMul = 0;
+        if (attacker.Weapon.damageOnX == Equipment.DamageDirection.Positive)
+            xMul = 1;
+        else if (attacker.Weapon.damageOnX == Equipment.DamageDirection.Negative)
+            xMul = -1;
+
+        int yMul = 0;
+        if (attacker.Weapon.damageOnY == Equipment.DamageDirection.Positive)
+            yMul = 1;
+        else if (attacker.Weapon.damageOnY == Equipment.DamageDirection.Negative)
+            yMul = -1;
+
+        int newX = target.CurrentHealth.X + damage * xMul;
+        int newY = target.CurrentHealth.Y + damage * yMul;
+        target.CurrentHealth = new(newX, newY);
+    }
+
+    (IEntity target, IEntity attacker) GetEntities(string targetId, string attackerId) {
+        IEntity target, attacker;
+        if (Entities[0].Id == targetId) {
+            target = Entities[0];
+            attacker = Entities[1];
+        } else {
+            target = Entities[1];
+            attacker = Entities[0];
+        }
+        return new(target, attacker);
     }
 }

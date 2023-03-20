@@ -9,7 +9,7 @@ public class CombatTests {
     {
         IEntity attacker = Utils.FakeEntity("attacker");
         IEntity target = Utils.FakeEntity("target");
-        IBattle battle = Utils.CreateDuelWithEntities();
+        IBattle battle = Utils.CreateDuel();
         battle.AddEntity(attacker); 
         Coordinate targetPosition = new(4, 4);
         battle.AddEntity(target, targetPosition);
@@ -29,7 +29,7 @@ public class CombatTests {
     {
         IEntity attacker = Utils.FakeEntity("attacker");
         IEntity target = Utils.FakeEntity("target");
-        IBattle battle = Utils.CreateDuelWithEntities();
+        IBattle battle = Utils.CreateDuel();
         battle.AddEntity(attacker); 
         Coordinate targetPosition = new(4, 4);
         battle.AddEntity(target, targetPosition);
@@ -54,7 +54,7 @@ public class CombatTests {
     {
         IEntity attacker = Utils.FakeEntity("attacker");
         IEntity target = Utils.FakeEntity("target");
-        IBattle battle = Utils.CreateDuelWithEntities();
+        IBattle battle = Utils.CreateDuel();
         battle.AddEntity(attacker); 
         Coordinate targetPosition = new(4, 4);
         battle.AddEntity(target, targetPosition);
@@ -67,5 +67,34 @@ public class CombatTests {
             Assert.IsFalse(battle.Attack(target.Id, attacker.Id), 
                 $"Success attack from ({x}, {y})");
         }
+    }
+
+    [TestMethod]
+    public void Dealling_Damage() {
+        int damage = 10;
+        IEntity attacker = Utils.FakeEntity("attacker");
+        DefineDamage(attacker, damage);
+        attacker.Weapon = new() { damageOnX = Equipment.DamageDirection.Negative };
+        IEntity target = Utils.FakeEntity("target");
+        int health = 50;
+        DefineHealth(target, health);
+        IBattle battle = Utils.CreateDuel();
+        
+        battle.AddEntity(attacker, new(0, 0));
+        battle.AddEntity(target, new(1, 1));
+        
+        battle.Attack(target.Id, attacker.Id);
+        Coordinate expectedHealthAfterAttack = new(health - damage, health);
+        
+        Assert.AreEqual(expectedHealthAfterAttack, target.CurrentHealth);
+    }
+
+    void DefineDamage(IEntity entity, int value) {
+        entity.Damage = value;
+    }
+
+    void DefineHealth(IEntity entity, int value) {
+        entity.HealthRadius = value;
+        entity.CurrentHealth = new(value, value);
     }
 }
