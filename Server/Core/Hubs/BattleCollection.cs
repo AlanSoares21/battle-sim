@@ -16,7 +16,7 @@ public class BattleCollection : IBattleCollection
     {
         foreach (Guid battleId in _data.Keys)
             if (_data[battleId].Entities
-                .Exists(entity => entity.Identifier == entityIdentifier)
+                .Exists(entity => entity.Id == entityIdentifier)
             )
                 return battleId;
         throw new KeyNotFoundException($"Not found a battle with entity {entityIdentifier}");

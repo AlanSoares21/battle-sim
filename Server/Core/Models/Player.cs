@@ -1,35 +1,24 @@
+using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine.Interfaces.Skills;
+using BattleSimulator.Engine.Equipment;
 
 namespace BattleSimulator.Server.Models;
 
 public class Player : IEntity
 {
     public Player(string identifier) {
-        this.Identifier = identifier;
+        this.Id = identifier;
         Skills = new();
     }
 
-    public string Identifier { get; private set; }
+    public Weapon Weapon { get; set; }
+
+    public string Id { get; private set; }
 
     public List<ISkillBase> Skills { get; set; }
-
-    public int Health { get; set; }
-    public int HealthRegeneration { get; set; }
-    public int Energy { get; set; }
-    public int EnergyRegeneration { get; set; }
-    public int PhysicalDamage { get; set; }
-    public int MagicalDamage { get; set; }
-    public double CriticalHit { get; set; }
-    public double Accuracy { get; set; }
-    public double AttackSpeed { get; set; }
-    public double Penetration { get; set; }
-    public double SkillsCooldown { get; set; }
-    public double PhysicalDefenseAbsorption { get; set; }
-    public double MagicalDefenseAbsorption { get; set; }
-    public double Dodge { get; set; }
-    public double Parry { get; set; }
-    public double Block { get; set; }
-    public double StealHealth { get; set; }
-    public double DamageReflection { get; set; }
+    public int HealthRadius { get; set; }
+    public Coordinate CurrentHealth { get; set; }
+    public int Damage { get; set; }
+    public double DefenseAbsorption { get; set; }
 }

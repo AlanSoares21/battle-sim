@@ -98,7 +98,7 @@ public class BattleCollectionTests
 
     IEntity FakeEntity(string identifier) {
         IEntity entity = A.Fake<IEntity>();
-        A.CallTo(() => entity.Identifier).Returns(identifier);
+        A.CallTo(() => entity.Id).Returns(identifier);
         return entity;
     }
     IBattle FakeBattleWithEntities(List<IEntity> entities) {

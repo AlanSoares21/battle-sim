@@ -301,7 +301,7 @@ public class EngineBattleRequestsTests {
 
     IBattle UserIsInTheBattle(string userId) => 
         A<IBattle>.That.Matches(battle => 
-            battle.Entities.Any(e => e.Identifier == userId));
+            battle.Entities.Any(e => e.Id == userId));
 
     [TestMethod]
     public async Task Create_Group_On_Hub_With_The_Users_Of_The_Battle() {

@@ -54,7 +54,7 @@ public class BattleTests
 
     IEntity FakeEntity(string identifier) {
         var entity = A.Fake<IEntity>();
-        A.CallTo(() => entity.Identifier).Returns(identifier);
+        A.CallTo(() => entity.Id).Returns(identifier);
         return entity;
     }
 

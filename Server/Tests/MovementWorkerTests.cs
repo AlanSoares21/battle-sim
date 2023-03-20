@@ -39,7 +39,7 @@ public class MovementWorkerTests
         var movementIntentions = CreateMoveIntentionsCollection();
         Coordinate invalidCellToMove = new(-1, -1);
         MovementIntention intention = new() {
-            entityIdentifier = entity.Identifier,
+            entityIdentifier = entity.Id,
             cell = invalidCellToMove
         };
         movementIntentions.TryAdd(intention);
@@ -59,7 +59,7 @@ public class MovementWorkerTests
         var battles = BattleCollectionWithEntityOnABattle(entity);
         var movementIntentions = CreateMoveIntentionsCollection();
         MovementIntention intention = new() {
-            entityIdentifier = entity.Identifier,
+            entityIdentifier = entity.Id,
             cell = new(1, 0)
         };
         movementIntentions.TryAdd(intention);
@@ -75,7 +75,7 @@ public class MovementWorkerTests
 
     IEntity CreateEntity(string id) {
         IEntity entity = A.Fake<IEntity>();
-        A.CallTo(() => entity.Identifier).Returns(id);
+        A.CallTo(() => entity.Id).Returns(id);
         return entity;
     }
 
