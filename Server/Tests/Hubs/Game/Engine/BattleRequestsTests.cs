@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Models;
+using BattleSimulator.Engine.Equipment;
 
 namespace BattleSimulator.Server.Tests.Hubs.Game.Engine;
 
@@ -304,6 +305,49 @@ public class EngineBattleRequestsTests {
             battle.Entities.Any(e => e.Id == userId));
 
     [TestMethod]
+    public async Task When_Create_Battle_And_Dont_Found_Entity_Data_On_Db_Use_Entity_With_Default_Data()
+    {
+        CurrentCallerContext caller = new(
+            "callerId", 
+            "callerConnectionId",
+            Utils.FakeHubCallerContext());
+        BattleRequest request = new() {
+            requester = "requesterId",
+            target = caller.UserId
+        };
+        IGameHubState state = FakeStateWithRequest(request);
+        IGameEngine engine = new GameEngineBuilder()
+            .WithState(state)
+            .Build();
+        await engine.AcceptBattleRequest(
+            request.requestId, 
+            caller,
+            Utils.FakeGroupManager());
+        A.CallTo(() => 
+            state.Battles.TryAdd(
+                BattleWithDefaultEntityForUser(caller.UserId)))
+            .MustHaveHappened();
+    }
+
+    IBattle BattleWithDefaultEntityForUser(string userId) {
+        return A<IBattle>.That.Matches(b => 
+            b.Entities.Exists(e => 
+                e.Id == userId && EntityIsDefault(e)));
+    }
+
+    bool EntityIsDefault(IEntity entity) =>
+        entity.Damage == 10
+        && entity.DefenseAbsorption == 0.1
+        && entity.HealthRadius == 25
+        && entity.CurrentHealth.CoordinatesAreEqual(25, 25)
+        && WeaponIsDefault(entity.Weapon);
+    
+
+    bool WeaponIsDefault(Weapon weapon) =>
+        weapon.damageOnX == DamageDirection.Positive
+        && weapon.damageOnY == DamageDirection.Neutral;
+
+    [TestMethod]
     public async Task When_Create_Battle_Get_Entity_Data_From_DB()
     {
         IEntity callerEntity = Utils.FakeEntity("callerId");
@@ -328,7 +372,8 @@ public class EngineBattleRequestsTests {
         A.CallTo(() => 
             state.Battles.TryAdd(
                 A<IBattle>.That.Matches(battle => 
-                    EntitiesAreInBattle(battle, callerEntity, requesterEntity))));
+                    EntitiesAreInBattle(battle, callerEntity, requesterEntity))))
+            .MustHaveHappened();
     }
 
     IGameDb FakeDbWithEntities(params IEntity[] entities) {

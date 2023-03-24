@@ -306,8 +306,13 @@ public class GameEngine : IGameEngine
     IEntity GetUserEntity(string userId) {
         var entity = this._database.SearchEntity(userId);        
         if (entity is null)
-            throw new Exception("Entity is null");
+            return CreateDefaultEntity(userId);
         return entity;
+    }
+
+    IEntity CreateDefaultEntity(string userId) 
+    {
+        return new Player(userId);
     }
 
     void LogCanNotCreateBattle(Guid requesterId) {

@@ -10,6 +10,14 @@ public class Player : IEntity
     public Player(string identifier) {
         this.Id = identifier;
         Skills = new();
+        Damage = 10;
+        DefenseAbsorption = 0.1;
+        HealthRadius = 25;
+        CurrentHealth = new(25, 25);
+        Weapon = new Weapon() {
+            damageOnX = DamageDirection.Positive,
+            damageOnY = DamageDirection.Neutral
+        };
     }
 
     public Weapon Weapon { get; set; }
