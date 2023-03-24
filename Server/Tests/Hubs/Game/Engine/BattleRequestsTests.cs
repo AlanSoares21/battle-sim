@@ -483,8 +483,12 @@ public class EngineBattleRequestsTests {
             requester = requesterEntity.Id,
             target = caller.UserId
         };
+        IGameHubState state = new GameHubStateBuilder()
+            .WithBattleCollection(new BattleCollection())
+            .Build();
+        AddRequestOnState(state, request);
         IGameEngine engine = new GameEngineBuilder()
-            .WithState(FakeStateWithRequest(request))
+            .WithState(state)
             .WithDb(FakeDbWithEntities(callerEntity, requesterEntity))
             .Build();
         await engine.AcceptBattleRequest(

@@ -272,10 +272,7 @@ public class GameEngine : IGameEngine
         await caller
             .HubClients
             .Group(battleGroupName)
-            .NewBattle(
-                battle.Id, 
-                GetBoardData(battle.Board)
-            );
+            .NewBattle(GetBattleData(battle));
     }
 
     void LogRequesterCanNotAcceptTheRequest(BattleRequest request) {
@@ -319,6 +316,13 @@ public class GameEngine : IGameEngine
         _logger.LogError("Error on create battle - requesterId: {requesterId}", 
             requesterId);
     }
+
+    BattleData GetBattleData(IBattle battle) => 
+        new BattleData() {
+            id = battle.Id,
+            board = GetBoardData(battle.Board),
+            entities = battle.Entities
+        };
 
     BoardData GetBoardData(IBoard board) =>
         new BoardData() {
