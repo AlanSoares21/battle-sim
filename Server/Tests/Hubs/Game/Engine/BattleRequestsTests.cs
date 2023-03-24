@@ -316,27 +316,27 @@ public class EngineBattleRequestsTests {
             requester = requesterEntity.Id,
             target = caller.UserId
         };
-        IGameDb gameDb = A.Fake<IGameDb>();
-        A.CallTo(() => gameDb.SearchEntity(callerEntity.Id))
-            .Returns(callerEntity);
-        A.CallTo(() => gameDb.SearchEntity(requesterEntity.Id))
-            .Returns(requesterEntity);
-        IBattleCollection battles = A.Fake<BattleCollection>();
-        IGameHubState state = new GameHubStateBuilder()
-            .WithBattleCollection(battles)
-            .Build();
-        AddRequestOnState(state, request);
+        IGameHubState state = FakeStateWithRequest(request);
         IGameEngine engine = new GameEngineBuilder()
             .WithState(state)
+            .WithDb(FakeDbWithEntities(callerEntity, requesterEntity))
             .Build();
         await engine.AcceptBattleRequest(
             request.requestId, 
             caller,
             Utils.FakeGroupManager());
         A.CallTo(() => 
-            battles.TryAdd(
+            state.Battles.TryAdd(
                 A<IBattle>.That.Matches(battle => 
                     EntitiesAreInBattle(battle, callerEntity, requesterEntity))));
+    }
+
+    IGameDb FakeDbWithEntities(params IEntity[] entities) {
+        IGameDb gameDb = A.Fake<IGameDb>();
+        foreach (var entity in entities)
+            A.CallTo(() => gameDb.SearchEntity(entity.Id))
+                .Returns(entity);
+        return gameDb;
     }
 
     bool EntitiesAreInBattle(IBattle battle, params IEntity[] entities) {

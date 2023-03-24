@@ -10,12 +10,15 @@ public class GameEngine : IGameEngine
     ICalculator _gameCalculator;
     IGameHubState _state;
     ILogger<GameEngine> _logger;
+    IGameDb _database;
     public GameEngine(
         IGameHubState state, 
-        ILogger<GameEngine> logger) {
+        ILogger<GameEngine> logger,
+        IGameDb database) {
         _state = state;
         _logger = logger;
         _gameCalculator = new Calculator();
+        _database = database;
     }
     public async Task HandleUserDisconnected(
         CurrentCallerContext caller)
@@ -300,7 +303,12 @@ public class GameEngine : IGameEngine
     Duel CreateDuel(Guid battleId) => 
         new Duel(battleId, GameBoard.WithDefaultSize(), _gameCalculator);
 
-    IEntity GetUserEntity(string userId) => new Player(userId);
+    IEntity GetUserEntity(string userId) {
+        var entity = this._database.SearchEntity(userId);        
+        if (entity is null)
+            throw new Exception("Entity is null");
+        return entity;
+    }
 
     void LogCanNotCreateBattle(Guid requesterId) {
         _logger.LogError("Error on create battle - requesterId: {requesterId}", 
