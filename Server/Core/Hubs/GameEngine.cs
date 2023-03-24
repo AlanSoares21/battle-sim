@@ -324,7 +324,7 @@ public class GameEngine : IGameEngine
         new BoardData() {
             entitiesPosition = GetEntitiesPosition(board),
             height = board.Height,
-            width = board.Width
+            width = board.Width,
         };
 
     List<EntityPosition> GetEntitiesPosition(IBoard board) {

@@ -1,3 +1,5 @@
+using BattleSimulator.Engine.Interfaces;
+
 namespace BattleSimulator.Server.Models;
 
 public class BoardData

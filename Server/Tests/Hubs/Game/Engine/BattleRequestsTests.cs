@@ -461,9 +461,45 @@ public class EngineBattleRequestsTests {
             request.requestId, 
             caller,
             Utils.FakeGroupManager());
-        A.CallTo(() => requesterClient.NewBattle(new(), new()))
+        A.CallTo(() => requesterClient.NewBattle(new()))
             .WithAnyArguments()
             .MustHaveHappenedOnceExactly();
+    }
+
+    [TestMethod]    
+    public async Task When_Accept_A_Request_Send_Entities_Data_For_All_Users() {
+        var requesterClient = A.Fake<IGameHubClient>();
+        var hubClients = Utils.FakeHubCallerContext();
+        A.CallTo(() => hubClients.Group(""))
+            .WithAnyArguments()
+            .Returns(requesterClient);
+        IEntity callerEntity = Utils.FakeEntity("callerId");
+        CurrentCallerContext caller = new(
+            callerEntity.Id, 
+            "callerConnectionId",
+            hubClients);
+        IEntity requesterEntity = Utils.FakeEntity("requesterId");
+        BattleRequest request = new() {
+            requester = requesterEntity.Id,
+            target = caller.UserId
+        };
+        IGameEngine engine = new GameEngineBuilder()
+            .WithState(FakeStateWithRequest(request))
+            .WithDb(FakeDbWithEntities(callerEntity, requesterEntity))
+            .Build();
+        await engine.AcceptBattleRequest(
+            request.requestId, 
+            caller,
+            Utils.FakeGroupManager());
+        A.CallTo(() => 
+            requesterClient.NewBattle(EntitiesAreInBattleData(callerEntity, requesterEntity)))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    BattleData EntitiesAreInBattleData(params IEntity[] entities) {
+        return A<BattleData>.That.Matches(b => 
+            b.entities.Count > 0
+            && b.entities.All(e => entities.Contains(e)));
     }
 
     IGameHubState FakeStateWithRequest(BattleRequest request) {

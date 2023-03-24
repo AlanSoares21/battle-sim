@@ -9,9 +9,7 @@ public interface IGameHubClient
     Task UserDisconnect(UserConnected user);
     Task NewBattleRequest(BattleRequest battleRequest);
     Task BattleRequestSent(BattleRequest battleRequest);
-    Task NewBattle(
-        Guid battleId, 
-        BoardData boardData);
+    Task NewBattle(BattleData battleData);
     Task EntityMove(string entityIdentifier, int x, int y);
     Task BattleRequestCancelled(
         string cancellerId, 
