@@ -304,6 +304,51 @@ public class EngineBattleRequestsTests {
             battle.Entities.Any(e => e.Id == userId));
 
     [TestMethod]
+    public async Task When_Create_Battle_Get_Entity_Data_From_DB()
+    {
+        IEntity callerEntity = Utils.FakeEntity("callerId");
+        IEntity requesterEntity = Utils.FakeEntity("requesterId");
+        CurrentCallerContext caller = new(
+            callerEntity.Id, 
+            "callerConnectionId",
+            Utils.FakeHubCallerContext());
+        BattleRequest request = new() {
+            requester = requesterEntity.Id,
+            target = caller.UserId
+        };
+        IGameDb gameDb = A.Fake<IGameDb>();
+        A.CallTo(() => gameDb.SearchEntity(callerEntity.Id))
+            .Returns(callerEntity);
+        A.CallTo(() => gameDb.SearchEntity(requesterEntity.Id))
+            .Returns(requesterEntity);
+        IBattleCollection battles = A.Fake<BattleCollection>();
+        IGameHubState state = new GameHubStateBuilder()
+            .WithBattleCollection(battles)
+            .Build();
+        AddRequestOnState(state, request);
+        IGameEngine engine = new GameEngineBuilder()
+            .WithState(state)
+            .Build();
+        await engine.AcceptBattleRequest(
+            request.requestId, 
+            caller,
+            Utils.FakeGroupManager());
+        A.CallTo(() => 
+            battles.TryAdd(
+                A<IBattle>.That.Matches(battle => 
+                    EntitiesAreInBattle(battle, callerEntity, requesterEntity))));
+    }
+
+    bool EntitiesAreInBattle(IBattle battle, params IEntity[] entities) {
+        foreach (var entity in entities)
+        {
+            if (!battle.Entities.Contains(entity))
+                return false;
+        }
+        return true;
+    }
+
+    [TestMethod]
     public async Task Create_Group_On_Hub_With_The_Users_Of_The_Battle() {
         string requesterId = "requesterId";
         string requesterConnectionId = "requesterConnectionId";
@@ -378,8 +423,12 @@ public class EngineBattleRequestsTests {
 
     IGameHubState FakeStateWithRequest(BattleRequest request) {
         IGameHubState state = new GameHubStateBuilder().Build();
+        AddRequestOnState(state, request);
+        return state;
+    }
+
+    void AddRequestOnState(IGameHubState state, BattleRequest request) {
         A.CallTo(() => state.BattleRequests.Get(request.requestId))
             .Returns(request);
-        return state;
     }
 }

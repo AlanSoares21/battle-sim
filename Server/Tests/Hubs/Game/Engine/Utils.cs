@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using BattleSimulator.Server.Hubs;
+using BattleSimulator.Engine.Interfaces;
 
 namespace BattleSimulator.Server.Tests.Hubs.Game.Engine;
 
@@ -20,4 +21,11 @@ public static class Utils
 
     public static IGroupManager FakeGroupManager() => 
         A.Fake<IGroupManager>();
+
+    public static IEntity FakeEntity(string id) 
+    {
+        var entity = A.Fake<IEntity>();
+        A.CallTo(() => entity.Id).Returns(id);
+        return entity;
+    }
 }
