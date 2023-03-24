@@ -8,4 +8,5 @@ public interface IGameHubServer
     Task Move(int x, int y);
     Task CancelBattleRequest(Guid requesterId);
     Task CancelBattle(Guid battleId);
+    void Attack(string targetId);
 }

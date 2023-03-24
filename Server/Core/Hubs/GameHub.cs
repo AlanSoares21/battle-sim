@@ -12,15 +12,18 @@ namespace BattleSimulator.Server.Hubs;
 public class GameHub : Hub<IGameHubClient>, IGameHubServer
 {
     IGameHubState _hubState;
-    private ILogger<GameHub> _logger;
-    private IGameEngine _engine;
+    ILogger<GameHub> _logger;
+    IGameEngine _engine;
+    IBattleEventsHandler _eventsHandler;
     public GameHub(
         ILogger<GameHub> logger, 
         IGameHubState hubState,
-        IGameEngine engine) {
+        IGameEngine engine,
+        IBattleEventsHandler eventsHandler) {
         _logger = logger;
         _hubState = hubState;
         _engine = engine;
+        _eventsHandler = eventsHandler;
     }
     public async Task ListUsers() 
     {
@@ -83,6 +86,11 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
             Context.UserIdentifier);
     }
 
+    public void Attack(string targetId)
+    {
+        _eventsHandler.Attack(targetId, GetCurrentUserId());
+    }
+
     public override async Task OnConnectedAsync()
     {
         _logger.LogInformation("New user connected - user: {user}", Context.UserIdentifier);
@@ -114,4 +122,5 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
         }
         return userId;
     }
+
 }
