@@ -1,3 +1,4 @@
+using BattleSimulator.Engine;
 using BattleSimulator.Server.Models;
 
 namespace BattleSimulator.Server.Hubs;
@@ -15,4 +16,5 @@ public interface IGameHubClient
         string cancellerId, 
         BattleRequest request);
     Task BattleCancelled(string cancellerId, Guid battleId);
+    Task Attack(string source, string target, Coordinate currentHealth);
 }
