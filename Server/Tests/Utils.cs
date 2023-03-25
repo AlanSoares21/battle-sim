@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Engine.Interfaces;
 
-namespace BattleSimulator.Server.Tests.Hubs.Game.Engine;
+namespace BattleSimulator.Server.Tests;
 
 public static class Utils
 {
