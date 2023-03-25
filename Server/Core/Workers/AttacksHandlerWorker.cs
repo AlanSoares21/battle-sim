@@ -1,3 +1,5 @@
+using BattleSimulator.Engine;
+using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
@@ -28,6 +30,39 @@ public class AttacksHandlerWorker : BackgroundService
 
     public void Handle() 
     {
-        
+        var list = _attackList.ListAttacks();
+        foreach (var attack in list)
+        {
+            string source = attack.Key;
+            string target = attack.Value;
+            var battle = _battles.Get(_battles.GetBattleIdByEntity(source));
+            battle.Attack(target, source);
+            if (!_attackList.RemoveAttack(source))
+                FailOnRemoveAttack(source, target, battle.Id);
+            _hub.Clients.Group(battle.Id.ToString())
+                .Attack(
+                    source, 
+                    target, 
+                    GetCurrentHealth(battle, target));
+        }
+    }
+
+    void FailOnRemoveAttack(string source, string target, Guid battleid) 
+    {
+        _logger.LogError("Fail on remove attack from {source} on {target} - battle: {id}",
+            source,
+            target,
+            battleid);
+    }
+
+    /*
+        The method IBattle.Attack alredy calculate the current health value for 
+        the target, thi value could be returned when the attack is executed,
+        with that this method could be deleted
+    */
+    Coordinate GetCurrentHealth(IBattle battle, string id) 
+    {
+        var entity = battle.Entities.Where(e => e.Id ==id).Single();
+        return entity.CurrentHealth;
     }
 }
