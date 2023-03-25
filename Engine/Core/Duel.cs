@@ -77,7 +77,7 @@ public class Duel : IBattle
         return true;
     }
 
-    bool CanAttack(string targetId, string attackerId) {
+    public bool CanAttack(string targetId, string attackerId) {
         Coordinate attakcerPosition = Board.GetEntityPosition(attackerId);
         Coordinate targetPosition = Board.GetEntityPosition(targetId);
         int xDiff = Math.Abs(targetPosition.X - attakcerPosition.X);

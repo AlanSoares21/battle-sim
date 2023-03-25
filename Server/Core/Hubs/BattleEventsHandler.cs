@@ -17,15 +17,22 @@ public class BattleEventsHandler : IBattleEventsHandler
     }
     public void Attack(string target, string caller)
     {
+        if (
+            CanAddAttack(caller, target) 
+            && !_attacksList.RegisterAttack(caller, target))
+                FailedOnRegisterAttack(caller, target);
+    }
+
+    bool CanAddAttack(string caller, string target) 
+    {
         try {
-            _battles.GetBattleIdByEntity(caller);
+            Guid battleId = _battles.GetBattleIdByEntity(caller);
+            return _battles.Get(battleId).CanAttack(target, caller);
         }
         catch (KeyNotFoundException) {
             CallerTriedAttackSomeoneButIsentInABattle(caller, target);
-            return;
+            return false;
         }
-        if (!_attacksList.RegisterAttack(caller, target))
-            FailedOnRegisterAttack(caller, target);
     }
 
     void CallerTriedAttackSomeoneButIsentInABattle(string caller, string target) 

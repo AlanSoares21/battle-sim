@@ -13,4 +13,5 @@ public interface IBattle
     void AddEntity(IEntity entity, Coordinate position);
     void Move(IEntity entity, MoveDirection direction);
     bool Attack(string targetId, string attackerId);
+    bool CanAttack(string targetId, string attackerId);
 }

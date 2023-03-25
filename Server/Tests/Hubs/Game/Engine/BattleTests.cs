@@ -17,7 +17,7 @@ public class BattleTests
             "callerConnectionId",
             Utils.FakeHubCallerContext());
         var battle = FakeBattleWithPlayers(
-            FakeEntity(callerContext.UserId));
+            Utils.FakeEntity(callerContext.UserId));
         A.CallTo(() => battle.EntityIsIntheBattle(callerContext.UserId))
             .Returns(true);
         var state = new GameHubStateBuilder().Build();
@@ -35,8 +35,8 @@ public class BattleTests
     public async Task User_Not_In_The_Battle_Can_Not_Cancel_The_Battle()
     {
         var battle = FakeBattleWithPlayers(
-            FakeEntity("entityA"),
-            FakeEntity("entityB")
+            Utils.FakeEntity("entityA"),
+            Utils.FakeEntity("entityB")
         );   
         var state = new GameHubStateBuilder().Build();
         AddBattleInTheState(battle, state);
@@ -52,12 +52,6 @@ public class BattleTests
             .MustNotHaveHappened();    
     }
 
-    IEntity FakeEntity(string identifier) {
-        var entity = A.Fake<IEntity>();
-        A.CallTo(() => entity.Id).Returns(identifier);
-        return entity;
-    }
-
     [TestMethod]
     public async Task Notify_Battle_Group_When_Battle_Is_Cancelled() 
     {
@@ -67,7 +61,7 @@ public class BattleTests
             "callerConnectionId",
             hubClients);
         var battle = FakeBattleWithPlayers(
-            FakeEntity(callerContext.UserId));
+            Utils.FakeEntity(callerContext.UserId));
         A.CallTo(() => battle.EntityIsIntheBattle(callerContext.UserId))
             .Returns(true);
         var state = new GameHubStateBuilder().Build();
