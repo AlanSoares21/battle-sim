@@ -70,6 +70,6 @@ public class AttacksHandlerWorker : BackgroundService
     Coordinate GetCurrentHealth(IBattle battle, string id) 
     {
         var entity = battle.Entities.Where(e => e.Id ==id).Single();
-        return entity.CurrentHealth;
+        return entity.State.CurrentHealth;
     }
 }

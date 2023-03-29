@@ -5,9 +5,12 @@ using BattleSimulator.Engine.Interfaces.Skills;
 
 namespace BattleSimulator.Engine.Interfaces;
 
-public interface IEntity: IStateAttributes, IOffensiveAttributes, IDefensiveAttributes 
+public interface IEntity
 {
     string Id { get; }
     List<ISkillBase> Skills { get; }
     Weapon Weapon { get; set; }
+    IStateAttributes State { get; set; }
+    IOffensiveAttributes OffensiveStats { get; set; } 
+    IDefensiveAttributes DefensiveStats { get; set; } 
 }

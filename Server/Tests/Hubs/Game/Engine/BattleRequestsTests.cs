@@ -336,10 +336,10 @@ public class EngineBattleRequestsTests {
     }
 
     bool EntityIsDefault(IEntity entity) =>
-        entity.Damage == 10
-        && entity.DefenseAbsorption == 0.1
-        && entity.HealthRadius == 25
-        && entity.CurrentHealth.CoordinatesAreEqual(25, 25)
+        entity.OffensiveStats.Damage == 10
+        && entity.DefensiveStats.DefenseAbsorption == 0.1
+        && entity.State.HealthRadius == 25
+        && entity.State.CurrentHealth.CoordinatesAreEqual(25, 25)
         && WeaponIsDefault(entity.Weapon);
     
 

@@ -86,15 +86,15 @@ public class CombatTests {
         battle.Attack(target.Id, attacker.Id);
         Coordinate expectedHealthAfterAttack = new(health - damage, health);
         
-        Assert.AreEqual(expectedHealthAfterAttack, target.CurrentHealth);
+        Assert.AreEqual(expectedHealthAfterAttack, target.State.CurrentHealth);
     }
 
     void DefineDamage(IEntity entity, int value) {
-        entity.Damage = value;
+        entity.OffensiveStats.Damage = value;
     }
 
     void DefineHealth(IEntity entity, int value) {
-        entity.HealthRadius = value;
-        entity.CurrentHealth = new(value, value);
+        entity.State.HealthRadius = value;
+        entity.State.CurrentHealth = new(value, value);
     }
 }

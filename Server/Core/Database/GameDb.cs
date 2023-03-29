@@ -35,9 +35,9 @@ public class GameDb : IGameDb
     Player PlayerFromEntity(Entity entity) 
     {
         Player player = new(entity.Id);
-        player.HealthRadius = entity.HealthRadius;
-        player.DefenseAbsorption = entity.DefenseAbsorption;
-        player.Damage = entity.Damage;
+        player.State.HealthRadius = entity.HealthRadius;
+        player.DefensiveStats.DefenseAbsorption = entity.DefenseAbsorption;
+        player.OffensiveStats.Damage = entity.Damage;
         return player;
     }
 }
