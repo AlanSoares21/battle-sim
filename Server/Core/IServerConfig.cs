@@ -8,4 +8,5 @@ public interface IServerConfig
     string  Audience { get; }
     byte[] SecretKey  { get; }
     string  AllowedOrigin { get; }
+    string? DbFilePath { get; }
 }
