@@ -49,14 +49,14 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         }, [setUsersConnected]);
 
     const onNewBattle = useCallback<IServerEvents['NewBattle']>(
-        async (battleId, boardData) => {
-            console.log({'new_battle': { battleId, boardData }});
-            const entities = boardData.entitiesPosition.map(e => e.entityIdentifier);
+        async (battle) => {
+            console.log({'new_battle': battle });
+            const entities = battle.board.entitiesPosition.map(e => e.entityIdentifier);
             setBattleRequests(requests => 
                     requests.filter(req => 
                         !entities.some(e => e === req.requester)));
             setUsersConnected(users => users.map(setChangeChallendByYouToFalse(entities)))
-            setBattle({ id: battleId, boardData });
+            setBattle({ id: battle.id, boardData: battle.board });
             navigate('/battle');
         }, [navigate]);
 

@@ -61,3 +61,28 @@ export interface IBoardData {
     height: number;
     entitiesPosition: IEntityPosition[]
 }
+
+export enum DamageDirection {
+    Neutral = 0,
+    Positive = 1,
+    Negative = 2
+}
+
+export interface IWeapon {
+    name: string;
+    damageOnX: DamageDirection;
+    damageOnY: DamageDirection;
+}
+
+export interface IEntity {
+    Id: string;
+    // TODO:: this will be implemented in the future
+    Skills: any[];
+    Weapon:IWeapon;
+}
+
+export interface IBattleData {
+    id: string;
+    board: IBoardData;
+    entities: IEntity[];
+}

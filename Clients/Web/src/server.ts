@@ -1,6 +1,6 @@
 import { HubConnection } from "@microsoft/signalr";
 import configs from "./configs";
-import { IApiError, IBattleRequest, IBoardData, ICheckNameResponse, IUserConnected } from "./interfaces";
+import { IApiError, IBattleData, IBattleRequest, IBoardData, ICheckNameResponse, IUserConnected } from "./interfaces";
 
 export async function login(name: string): 
     Promise<ICheckNameResponse | IApiError> {
@@ -33,7 +33,7 @@ export interface IServerEvents {
     UserDisconnect(user: IUserConnected): void;
     NewBattleRequest(request: IBattleRequest): void;
     BattleRequestSent(request: IBattleRequest): void;
-    NewBattle(battleId: string, boardData: IBoardData): void;
+    NewBattle(battleData: IBattleData): void;
     EntityMove(entity: string, x: number, y: number): void;
     BattleRequestCancelled(cancellerId: string, request: IBattleRequest): void;
     BattleCancelled(cancellerId: string, battleId: string): void;
