@@ -23,9 +23,16 @@ public class AttacksHandlerWorker : BackgroundService
         _logger = logger;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Attack handler woker start");
+        const int delay = 500;
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            Handle();
+            await Task.Delay(delay);
+        }
+        _logger.LogInformation("Attack handler woker stop");
     }
 
     public void Handle() 
