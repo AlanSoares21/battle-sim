@@ -1,14 +1,14 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { BattleContext } from "../BattleContext";
 import CanvasWrapper from "../../../CanvasWrapper";
-import { TBoard } from "../../../interfaces";
+import { TBoard, TCanvasCoordinates } from "../../../interfaces";
 import BoardCanvas from "../../../BoardCanvas";
 import BoardRenderController from "../../../BoardRenderController";
 
 export interface IBoardProps { cellSize: number }
 
 const Board: React.FC<IBoardProps> = ({ cellSize }) => {
-    const { battle } = useContext(BattleContext);
+    const { battle, server } = useContext(BattleContext);
 
     const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
 
@@ -33,8 +33,22 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
     }, [ canvasRef, battle ])
 
     const handleCanvasClick = useCallback<React.MouseEventHandler<HTMLCanvasElement>>(ev => {
+        if (render === undefined) {
+            console.error("click handled but render object is null");
+            return;
+        }
+        const canvasCoordinates: TCanvasCoordinates = { 
+            x: ev.clientX - (canvasRef !== null ? canvasRef.offsetLeft : 0), 
+            y: ev.clientY - (canvasRef !== null ? canvasRef.offsetTop : 0)
+        };
+
+        const boardCoordinates = render.boardCanvas
+            .canvasToBoardCoordinates(canvasCoordinates);
         
-    }, []);
+        render.placePointerAndRender(boardCoordinates);
+        
+        server.Move(boardCoordinates.x, boardCoordinates.y);
+    }, [render]);
 
     useEffect(() => {
         if (render !== undefined)

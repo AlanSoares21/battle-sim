@@ -5,7 +5,6 @@ import CanvasWrapper from "../../CanvasWrapper";
 import { AuthContext } from "../../contexts/AuthContext";
 import { CommomDataContext } from "../../contexts/CommomDataContext";
 import { TBoard, TCanvasCoordinates } from "../../interfaces";
-import { convertCanvasToBoardCoordinates } from "../../utils";
 import './index.css'
 import { CancelButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
@@ -50,37 +49,7 @@ export const BattlePage: React.FC = () => {
         renderController.placePlayer({x, y}, { name: entityIdentifier });
         renderController.render();
     }, [renderController]);
-    
-    const handleCanvasClick = useCallback<React.MouseEventHandler<HTMLCanvasElement>>(ev => {
-        const canvasCoordinates: TCanvasCoordinates = { x: ev.clientX, y: ev.clientY };
-        const boardCoordinates = convertCanvasToBoardCoordinates(canvasCoordinates, cellSize);
-        if (!renderController)
-            return console.error(`board canvas não foi preenchido`);
-        renderController.placePointerAndRender(boardCoordinates);
-        console.log({boardCoordinates});
-        
-        if (authContext.data !== undefined)
-            authContext.data.server.Move(boardCoordinates.x, boardCoordinates.y);
-    }, [renderController, authContext.data]);
 
-    useEffect(() => {
-        if (commomData.battle === undefined) 
-            return;
-        if (renderController === undefined) 
-            return;
-
-        const { battle }  = commomData;
-        if (renderController.boardCanvas.board.width !== battle.board.width || 
-            renderController.boardCanvas.board.height !== battle.board.height) {
-            renderController.boardCanvas.board.width = battle.board.width;
-            renderController.boardCanvas.board.height = battle.board.height;
-        }
-        
-        for (const player of commomData.battle.board.entitiesPosition) {
-            renderController.placePlayer({ x: player.x, y: player.y }, { name: player.entityIdentifier });
-        }
-        renderController.render();
-    }, [renderController, commomData.battle]);
 
     useEffect(() => {
         if (authContext.data) {
@@ -90,8 +59,11 @@ export const BattlePage: React.FC = () => {
 
     return(<>
         {
-            commomData.battle &&
-            <BattleContext.Provider value={{battle: commomData.battle}}>
+            commomData.battle && authContext.data &&
+            <BattleContext.Provider value={{
+                battle: commomData.battle,
+                server: authContext.data.server
+            }}>
                 <LifeBar />
                 <Board cellSize={25} />
             </BattleContext.Provider>
