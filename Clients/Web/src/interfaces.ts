@@ -1,4 +1,4 @@
-type TCoordinates = { x: number, y: number };
+export type TCoordinates = { x: number, y: number };
 
 export type TBoardCoordinates = TCoordinates;
 
@@ -74,11 +74,21 @@ export interface IWeapon {
     damageOnY: DamageDirection;
 }
 
+// TODO:: this will be implemented in the future
 export interface IEntity {
-    Id: string;
-    // TODO:: this will be implemented in the future
-    Skills: any[];
-    Weapon:IWeapon;
+    id: string;
+    skills: any[];
+    weapon: IWeapon;
+    state: {
+        currentHealth: TCoordinates;
+        healthRadius: number;
+    };
+    offensiveStats: {
+        damage: number;
+    };
+    defensiveStats: {
+        defenseAbsorption: number;
+    }
 }
 
 export interface IBattleData {

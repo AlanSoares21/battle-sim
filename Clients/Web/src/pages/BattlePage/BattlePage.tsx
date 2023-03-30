@@ -9,6 +9,7 @@ import { convertCanvasToBoardCoordinates } from "../../utils";
 import './index.css'
 import { CancelButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
+import LifeBar from "./components/LifeBar";
 
 const cellSize = 100;
 
@@ -51,12 +52,12 @@ export const BattlePage: React.FC = () => {
             return console.log("contexto ta nulo");
         const canvasWrapper = new CanvasWrapper(context)
         const board: TBoard = {
-            height: commomData.battle.boardData.height,
-            width: commomData.battle.boardData.width
+            height: commomData.battle.board.height,
+            width: commomData.battle.board.width
         };
         const boardCanvas = new BoardCanvas(board, canvasWrapper, cellSize);
         const render = new BoardRenderController(board, boardCanvas);
-        for (const player of commomData.battle.boardData.entitiesPosition) {
+        for (const player of commomData.battle.board.entitiesPosition) {
             render.placePlayer({ x: player.x, y: player.y }, { name: player.entityIdentifier });
         }
         render.render();
@@ -70,6 +71,23 @@ export const BattlePage: React.FC = () => {
     }, [authContext.data, onEntityMove])
 
     return(<>
+            {
+                commomData.battle !== undefined &&
+                (<LifeBar entities={commomData.battle.entities} />)
+            }
+        {
+            commomData.battle !== undefined &&
+            (
+                <canvas 
+                    ref={canvasRef} 
+                    width={commomData.battle.board.width * cellSize} 
+                    height={commomData.battle.board.height * cellSize} 
+                    style={{border: "1px solid #f1f1f1"}}
+                    onClick={handleCanvasClick}
+                    >
+                </canvas>
+            )
+        }
         <CancelButton 
             text="Cancel Battle" 
             onClick={() => {
@@ -85,18 +103,5 @@ export const BattlePage: React.FC = () => {
                 }
                 authContext.data.server.CancelBattle(commomData.battle?.id);
             }} />
-        {
-            commomData.battle !== undefined &&
-            (
-                <canvas 
-                    ref={canvasRef} 
-                    width={commomData.battle.boardData.width * cellSize} 
-                    height={commomData.battle.boardData.height * cellSize} 
-                    style={{border: "1px solid #f1f1f1"}}
-                    onClick={handleCanvasClick}
-                >
-                </canvas>
-            )
-        }
     </>);
 }

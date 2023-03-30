@@ -1,6 +1,6 @@
 import { HubConnection } from "@microsoft/signalr";
 import configs from "./configs";
-import { IApiError, IBattleData, IBattleRequest, IBoardData, ICheckNameResponse, IUserConnected } from "./interfaces";
+import { IApiError, IBattleData, IBattleRequest, ICheckNameResponse, IUserConnected, TCoordinates } from "./interfaces";
 
 export async function login(name: string): 
     Promise<ICheckNameResponse | IApiError> {
@@ -24,6 +24,7 @@ export interface IHubServer {
     Move(x: number, y: number): void;
     CancelBattleRequest(requesterId: string): void;
     CancelBattle(battleId: string): void;
+    Attack(targetId: string): void;
 }
 
 // events sent by the server
@@ -37,6 +38,7 @@ export interface IServerEvents {
     EntityMove(entity: string, x: number, y: number): void;
     BattleRequestCancelled(cancellerId: string, request: IBattleRequest): void;
     BattleCancelled(cancellerId: string, battleId: string): void;
+    Attack(source: string, target: string, currentHealth: TCoordinates): void;
 }
 
 export class ServerConnection implements IHubServer
@@ -82,6 +84,10 @@ export class ServerConnection implements IHubServer
         this.conn.on('BattleCancelled', listener);
         return this;
     }
+    onAttack(listener: IServerEvents['Attack']) {
+        this.conn.on('Attack', listener);
+        return this;
+    }
     
     ListUsers(): void {
         this.conn.send('ListUsers');
@@ -100,5 +106,8 @@ export class ServerConnection implements IHubServer
     }
     CancelBattle(battleId: string) {
         this.conn.send('CancelBattle', battleId);
+    }
+    Attack(targetId: string) {
+        this.conn.send('Attack', targetId);
     }
 }

@@ -56,7 +56,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     requests.filter(req => 
                         !entities.some(e => e === req.requester)));
             setUsersConnected(users => users.map(setChangeChallendByYouToFalse(entities)))
-            setBattle({ id: battle.id, boardData: battle.board });
+            setBattle(battle);
             navigate('/battle');
         }, [navigate]);
 
@@ -77,6 +77,15 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             navigate('/home');
         }, [navigate]);
 
+    const onAttack = useCallback<IServerEvents['Attack']>(
+        async (source, target, currentHealth) => {
+            console.log({'new-attack': {
+                source,
+                target,
+                currentHealth
+            }});
+        }, []);
+
     useEffect(
         () => {
             if (authContext.data) {
@@ -88,7 +97,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     .onBattleRequestSent(onBattleRequestSent)
                     .onNewBattle(onNewBattle)
                     .onBattleRequestCancelled(onBattleRequestCancelled)
-                    .onBattleCancelled(onBattleCancelled);
+                    .onBattleCancelled(onBattleCancelled)
+                    .onAttack(onAttack);
             }
         }, 
         [
@@ -100,7 +110,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             onBattleRequestSent, 
             onNewBattle,
             onBattleRequestCancelled,
-            onBattleCancelled
+            onBattleCancelled,
+            onAttack
         ]
     )
 
