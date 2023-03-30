@@ -14,7 +14,7 @@ export default class BoardCanvas {
         }
     }
     private cellSize: number;
-    private board: TBoard;
+    board: TBoard;
 
     constructor(board: TBoard, canvas: CanvasWrapper, cellSize: number) {
         this.canvas = canvas;

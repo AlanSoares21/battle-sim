@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { IEntity, TCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
+import { BattleContext } from "../BattleContext";
 
-export interface ILifeBarProps {
-    entities: IEntity[];
-}
+export interface ILifeBarProps { }
 
-const LifeBar: React.FC<ILifeBarProps> = ({
-    entities
-}) => {
+const LifeBar: React.FC<ILifeBarProps> = () => {
+    const { battle: { entities }} = useContext(BattleContext);
+    
     const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
     
     const canvasWrapper = useMemo<CanvasWrapper | undefined>(() => {
