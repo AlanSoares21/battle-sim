@@ -7,6 +7,12 @@ import BoardRenderController from "../../../BoardRenderController";
 
 export interface IBoardProps { cellSize: number }
 
+const onEntityMove = (render: BoardRenderController) => 
+    ((entityIdentifier: string, x: number, y: number) => {
+        render.placePlayer({x, y}, { name: entityIdentifier });
+        render.render();
+    });
+
 const Board: React.FC<IBoardProps> = ({ cellSize }) => {
     const { battle, server } = useContext(BattleContext);
 
@@ -30,7 +36,7 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
             value.placePlayer({ x: player.x, y: player.y }, { name: player.entityIdentifier });
         }
         return value;
-    }, [ canvasRef, battle ])
+    }, [ canvasRef, battle, cellSize ])
 
     const handleCanvasClick = useCallback<React.MouseEventHandler<HTMLCanvasElement>>(ev => {
         if (render === undefined) {
@@ -48,12 +54,17 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
         render.placePointerAndRender(boardCoordinates);
         
         server.Move(boardCoordinates.x, boardCoordinates.y);
-    }, [render]);
+    }, [render, canvasRef, server]);
 
     useEffect(() => {
         if (render !== undefined)
             render.render();
     }, [render]);
+
+    useEffect(() => {
+        if (render !== undefined)
+            server.onEntityMove(onEntityMove(render));
+    }, [render, server]);
 
     return (<div>
         <canvas 
