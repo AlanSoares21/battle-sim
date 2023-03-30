@@ -29,17 +29,10 @@ export default class BoardCanvas {
         this.board = board;
         this.cellSize = cellSize;
     }
-
-    private getCanvasSize() {
-        return {
-            width: this.canvas.canvasWidth(),
-            height: this.canvas.canvasHeight(),
-        };
-    }
     
     fillBackground() {
         const start: TCanvasCoordinates = { x: 0, y: 0 };
-        const canvas = this.getCanvasSize();
+        const canvas = this.canvas.getSize();
         const end: TCanvasCoordinates = { x: canvas.width, y: canvas.height };
         this.canvas.drawRect(this.colors.background, start, end);
     }
@@ -103,7 +96,7 @@ export default class BoardCanvas {
 
     boardToCanvasCoordinates(coordinates: TBoardCoordinates): TCanvasCoordinates {
         const diffFromCenter = this.cellSize / 2;
-        const canvas = this.getCanvasSize();
+        const canvas = this.canvas.getSize();
         return {
             x: (coordinates.x * (canvas.width / this.board.width)) + diffFromCenter, 
             y: (coordinates.y * (canvas.height / this.board.height)) + diffFromCenter

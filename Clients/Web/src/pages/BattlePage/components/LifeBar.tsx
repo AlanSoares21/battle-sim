@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { IEntity, TCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
 import { BattleContext } from "../BattleContext";
+import LifeBarRender from "./LifeBarRender";
 
 export interface ILifeBarProps { }
 
@@ -25,44 +25,10 @@ const LifeBar: React.FC<ILifeBarProps> = () => {
 
     useEffect(() => {
         if (canvasWrapper !== undefined) {
-            let radiusScale = 2;
-            let lifePointRadius = 2 * radiusScale;
-            canvasWrapper.drawRect('#555AAA', { x: 0, y: 0 }, { x: 500, y: 125 })
-            const lifeCircleCoord: TCoordinates = { x: 0, y: 75 };
-            const nameGap = 15;
-            const nameStart: TCoordinates = { x: nameGap, y: 15 };
-
-            
-            for (const entity of entities) {
-                const radius = entity.state.healthRadius * radiusScale;
-                lifeCircleCoord.x += radius;
-                canvasWrapper.drawCircle(lifeCircleCoord, radius, '#FF7777');
-                
-                const y = entity.state.currentHealth.y * radiusScale;
-                const x = entity.state.currentHealth.x * radiusScale;
-
-                const currentLife: TCoordinates = {
-                    x :  lifeCircleCoord.x,
-                    y : lifeCircleCoord.y
-                };
-
-                if (entity.state.healthRadius < entity.state.currentHealth.x)
-                    currentLife.x = lifeCircleCoord.x + x;
-                else if (entity.state.healthRadius > entity.state.currentHealth.x)
-                    currentLife.x = lifeCircleCoord.x - x;
-                
-                if (entity.state.healthRadius < entity.state.currentHealth.y)
-                    currentLife.y = lifeCircleCoord.y + y;
-                else if (entity.state.healthRadius > entity.state.currentHealth.y)
-                    currentLife.y = lifeCircleCoord.y - y;
-
-                canvasWrapper.drawCircle(currentLife, lifePointRadius, '#FFFFFF');
-
-                lifeCircleCoord.x += radius;
-                
-                canvasWrapper.writeText(nameStart, entity.id, '#FFFFFF');
-                nameStart.x += nameGap + lifeCircleCoord.x;
-            }
+            const render = new LifeBarRender(canvasWrapper);
+            for (const entity of entities)
+                render.setEntity(entity);
+            render.render();
         }
     }, [entities, canvasWrapper]);
 
