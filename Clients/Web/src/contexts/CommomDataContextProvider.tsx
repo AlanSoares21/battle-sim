@@ -86,6 +86,24 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             }});
         }, []);
 
+    const updateEntitiesPosition = useCallback<IServerEvents['EntityMove']>(
+        (entity, x, y) => {
+            setBattle(b => (b && {
+                ...b, 
+                board: { 
+                    ...b.board, 
+                    entitiesPosition: b.board.entitiesPosition.map(value => {
+                        if (entity === value.entityIdentifier) {
+                            value.y = y;
+                            value.x = x;
+                        }
+                        return value;
+                    })
+                }
+            }));
+        }
+    , []);
+
     useEffect(
         () => {
             if (authContext.data) {
@@ -98,7 +116,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     .onNewBattle(onNewBattle)
                     .onBattleRequestCancelled(onBattleRequestCancelled)
                     .onBattleCancelled(onBattleCancelled)
-                    .onAttack(onAttack);
+                    .onAttack(onAttack)
+                    .onEntityMove(updateEntitiesPosition);
             }
         }, 
         [
@@ -111,7 +130,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             onNewBattle,
             onBattleRequestCancelled,
             onBattleCancelled,
-            onAttack
+            onAttack,
+            updateEntitiesPosition
         ]
     )
 

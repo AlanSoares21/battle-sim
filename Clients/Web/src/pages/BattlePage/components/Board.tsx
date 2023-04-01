@@ -7,7 +7,7 @@ import BoardRenderController from "../../../BoardRenderController";
 
 export interface IBoardProps { cellSize: number }
 
-const onEntityMove = (render: BoardRenderController) => 
+const renderEntityMove = (render: BoardRenderController) => 
     ((entityIdentifier: string, x: number, y: number) => {
         render.placePlayer({x, y}, { name: entityIdentifier });
         render.render();
@@ -31,12 +31,12 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
         const canvasWrapper = new CanvasWrapper(context)
         const board: TBoard = battle.board;
         const boardCanvas = new BoardCanvas(board, canvasWrapper, cellSize);
-        const value = new BoardRenderController(board, boardCanvas)
+        const value = new BoardRenderController(boardCanvas)
         for (const player of battle.board.entitiesPosition) {
             value.placePlayer({ x: player.x, y: player.y }, { name: player.entityIdentifier });
         }
         return value;
-    }, [ canvasRef, battle, cellSize ])
+    }, [ canvasRef, battle.board, cellSize ])
 
     const handleCanvasClick = useCallback<React.MouseEventHandler<HTMLCanvasElement>>(ev => {
         if (render === undefined) {
@@ -61,20 +61,19 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
         else {
             const target = battle.board.entitiesPosition[index].entityIdentifier;
             server.Attack(target);
-            console.log(`attacking ${target}`);
         }
         
-    }, [render, canvasRef, server]);
+    }, [render, canvasRef, server, battle.board.entitiesPosition]);
 
     useEffect(() => {
         if (render !== undefined)
             render.render();
     }, [render]);
 
-    useEffect(() => {
-        if (render !== undefined)
-            server.onEntityMove(onEntityMove(render));
-    }, [render, server]);
+    // useEffect(() => {
+    //     if (render !== undefined)
+    //         server.onEntityMove(renderEntityMove(render));
+    // }, [render, server]);
 
     return (<div>
         <canvas 
