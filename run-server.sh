@@ -14,8 +14,11 @@ if [ -z $SiteUrl ]; then
     echo "SiteUrl can not be empty"
     exit 127
 fi
+if [ -z $DbFileName ]; then
+	DbFileName="/etc/game/gamedb.json"
+fi
 # write server configs in env file
-echo -e "SecondsAuthTokenExpire=$SecondsAuthTokenExpire\nJwt:Issuer=$ApiUrl\nJwt:Secret=$JwtSecret\nJwt:Audience=$SiteUrl\nAllowedOrigin=$SiteUrl" > $EnvFilename
+echo -e "SecondsAuthTokenExpire=$SecondsAuthTokenExpire\nJwt:Issuer=$ApiUrl\nJwt:Secret=$JwtSecret\nJwt:Audience=$SiteUrl\nAllowedOrigin=$SiteUrl\nDbFileName=$DbFileName" > $EnvFilename
 Imagename="battlesim:server"
 ContainerName="battlesim-server"
 LocalPort=3002
@@ -28,9 +31,11 @@ if [ -n "$PreviousContainerId" ]; then
     # removing old images used on older containers
     docker image prune -f
 fi
+GameDataVolume="battle-sim-data-vol"
 docker run \
 -dp $LocalPort:80 \
 --name $ContainerName \
 --env-file $EnvFilename \
+-v $GameDataVolume:/etc/game \
 $Imagename
 exit $?
