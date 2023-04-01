@@ -51,9 +51,19 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
         const boardCoordinates = render.boardCanvas
             .canvasToBoardCoordinates(canvasCoordinates);
         
-        render.placePointerAndRender(boardCoordinates);
+        render.placePointer(boardCoordinates);
+
+        const index = battle.board.entitiesPosition.findIndex(p =>
+            p.x === boardCoordinates.x && p.y === boardCoordinates.y);
         
-        server.Move(boardCoordinates.x, boardCoordinates.y);
+        if (index === -1)
+            server.Move(boardCoordinates.x, boardCoordinates.y);
+        else {
+            const target = battle.board.entitiesPosition[index].entityIdentifier;
+            server.Attack(target);
+            console.log(`attacking ${target}`);
+        }
+        
     }, [render, canvasRef, server]);
 
     useEffect(() => {

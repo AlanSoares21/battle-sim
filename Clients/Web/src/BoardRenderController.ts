@@ -40,7 +40,7 @@ export default class BoardRenderController {
         });
     }
 
-    private placePointer(cordinates: TBoardCoordinates) {
+    placePointer(cordinates: TBoardCoordinates) {
         const pointer: TRenderElement = {
             cell: cordinates,
             type: 'pointer'
