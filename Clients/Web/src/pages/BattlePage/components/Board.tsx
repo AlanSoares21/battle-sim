@@ -1,17 +1,18 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { BattleContext } from "../BattleContext";
 import CanvasWrapper from "../../../CanvasWrapper";
-import { TBoard, TCanvasCoordinates } from "../../../interfaces";
+import { TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
 import BoardCanvas from "../../../BoardCanvas";
 import BoardRenderController from "../../../BoardRenderController";
 
 export interface IBoardProps { cellSize: number }
 
-const renderEntityMove = (render: BoardRenderController) => 
-    ((entityIdentifier: string, x: number, y: number) => {
-        render.placePlayer({x, y}, { name: entityIdentifier });
-        render.render();
-    });
+function getMiddleCoordinates(board: TBoard): TBoardCoordinates {
+    return {
+        x: board.width / 2,
+        y: board.height / 2
+    }
+}
 
 const Board: React.FC<IBoardProps> = ({ cellSize }) => {
     const { battle, server } = useContext(BattleContext);
@@ -29,14 +30,12 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
             return;
         }
         const canvasWrapper = new CanvasWrapper(context)
-        const board: TBoard = battle.board;
+        const board: TBoard = battle.board.size;
         const boardCanvas = new BoardCanvas(board, canvasWrapper, cellSize);
-        const value = new BoardRenderController(boardCanvas)
-        for (const player of battle.board.entitiesPosition) {
-            value.placePlayer({ x: player.x, y: player.y }, { name: player.entityIdentifier });
-        }
+        const value = new BoardRenderController(boardCanvas);
+        value.placePointer(getMiddleCoordinates(battle.board.size));
         return value;
-    }, [ canvasRef, battle.board, cellSize ])
+    }, [ canvasRef, battle.board.size, cellSize ])
 
     const handleCanvasClick = useCallback<React.MouseEventHandler<HTMLCanvasElement>>(ev => {
         if (render === undefined) {
@@ -66,20 +65,25 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
     }, [render, canvasRef, server, battle.board.entitiesPosition]);
 
     useEffect(() => {
-        if (render !== undefined)
+        if (render !== undefined) {
+            for (const entity of battle.board.entitiesPosition) {
+                render.placePlayer({
+                    x: entity.x,
+                    y: entity.y
+                }, 
+                {
+                    name: entity.entityIdentifier
+                });
+            }
             render.render();
-    }, [render]);
-
-    // useEffect(() => {
-    //     if (render !== undefined)
-    //         server.onEntityMove(renderEntityMove(render));
-    // }, [render, server]);
+        }
+    }, [render, battle.board.entitiesPosition]);
 
     return (<div>
         <canvas 
             ref={setCanvasRef} 
-            width={battle.board.width * cellSize} 
-            height={battle.board.height * cellSize} 
+            width={battle.board.size.width * cellSize} 
+            height={battle.board.size.height * cellSize} 
             style={{border: "1px solid #f1f1f1"}}
             onClick={handleCanvasClick}>
         </canvas>

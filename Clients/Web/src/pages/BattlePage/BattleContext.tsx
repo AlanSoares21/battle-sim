@@ -11,8 +11,10 @@ export interface IBattleContext {
 export const BattleContext = createContext<IBattleContext>({
     battle: {
         board: {
-            height: 4,
-            width: 6,
+            size: {
+                height: 4,
+                width: 6
+            },
             entitiesPosition: []
         },
         entities: [],

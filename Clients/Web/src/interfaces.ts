@@ -57,9 +57,11 @@ export interface IEntityPosition
 }
 
 export interface IBoardData {
-    width: number;
-    height: number;
-    entitiesPosition: IEntityPosition[]
+    size: {
+        width: number;
+        height: number;
+    }
+    entitiesPosition: IEntityPosition[];
 }
 
 export enum DamageDirection {
