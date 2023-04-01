@@ -81,6 +81,7 @@ builder.Services
     });
 
 builder.Services.AddHostedService<MovementIntentionsWorker>();
+builder.Services.AddHostedService<AttacksHandlerWorker>();
 
 var app = builder.Build();
 
