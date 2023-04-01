@@ -1,7 +1,7 @@
 using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Hubs.EventHandling;
 using BattleSimulator.Server.Hubs;
-using Microsoft.Extensions.Logging;
 
 namespace BattleSimulator.Server.Tests.Hubs.Game.BattleEvents;
 
@@ -32,7 +32,7 @@ public class AttacksTests {
         IEntity caller = Utils.FakeEntity("callerId");
         IEntity target = Utils.FakeEntity("targetId");
         var battles = new BattleCollection();
-        var battle = CreateDuel();
+        var battle = Utils.CreateDuel();
         battle.AddEntity(caller, new(0, 0));
         battle.AddEntity(target, new(2, 0));
         battles.TryAdd(battle);
@@ -53,7 +53,7 @@ public class AttacksTests {
     public void Register_Attacks() {
         string callerId = "callerId";
         string targetId = "targetId";
-        var battles = BattleCollectionWithBattleFor(
+        var battles = Utils.BattleCollectionWithBattleFor(
             callerId, 
             targetId
         );
@@ -66,22 +66,4 @@ public class AttacksTests {
         A.CallTo(() => attacksRequested.RegisterAttack(callerId, targetId))
             .MustHaveHappenedOnceExactly();
     }
-
-    IBattleCollection BattleCollectionWithBattleFor(
-        string firstEntityId, 
-        string secondEntityId) 
-    {
-        var battles = new BattleCollection();
-        var battle = CreateDuel();
-        battle.AddEntity(Utils.FakeEntity(firstEntityId), new(0, 0));
-        battle.AddEntity(Utils.FakeEntity(secondEntityId), new(0, 0));
-        battles.TryAdd(battle);
-        return battles;
-    }
-
-    IBattle CreateDuel() =>
-        new Duel(
-            Guid.NewGuid(),
-            GameBoard.WithDefaultSize(),
-            A.Fake<ICalculator>());
 }

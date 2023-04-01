@@ -1,9 +1,6 @@
-using System.Collections.Concurrent;
-using BattleSimulator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using BattleSimulator.Engine;
-using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Hubs.EventHandling;
 using BattleSimulator.Server.Models;
 
 namespace BattleSimulator.Server.Hubs;

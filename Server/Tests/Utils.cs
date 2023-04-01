@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Engine;
 
 namespace BattleSimulator.Server.Tests;
 
@@ -28,4 +29,32 @@ public static class Utils
         A.CallTo(() => entity.Id).Returns(id);
         return entity;
     }
+
+    public static IBattleCollection BattleCollectionWithBattleFor(
+        string firstEntityId, 
+        string secondEntityId) 
+    {
+        return BattleCollectionWithBattleFor(
+            Utils.FakeEntity(firstEntityId),
+            Utils.FakeEntity(secondEntityId)
+        );
+    }
+    
+    public static IBattleCollection BattleCollectionWithBattleFor(
+        IEntity firstEntity, 
+        IEntity secondEntity) 
+    {
+        var battles = new BattleCollection();
+        var battle = CreateDuel();
+        battle.AddEntity(firstEntity, new(0, 0));
+        battle.AddEntity(secondEntity, new(0, 0));
+        battles.TryAdd(battle);
+        return battles;
+    }
+
+    public static IBattle CreateDuel() =>
+        new Duel(
+            Guid.NewGuid(),
+            GameBoard.WithDefaultSize(),
+            A.Fake<ICalculator>());
 }

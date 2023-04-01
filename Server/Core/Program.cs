@@ -5,6 +5,7 @@ using BattleSimulator.Server.Auth;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Workers;
 using BattleSimulator.Server.Database;
+using BattleSimulator.Server.Hubs.EventHandling;
 
 const string CorsPolicyName = "CorsDefault";
 
