@@ -20,12 +20,12 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
 
     const render = useMemo<BoardRenderController | undefined>(() => {
         if (!canvasRef) {
-            console.log("canvas ref ta nulo");
+            console.error("canvas ref ta nulo");
             return;
         }
         const context = canvasRef.getContext('2d');
         if (!context) {
-            console.log("contexto ta nulo")
+            console.error("contexto ta nulo")
             return;
         }
         const canvasWrapper = new CanvasWrapper(context)

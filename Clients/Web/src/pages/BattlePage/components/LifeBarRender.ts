@@ -56,7 +56,18 @@ export default class LifeBarRender {
     }
 
     setEntity(entity: IEntity) {
-        this.entities.push(entity);
+        const index = this.entities.findIndex(e => e.id === entity.id);
+        if (index === -1)
+            this.entities.push(entity);
+        else
+            this.entities[index] = entity;
+    }
+    
+    setEntityCurrentHealth(id: string, health: TCoordinates) {
+        const index = this.entities.findIndex(e => e.id === id);
+        if (index !== -1) {
+            this.entities[index].state.currentHealth = health;
+        }
     }
 
     calculeCurrentLifeCoord(
@@ -64,35 +75,49 @@ export default class LifeBarRender {
         currentHealth: TCoordinates,
         healthRadius: number): TCoordinates
     {
-        const currentLifeCoord: TCoordinates = sphereCenter;
+        let currentLifeCoord: TCoordinates = {
+            x: sphereCenter.x,
+            y: sphereCenter.y
+        };
         
-        const y = currentHealth.y * this.scale.life;
-        const x = currentHealth.x * this.scale.life;
+        let y = Math.abs(currentHealth.y - healthRadius) * this.scale.life;
+        let x = Math.abs(currentHealth.x - healthRadius) * this.scale.life;
 
-        if (healthRadius < currentHealth.x)
+        if (healthRadius < currentHealth.x) {
             currentLifeCoord.x = sphereCenter.x + x;
-        else if (healthRadius > currentHealth.x)
+        }
+        else if (healthRadius > currentHealth.x) {
             currentLifeCoord.x = sphereCenter.x - x;
+        }
         
-        if (healthRadius < currentHealth.y)
+        if (healthRadius < currentHealth.y) {
             currentLifeCoord.y = sphereCenter.y + y;
-        else if (healthRadius > currentHealth.y)
+        }
+        else if (healthRadius > currentHealth.y) {
             currentLifeCoord.y = sphereCenter.y - y;
+        }
         
         return currentLifeCoord;
     }
 
     render() {
         this.drawBackground();
-        const coordinates = {
-            base: config.baseCoord,
-            name: config.name.initialCoord,
-            sphereCenter: config.life.circle.initialCoord
+        let coordinates: {
+            base: TCoordinates;
+            name: TCoordinates;
+            sphereCenter: TCoordinates;
+        } = {
+            base: { x: config.baseCoord.x, y: config.baseCoord.y },
+            name: { x: config.name.initialCoord.x, y: config.name.initialCoord.y },
+            sphereCenter: { 
+                x: config.life.circle.initialCoord.x, 
+                y: config.life.circle.initialCoord.y 
+            }
         };
         for (const entity of this.entities) {
             this.drawName(entity.id, coordinates.name);
             
-            const circleRadius = entity.state.healthRadius * this.scale.life;
+            let circleRadius = entity.state.healthRadius * this.scale.life;
             
             coordinates.sphereCenter.x += circleRadius;
             this.drawLifeSphere(circleRadius, coordinates.sphereCenter);

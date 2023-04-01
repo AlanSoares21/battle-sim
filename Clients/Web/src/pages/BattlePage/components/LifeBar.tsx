@@ -2,15 +2,24 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import CanvasWrapper from "../../../CanvasWrapper";
 import { BattleContext } from "../BattleContext";
 import LifeBarRender from "./LifeBarRender";
+import { IServerEvents } from "../../../server";
 
 export interface ILifeBarProps { }
 
+const onAttack = (render: LifeBarRender): IServerEvents['Attack'] => 
+(
+    (_, target, currentHealth) => {
+        render.setEntityCurrentHealth(target, currentHealth);
+        render.render();
+    }
+)
+
 const LifeBar: React.FC<ILifeBarProps> = () => {
-    const { battle: { entities }} = useContext(BattleContext);
+    const { battle: { entities }, server } = useContext(BattleContext);
     
     const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
     
-    const canvasWrapper = useMemo<CanvasWrapper | undefined>(() => {
+    const render = useMemo<LifeBarRender | undefined>(() => {
         if (!canvasRef) {
             console.error("canvas ref ta nulo");
             return;
@@ -20,17 +29,21 @@ const LifeBar: React.FC<ILifeBarProps> = () => {
             console.error("contexto ta nulo");
             return;
         }
-        return new CanvasWrapper(context)
+        return new LifeBarRender(new CanvasWrapper(context));
     }, [ canvasRef ]);
 
     useEffect(() => {
-        if (canvasWrapper !== undefined) {
-            const render = new LifeBarRender(canvasWrapper);
+        if (render !== undefined) {
             for (const entity of entities)
-                render.setEntity(entity);
+                render.setEntity({...entity});
             render.render();
         }
-    }, [entities, canvasWrapper]);
+    }, [entities, render]);
+
+    useEffect(() => {
+        if (render !== undefined)
+            server.onAttack(onAttack(render));
+    }, [ server, render ]);
 
     return (<div>
         <canvas 
