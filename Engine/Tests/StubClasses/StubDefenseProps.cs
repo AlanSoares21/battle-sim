@@ -1,15 +1,8 @@
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 
-namespace BattleSimulator.Engine.Tests.StubClasses
+namespace BattleSimulator.Engine.Tests.StubClasses;
+
+public class StubDefenseProps : IDefensiveAttributes
 {
-    class StubDefenseProps : IDefensiveAttributes
-    {
-        public double PhysicalDefenseAbsorption { get; set; }
-        public double MagicalDefenseAbsorption { get; set; }
-        public double Dodge { get; set; }
-        public double Parry { get; set; }
-        public double Block { get; set; }
-        public double StealHealth { get; set; }
-        public double DamageReflection { get; set; }
-    }
+    public double DefenseAbsorption { get; set; }
 }

@@ -7,13 +7,18 @@ namespace BattleSimulator.Server.Hubs;
 
 public class GameEngine : IGameEngine
 {
+    ICalculator _gameCalculator;
     IGameHubState _state;
     ILogger<GameEngine> _logger;
+    IGameDb _database;
     public GameEngine(
         IGameHubState state, 
-        ILogger<GameEngine> logger) {
+        ILogger<GameEngine> logger,
+        IGameDb database) {
         _state = state;
         _logger = logger;
+        _gameCalculator = new Calculator();
+        _database = database;
     }
     public async Task HandleUserDisconnected(
         CurrentCallerContext caller)
@@ -267,10 +272,7 @@ public class GameEngine : IGameEngine
         await caller
             .HubClients
             .Group(battleGroupName)
-            .NewBattle(
-                battle.Id, 
-                GetBoardData(battle.Board)
-            );
+            .NewBattle(GetBattleData(battle));
     }
 
     void LogRequesterCanNotAcceptTheRequest(BattleRequest request) {
@@ -296,20 +298,37 @@ public class GameEngine : IGameEngine
     }
 
     Duel CreateDuel(Guid battleId) => 
-        new Duel(battleId, GameBoard.WithDefaultSize());
+        new Duel(battleId, GameBoard.WithDefaultSize(), _gameCalculator);
 
-    IEntity GetUserEntity(string userId) => new Player(userId);
+    IEntity GetUserEntity(string userId) {
+        var entity = this._database.SearchEntity(userId);        
+        if (entity is null)
+            return CreateDefaultEntity(userId);
+        return entity;
+    }
+
+    IEntity CreateDefaultEntity(string userId) 
+    {
+        return new Player(userId);
+    }
 
     void LogCanNotCreateBattle(Guid requesterId) {
         _logger.LogError("Error on create battle - requesterId: {requesterId}", 
             requesterId);
     }
 
+    BattleData GetBattleData(IBattle battle) => 
+        new BattleData() {
+            id = battle.Id,
+            board = GetBoardData(battle.Board),
+            entities = battle.Entities
+        };
+
     BoardData GetBoardData(IBoard board) =>
         new BoardData() {
             entitiesPosition = GetEntitiesPosition(board),
             height = board.Height,
-            width = board.Width
+            width = board.Width,
         };
 
     List<EntityPosition> GetEntitiesPosition(IBoard board) {

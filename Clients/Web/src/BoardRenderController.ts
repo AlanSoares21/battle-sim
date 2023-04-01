@@ -1,13 +1,6 @@
 import BoardCanvas from "./BoardCanvas";
-import { IPlayerRenderData, RenderElementsHandlers, TBoard, TBoardCoordinates, TRenderElement } from "./interfaces";
+import { IPlayerRenderData, RenderElementsHandlers, TBoardCoordinates, TRenderElement } from "./interfaces";
 import { isPlayerRenderData } from "./typeCheck";
-
-function getMiddleCoordinates(board: TBoard): TBoardCoordinates {
-    return {
-        x: board.width / 2,
-        y: board.height / 2
-    }
-}
 
 export default class BoardRenderController {
     boardCanvas: BoardCanvas;
@@ -16,9 +9,8 @@ export default class BoardRenderController {
      */
     private elements: TRenderElement[] = [];
 
-    constructor(board: TBoard, boardCanvas: BoardCanvas) {
+    constructor(boardCanvas: BoardCanvas) {
         this.boardCanvas = boardCanvas;
-        this.placePointer(getMiddleCoordinates(board));
         this.render();
     }
 
@@ -40,7 +32,7 @@ export default class BoardRenderController {
         });
     }
 
-    private placePointer(cordinates: TBoardCoordinates) {
+    placePointer(cordinates: TBoardCoordinates) {
         const pointer: TRenderElement = {
             cell: cordinates,
             type: 'pointer'

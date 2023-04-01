@@ -14,6 +14,13 @@ export default class CanvasWrapper {
         return this.context.canvas.height;
     }
 
+    getSize() {
+        return {
+            width: this.canvasWidth(),
+            height: this.canvasHeight(),
+        };
+    }
+
     drawRect(color: CanvasFillStrokeStyles['fillStyle'], start: TCanvasCoordinates, end: TCanvasCoordinates) {
         this.context.fillStyle = color;
         this.context.fillRect(start.x, start.y, end.x, end.y);

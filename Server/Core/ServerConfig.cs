@@ -28,4 +28,6 @@ public class ServerConfig : IServerConfig
         int.Parse(_configuration["SecondsAuthTokenExpire"]);
 
     public string AllowedOrigin => _configuration["AllowedOrigin"];
+
+    public string? DbFilePath => _configuration["DbFilePath"];
 }

@@ -1,13 +1,10 @@
 import { createContext } from "react";
-import { IBattleRequest, IBoardData, IUserConnected } from "../interfaces";
+import { IBattleData, IBattleRequest, IUserConnected } from "../interfaces";
 
 export interface ICommomDataContext {
     usersConnected: IUserConnected[];
     battleRequests: IBattleRequest[];
-    battle?: {
-        id: string;
-        boardData: IBoardData;
-    }
+    battle?: IBattleData;
 }
 
 export const CommomDataContext = createContext<ICommomDataContext>({

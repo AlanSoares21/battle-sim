@@ -6,10 +6,12 @@ namespace BattleSimulator.Engine;
 
 public class Duel : IBattle
 {
-    public Duel(Guid battleId, IBoard board) {
+    private ICalculator Calc;
+    public Duel(Guid battleId, IBoard board, ICalculator calculator) {
         this.Board = board;
         this.Entities = new();
         Id = battleId;
+        Calc = calculator;
     }
     public Guid Id { get; private set; }
     public List<IEntity> Entities { get; private set; }
@@ -30,14 +32,14 @@ public class Duel : IBattle
     }
 
     public void Move(IEntity entity, MoveDirection direction) {
-        if (!EntityIsIntheBattle(entity.Identifier))
-            throw new Exception($"The entity {entity.Identifier} is not in the board");
+        if (!EntityIsIntheBattle(entity.Id))
+            throw new Exception($"The entity {entity.Id} is not in the board");
         Coordinate curentCellWithEntity = Board
-            .GetEntityPosition(entity.Identifier);
+            .GetEntityPosition(entity.Id);
         Coordinate targetCell = _GetTargetCellToMove(
             curentCellWithEntity, direction
         );
-        Board.Move(entity.Identifier, targetCell);
+        Board.Move(entity.Id, targetCell);
     }
 
 
@@ -62,9 +64,64 @@ public class Duel : IBattle
     public void AddEntity(IEntity entity, Coordinate position)
     {
         Entities.Add(entity);
-        Board.Place(entity.Identifier, position);
+        Board.Place(entity.Id, position);
     }
 
-    public bool EntityIsIntheBattle(string identifier) => 
-        Board.GetEntities().Contains(identifier);
+    public bool EntityIsIntheBattle(string Id) => 
+        Board.GetEntities().Contains(Id);
+
+    public bool Attack(string targetId, string attackerId) {
+        if (!CanAttack(targetId, attackerId))
+            return false;
+        ExecuteAttack(targetId, attackerId);
+        return true;
+    }
+
+    public bool CanAttack(string targetId, string attackerId) {
+        Coordinate attakcerPosition = Board.GetEntityPosition(attackerId);
+        Coordinate targetPosition = Board.GetEntityPosition(targetId);
+        int xDiff = Math.Abs(targetPosition.X - attakcerPosition.X);
+        if (xDiff > 1)
+            return false;
+        int yDiff = Math.Abs(targetPosition.Y - attakcerPosition.Y);
+        return yDiff <= 1;
+    }
+
+    void ExecuteAttack(string targetId, string attackerId) {
+        (IEntity target, IEntity attacker) = GetEntities(targetId, attackerId);
+        int damage = Calc
+            .Damage(
+                attacker.OffensiveStats.Damage, 
+                target.DefensiveStats.DefenseAbsorption, 
+                attacker.OffensiveStats, 
+                target.DefensiveStats);
+        
+        int xMul = 0;
+        if (attacker.Weapon.damageOnX == Equipment.DamageDirection.Positive)
+            xMul = 1;
+        else if (attacker.Weapon.damageOnX == Equipment.DamageDirection.Negative)
+            xMul = -1;
+
+        int yMul = 0;
+        if (attacker.Weapon.damageOnY == Equipment.DamageDirection.Positive)
+            yMul = 1;
+        else if (attacker.Weapon.damageOnY == Equipment.DamageDirection.Negative)
+            yMul = -1;
+
+        int newX = target.State.CurrentHealth.X + damage * xMul;
+        int newY = target.State.CurrentHealth.Y + damage * yMul;
+        target.State.CurrentHealth = new(newX, newY);
+    }
+
+    (IEntity target, IEntity attacker) GetEntities(string targetId, string attackerId) {
+        IEntity target, attacker;
+        if (Entities[0].Id == targetId) {
+            target = Entities[0];
+            attacker = Entities[1];
+        } else {
+            target = Entities[1];
+            attacker = Entities[0];
+        }
+        return new(target, attacker);
+    }
 }

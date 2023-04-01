@@ -1,4 +1,4 @@
-type TCoordinates = { x: number, y: number };
+export type TCoordinates = { x: number, y: number };
 
 export type TBoardCoordinates = TCoordinates;
 
@@ -60,4 +60,39 @@ export interface IBoardData {
     width: number;
     height: number;
     entitiesPosition: IEntityPosition[]
+}
+
+export enum DamageDirection {
+    Neutral = 0,
+    Positive = 1,
+    Negative = 2
+}
+
+export interface IWeapon {
+    name: string;
+    damageOnX: DamageDirection;
+    damageOnY: DamageDirection;
+}
+
+// TODO:: this will be implemented in the future
+export interface IEntity {
+    id: string;
+    skills: any[];
+    weapon: IWeapon;
+    state: {
+        currentHealth: TCoordinates;
+        healthRadius: number;
+    };
+    offensiveStats: {
+        damage: number;
+    };
+    defensiveStats: {
+        defenseAbsorption: number;
+    }
+}
+
+export interface IBattleData {
+    id: string;
+    board: IBoardData;
+    entities: IEntity[];
 }

@@ -93,7 +93,7 @@ public class MovementIntentionsWorker : BackgroundService
     void MoveEntity(MovementIntention intention, IBattle battle) 
     {
         IEntity entity = battle.Entities
-            .Where(e => e.Identifier == intention.entityIdentifier)
+            .Where(e => e.Id == intention.entityIdentifier)
             .Single();
         TryMove(intention.cell, entity, battle);
     }
@@ -105,13 +105,13 @@ public class MovementIntentionsWorker : BackgroundService
     }
 
     void TryMove(Coordinate targetCell, IEntity entity, IBattle battle) {
-        Coordinate sourceCell = battle.Board.GetEntityPosition(entity.Identifier);
+        Coordinate sourceCell = battle.Board.GetEntityPosition(entity.Id);
         MoveDirection direction = GetDirectionToCell(sourceCell, targetCell);
         try {
             battle.Move(entity, direction);
         } 
         catch (Exception ex) {
-            LogErrorOnMoveEntity(entity.Identifier, direction, ex);
+            LogErrorOnMoveEntity(entity.Id, direction, ex);
             throw new EntityNotMovedException();
         }
     }

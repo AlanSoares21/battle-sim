@@ -4,6 +4,7 @@ using BattleSimulator.Server;
 using BattleSimulator.Server.Auth;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Workers;
+using BattleSimulator.Server.Database;
 
 const string CorsPolicyName = "CorsDefault";
 
@@ -17,6 +18,11 @@ builder.Services.AddSingleton<IBattleRequestCollection, BattleRequestCollection>
 builder.Services.AddSingleton<IBattleCollection, BattleCollection>();
 builder.Services.AddSingleton<IGameHubState, GameHubState>();
 builder.Services.AddSingleton<IGameEngine, GameEngine>();
+builder.Services.AddSingleton<IJsonSerializerWrapper, JsonSerializerWrapper>();
+builder.Services.AddSingleton<IGameDb, GameDb>();
+builder.Services.AddSingleton<IAttacksRequestedList, AttacksRequestedList>();
+builder.Services.AddSingleton<IBattleEventsHandler, BattleEventsHandler>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IServerConfig, ServerConfig>();
 
@@ -75,6 +81,7 @@ builder.Services
     });
 
 builder.Services.AddHostedService<MovementIntentionsWorker>();
+builder.Services.AddHostedService<AttacksHandlerWorker>();
 
 var app = builder.Build();
 

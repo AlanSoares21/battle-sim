@@ -1,15 +1,8 @@
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 
-namespace BattleSimulator.Engine.Tests.StubClasses
+namespace BattleSimulator.Engine.Tests.StubClasses;
+
+public class StubAttackProps : IOffensiveAttributes
 {
-    class StubAttackProps : IOffensiveAttributes
-    {
-        public int PhysicalDamage { get; set; }
-        public int MagicalDamage { get; set; }
-        public double CriticalHit { get; set; }
-        public double Accuracy { get; set; }
-        public double AttackSpeed { get; set; }
-        public double Penetration { get; set; }
-        public double SkillsCooldown { get; set; }
-    }
+    public int Damage { get; set; }
 }

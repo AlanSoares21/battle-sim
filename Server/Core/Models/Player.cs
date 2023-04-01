@@ -1,35 +1,61 @@
+using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine.Interfaces.Skills;
+using BattleSimulator.Engine.Equipment;
+using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 
 namespace BattleSimulator.Server.Models;
 
 public class Player : IEntity
 {
     public Player(string identifier) {
-        this.Identifier = identifier;
+        this.Id = identifier;
         Skills = new();
+        this.OffensiveStats = new OffensiveStats();
+        this.DefensiveStats = new DefensiveStats();
+        this.State = new State();
+        Weapon = new Weapon() {
+            damageOnX = DamageDirection.Positive,
+            damageOnY = DamageDirection.Neutral
+        };
     }
 
-    public string Identifier { get; private set; }
-
+    public string Id { get; private set; }
+    public Weapon Weapon { get; set; }
     public List<ISkillBase> Skills { get; set; }
+    
+    public IStateAttributes State { get; set; }
+    public IOffensiveAttributes OffensiveStats { get; set; }
+    public IDefensiveAttributes DefensiveStats { get; set; }
+}
 
-    public int Health { get; set; }
-    public int HealthRegeneration { get; set; }
-    public int Energy { get; set; }
-    public int EnergyRegeneration { get; set; }
-    public int PhysicalDamage { get; set; }
-    public int MagicalDamage { get; set; }
-    public double CriticalHit { get; set; }
-    public double Accuracy { get; set; }
-    public double AttackSpeed { get; set; }
-    public double Penetration { get; set; }
-    public double SkillsCooldown { get; set; }
-    public double PhysicalDefenseAbsorption { get; set; }
-    public double MagicalDefenseAbsorption { get; set; }
-    public double Dodge { get; set; }
-    public double Parry { get; set; }
-    public double Block { get; set; }
-    public double StealHealth { get; set; }
-    public double DamageReflection { get; set; }
+class OffensiveStats : IOffensiveAttributes
+{
+    public OffensiveStats() 
+    {
+        Damage = 10;
+    }
+    public int Damage { get; set; }
+}
+
+class DefensiveStats : IDefensiveAttributes
+{
+    public DefensiveStats() 
+    {
+        DefenseAbsorption = 0.1;
+    }
+
+    public double DefenseAbsorption { get; set; }
+}
+
+class State : IStateAttributes
+{
+    public State() 
+    {
+        HealthRadius = 25;
+        CurrentHealth = new(25, 25);
+    }
+
+    public int HealthRadius { get; set; }
+    public Coordinate CurrentHealth { get; set; }
 }
