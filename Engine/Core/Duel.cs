@@ -70,11 +70,10 @@ public class Duel : IBattle
     public bool EntityIsIntheBattle(string Id) => 
         Board.GetEntities().Contains(Id);
 
-    public bool Attack(string targetId, string attackerId) {
+    public void Attack(string targetId, string attackerId) {
         if (!CanAttack(targetId, attackerId))
-            return false;
+            return;
         ExecuteAttack(targetId, attackerId);
-        return true;
     }
 
     public bool CanAttack(string targetId, string attackerId) {

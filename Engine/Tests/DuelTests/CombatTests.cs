@@ -5,7 +5,7 @@ namespace BattleSimulator.Engine.Tests.DuelTests;
 [TestClass]
 public class CombatTests {
     [TestMethod]
-    public void Successfull_Attack_When_Is_On_The_Side_Of_The_Target() 
+    public void Can_Attack_When_Is_On_The_Side_Of_The_Target() 
     {
         IEntity attacker = Utils.FakeEntity("attacker");
         IEntity target = Utils.FakeEntity("target");
@@ -19,13 +19,13 @@ public class CombatTests {
         {
             Coordinate attackerPosition = new(x, y);
             battle.Board.Move(attacker.Id, attackerPosition);
-            Assert.IsTrue(battle.Attack(target.Id, attacker.Id), 
+            Assert.IsTrue(battle.CanAttack(target.Id, attacker.Id), 
                 $"Attack failed for ({x}, {y})");
         }
     }
 
     [TestMethod]
-    public void Attack_Fails_When_One_Square_Away_In_X_From_The_Target() 
+    public void Can_Not_Attack_When_One_Square_Away_In_X_From_The_Target() 
     {
         IEntity attacker = Utils.FakeEntity("attacker");
         IEntity target = Utils.FakeEntity("target");
@@ -39,7 +39,7 @@ public class CombatTests {
         {
             Coordinate attackerPosition = new(x, y);
             battle.Board.Move(attacker.Id, attackerPosition);
-            Assert.IsFalse(battle.Attack(target.Id, attacker.Id), 
+            Assert.IsFalse(battle.CanAttack(target.Id, attacker.Id), 
                 $"Success attack from ({x}, {y})");
         }
     }
@@ -50,7 +50,7 @@ public class CombatTests {
         (the vertices tests)
     */
     [TestMethod]
-    public void Attack_Fails_When_One_Square_Away_In_Y_From_The_Target() 
+    public void Can_Not_Attack_When_One_Square_Away_In_Y_From_The_Target() 
     {
         IEntity attacker = Utils.FakeEntity("attacker");
         IEntity target = Utils.FakeEntity("target");
@@ -64,7 +64,7 @@ public class CombatTests {
         {
             Coordinate attackerPosition = new(x, y);
             battle.Board.Move(attacker.Id, attackerPosition);
-            Assert.IsFalse(battle.Attack(target.Id, attacker.Id), 
+            Assert.IsFalse(battle.CanAttack(target.Id, attacker.Id), 
                 $"Success attack from ({x}, {y})");
         }
     }
