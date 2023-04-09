@@ -22,5 +22,10 @@ public abstract class CommomDamageSkill : ISkillBase
             this.damageOnX,
             this.damageOnY
         );
+        battle.Notify.SkillDamage(
+            this.Name, 
+            source.Id, 
+            target.Id, 
+            target.State.CurrentHealth);
     }
 }
