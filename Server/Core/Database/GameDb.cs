@@ -1,7 +1,7 @@
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs;
-using BattleSimulator.Server.Models;
+using BattleSimulator.Engine;
 
 namespace BattleSimulator.Server.Database;
 

@@ -1,10 +1,10 @@
-using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine.Interfaces.Skills;
 using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
+using System.Collections.Generic;
 
-namespace BattleSimulator.Server.Models;
+namespace BattleSimulator.Engine;
 
 public class Player : IEntity
 {
