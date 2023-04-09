@@ -1,0 +1,26 @@
+using BattleSimulator.Engine.Equipment;
+using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Engine.Interfaces.Skills;
+
+namespace BattleSimulator.Engine.Skills;
+
+public abstract class CommomDamageSkill : ISkillBase
+{
+    private int skillDamage = 10;
+    protected abstract DamageDirection damageOnX { get; }
+    protected abstract DamageDirection damageOnY { get; }
+    
+    public abstract string Name { get; }
+
+    public void Exec(IEntity target, IEntity source, IBattle battle)
+    {
+        battle.DealDamage(
+            skillDamage,
+            target.DefensiveStats,
+            target.State,
+            source.OffensiveStats,
+            this.damageOnX,
+            this.damageOnY
+        );
+    }
+}

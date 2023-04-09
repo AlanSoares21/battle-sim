@@ -19,5 +19,9 @@ public static class Utils {
     }
 
     public static IBattle CreateDuel() => 
-        new Duel(Guid.NewGuid(), GameBoard.WithDefaultSize(), new Calculator());
+        new Duel(
+            Guid.NewGuid(), 
+            GameBoard.WithDefaultSize(), 
+            new Calculator(),
+            A.Fake<IEventsObserver>());
 }

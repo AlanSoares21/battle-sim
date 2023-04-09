@@ -1,21 +1,31 @@
 using System;
 using System.Collections.Generic;
+using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 
 namespace BattleSimulator.Engine;
 
 public class Duel : IBattle
 {
     private ICalculator Calc;
-    public Duel(Guid battleId, IBoard board, ICalculator calculator) {
+    public Duel(
+        Guid battleId, 
+        IBoard board, 
+        ICalculator calculator,
+        IEventsObserver notifier) 
+    {
         this.Board = board;
         this.Entities = new();
         Id = battleId;
         Calc = calculator;
+        Notify = notifier;
     }
     public Guid Id { get; private set; }
     public List<IEntity> Entities { get; private set; }
     public IBoard Board { get; private set; }
+
+    public IEventsObserver Notify { get; private set; }
 
     public void AddEntity(IEntity entity)
     {
@@ -85,31 +95,47 @@ public class Duel : IBattle
         int yDiff = Math.Abs(targetPosition.Y - attakcerPosition.Y);
         return yDiff <= 1;
     }
-
+    
     void ExecuteAttack(string targetId, string attackerId) {
         (IEntity target, IEntity attacker) = GetEntities(targetId, attackerId);
-        int damage = Calc
-            .Damage(
-                attacker.OffensiveStats.Damage, 
-                target.DefensiveStats.DefenseAbsorption, 
-                attacker.OffensiveStats, 
-                target.DefensiveStats);
+        DealDamage(
+            attacker.OffensiveStats.Damage, 
+            target.DefensiveStats, 
+            target.State, 
+            attacker.OffensiveStats,
+            attacker.Weapon.damageOnX,
+            attacker.Weapon.damageOnY);
+    }
+
+    public void DealDamage(
+        int damage, 
+        IDefensiveAttributes targetAttributes,
+        IStateAttributes targetState, 
+        IOffensiveAttributes attackerAttributes,
+        DamageDirection damageOnX,
+        DamageDirection damageOnY) 
+    {
+        damage = Calc.Damage(
+            damage, 
+            targetAttributes.DefenseAbsorption, 
+            attackerAttributes, 
+            targetAttributes);
         
         int xMul = 0;
-        if (attacker.Weapon.damageOnX == Equipment.DamageDirection.Positive)
+        if (damageOnX == Equipment.DamageDirection.Positive)
             xMul = 1;
-        else if (attacker.Weapon.damageOnX == Equipment.DamageDirection.Negative)
+        else if (damageOnX == Equipment.DamageDirection.Negative)
             xMul = -1;
 
         int yMul = 0;
-        if (attacker.Weapon.damageOnY == Equipment.DamageDirection.Positive)
+        if (damageOnY == Equipment.DamageDirection.Positive)
             yMul = 1;
-        else if (attacker.Weapon.damageOnY == Equipment.DamageDirection.Negative)
+        else if (damageOnY == Equipment.DamageDirection.Negative)
             yMul = -1;
 
-        int newX = target.State.CurrentHealth.X + damage * xMul;
-        int newY = target.State.CurrentHealth.Y + damage * yMul;
-        target.State.CurrentHealth = new(newX, newY);
+        int newX = targetState.CurrentHealth.X + damage * xMul;
+        int newY = targetState.CurrentHealth.Y + damage * yMul;
+        targetState.CurrentHealth = new(newX, newY);
     }
 
     (IEntity target, IEntity attacker) GetEntities(string targetId, string attackerId) {
