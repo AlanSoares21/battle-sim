@@ -56,7 +56,8 @@ public class AttacksRequestsWorkerTests
         new Duel(
             Guid.NewGuid(),
             GameBoard.WithDefaultSize(),
-            new Calculator());
+            new Calculator(),
+            A.Fake<IEventsObserver>());
 
     IHubContext<GameHub, IGameHubClient> HubWithClientForThisBattle(
         IBattle battle, 

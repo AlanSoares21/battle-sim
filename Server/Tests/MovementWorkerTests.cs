@@ -124,7 +124,8 @@ public class MovementWorkerTests
         IBattle battle = new Duel(
             Guid.NewGuid(), 
             GameBoard.WithDefaultSize(),
-            A.Fake<ICalculator>());
+            A.Fake<ICalculator>(),
+            A.Fake<IEventsObserver>());
         battle.AddEntity(entity);
         return battle;
     }

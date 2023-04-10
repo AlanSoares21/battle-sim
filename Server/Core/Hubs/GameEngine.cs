@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Models;
+using BattleSimulator.Server.Hubs.EventHandling;
 
 namespace BattleSimulator.Server.Hubs;
 
@@ -298,7 +299,11 @@ public class GameEngine : IGameEngine
     }
 
     Duel CreateDuel(Guid battleId) => 
-        new Duel(battleId, GameBoard.WithDefaultSize(), _gameCalculator);
+        new Duel(
+            battleId, 
+            GameBoard.WithDefaultSize(), 
+            _gameCalculator,
+            new EventsObserver());
 
     IEntity GetUserEntity(string userId) {
         var entity = this._database.SearchEntity(userId);        

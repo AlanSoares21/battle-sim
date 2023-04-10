@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine;
+using BattleSimulator.Engine.Interfaces.Skills;
 
 namespace BattleSimulator.Server.Tests;
 
@@ -22,6 +23,13 @@ public static class Utils
 
     public static IGroupManager FakeGroupManager() => 
         A.Fake<IGroupManager>();
+
+    public static IEntity FakeEntity(string id, List<ISkillBase> skills) 
+    {
+        var entity = FakeEntity(id);
+        A.CallTo(() => entity.Skills).Returns(skills);
+        return entity;
+    }
 
     public static IEntity FakeEntity(string id) 
     {
@@ -56,5 +64,31 @@ public static class Utils
         new Duel(
             Guid.NewGuid(),
             GameBoard.WithDefaultSize(),
-            A.Fake<ICalculator>());
+            A.Fake<ICalculator>(),
+            A.Fake<IEventsObserver>());
+
+    public static List<ISkillBase> NewSkillSet(params string[] names) {
+        List<ISkillBase> skills = new();
+        foreach (var name in names)
+        {
+            skills.Add(FakeSkill(name));
+        }
+        return NewSkillSet(skills.ToArray());
+    }
+
+    public static ISkillBase FakeSkill(string name) 
+    {
+        var skill = A.Fake<ISkillBase>();
+        A.CallTo(() => skill.Name).Returns(name);
+        return skill;
+    }
+
+    public static List<ISkillBase> NewSkillSet(params ISkillBase[] skills) {
+        List<ISkillBase> value = new();
+        foreach (var skill in skills)
+        {
+            value.Add(skill);
+        }
+        return value;
+    }
 }

@@ -27,9 +27,7 @@ public class SkillsTests
     public void Enqueue_Skill_Event() {
         string skillName = "someSkillName";
         
-        var caller = Utils.FakeEntity("callerId");
-        A.CallTo(() => caller.Skills)
-            .Returns(NewSkillSet(skillName));
+        var caller = Utils.FakeEntity("callerId", Utils.NewSkillSet(skillName));
         var target = Utils.FakeEntity("targetId");
         var battles = Utils.BattleCollectionWithBattleFor(
             caller, 
@@ -50,17 +48,5 @@ public class SkillsTests
                 && e.Skill.Name == skillName
         )))
             .MustHaveHappenedOnceExactly();
-    }
-
-    List<ISkillBase> NewSkillSet(params string[] names) {
-        List<ISkillBase> value = new();
-        foreach (var name in names)
-        {
-            var skill = A.Fake<ISkillBase>();
-            A.CallTo(() => skill.Name)
-                .Returns(name);
-            value.Add(skill);
-        }
-        return value;
     }
 }
