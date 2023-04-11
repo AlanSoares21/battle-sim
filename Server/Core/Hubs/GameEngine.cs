@@ -254,8 +254,10 @@ public class GameEngine : IGameEngine
             return;
         }
         Guid battleId = Guid.NewGuid();
+        string battleGroupName = battleId.ToString();
         bool succesOnCreateBattle = CreateBattle(
             battleId,
+            caller.HubClients.Group(battleGroupName),
             request.target,
             request.requester
         );
@@ -264,7 +266,6 @@ public class GameEngine : IGameEngine
             return;
         }
         IBattle battle = _state.Battles.Get(battleId);
-        string battleGroupName = battle.Id.ToString();
         await FillGroupWithUsers(groupManager,
             battleGroupName,
             caller.ConnectionId,
@@ -291,19 +292,32 @@ public class GameEngine : IGameEngine
             request.target);
     }
 
-    bool CreateBattle(Guid battleId, params string[] userIds) {
-        IBattle battle = CreateDuel(battleId);
+    bool CreateBattle(
+        Guid battleId, 
+        IGameHubClient battleClient, 
+        params string[] userIds) 
+    {
+        IBattle battle = CreateDuel(battleId, battleClient);
         foreach(var id in userIds)
             battle.AddEntity(GetUserEntity(id));
         return _state.Battles.TryAdd(battle);
     }
 
-    Duel CreateDuel(Guid battleId) => 
+    Duel CreateDuel(Guid battleId, IGameHubClient battleClient) => 
         new Duel(
             battleId, 
             GameBoard.WithDefaultSize(), 
             _gameCalculator,
-            new EventsObserver());
+            CreateObserver(battleClient));
+
+    IEventsObserver CreateObserver(IGameHubClient client) 
+    {
+        var observer = new EventsObserver();
+        observer.SubscribeToSkillDamage((skill, source, target, currentHealth) => {
+            client.Skill(skill, source, target, currentHealth).Wait();
+        });
+        return observer;
+    }
 
     IEntity GetUserEntity(string userId) {
         var entity = this._database.SearchEntity(userId);        
@@ -384,6 +398,42 @@ public class GameEngine : IGameEngine
             .BattleCancelled(caller.UserId, battle.Id);
     }
 
+    void LogCallerIsNotInTheBattle(
+        CurrentCallerContext caller,
+        IBattle battle) 
+    {
+        _logger.LogInformation("User {user} is not in the battle {id} but tried cancel it.",
+            caller.UserId,
+            battle.Id);
+    }
+
+    void LogFailToRemoveBattle(IBattle battle) 
+    {
+        _logger.LogError("Fail to remove battle {id}",
+            battle.Id);
+    }
+
+    public Task Skill(string skillName, string target, CurrentCallerContext caller) 
+    {
+        var battleId = _state.Battles.GetBattleIdByEntity(caller.UserId);
+        var battle = GetBattle(battleId);
+        if (battle is null) 
+            return Task.CompletedTask;
+        var callerEntity = battle.Entities.Single(e => e.Id == caller.UserId);
+        var skill = callerEntity.Skills.Find(s => s.Name == skillName);
+        if (skill is null) {
+            LogSkillNotFound(battleId, skillName, caller.UserId);
+            return Task.CompletedTask;
+        }
+        IEntity targetEntity;
+        if (target == callerEntity.Id)
+            targetEntity = callerEntity;
+        else
+            targetEntity = battle.Entities.Single(e => e.Id == target);
+        skill.Exec(targetEntity, callerEntity, battle);
+        return Task.CompletedTask;
+    }
+
     IBattle? GetBattle(Guid battleId) {
         try {
             return _state.Battles.Get(battleId);
@@ -399,20 +449,12 @@ public class GameEngine : IGameEngine
             battleId,
             ex.Message);
     }
-
-    void LogCallerIsNotInTheBattle(
-        CurrentCallerContext caller,
-        IBattle battle) 
-    {
-        _logger.LogInformation("User {user} is not in the battle {id} but tried cancel it.",
-            caller.UserId,
-            battle.Id);
-    }
-
-    void LogFailToRemoveBattle(IBattle battle) 
-    {
-        _logger.LogError("Fail to remove battle {id}",
-            battle.Id);
+    
+    void LogSkillNotFound(Guid battleId, string skill, string user) {
+        _logger.LogError("In battle {id} skill {skill} was not found for user {user}",
+            battleId,
+            skill,
+            user);
     }
 
     public void Move(Coordinate coordinate, CurrentCallerContext caller) 

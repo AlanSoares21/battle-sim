@@ -1,5 +1,7 @@
+using BattleSimulator.Engine;
 using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Engine.Interfaces.Skills;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Models;
 using BattleSimulator.Server.Tests.Builders;
@@ -139,5 +141,4 @@ public class BattleCreatedTests
         }
         return true;
     }
-
 }

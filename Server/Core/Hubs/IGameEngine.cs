@@ -24,4 +24,5 @@ public interface IGameEngine
 
     Task CancelBattle(Guid battleId, CurrentCallerContext caller);
     void Move(Coordinate coordinate, CurrentCallerContext caller);
+    Task Skill(string skillName, string target, CurrentCallerContext caller);
 }

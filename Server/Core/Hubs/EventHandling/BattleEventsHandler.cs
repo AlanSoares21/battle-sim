@@ -48,9 +48,4 @@ public class BattleEventsHandler : IBattleEventsHandler
             caller,
             target);
     }
-
-    public void UseSkill(string target, string callerId, string skillName)
-    {
-        
-    }
 }
