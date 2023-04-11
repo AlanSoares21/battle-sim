@@ -5,12 +5,26 @@ namespace BattleSimulator.Server.Hubs.EventHandling;
 
 public class EventsObserver : IEventsObserver
 {
+    List<Action<string, string, string, Coordinate>> _skillDamageSubscribers;
+
+    public EventsObserver() 
+    {
+        _skillDamageSubscribers = new();
+    }
+
+    public void SubscribeToSkillDamage(
+        Action<string, string, string, Coordinate> subscriber)
+    {
+        _skillDamageSubscribers.Add(subscriber);
+    }
+
     public void SkillDamage(
         string skillName, 
         string sourceId, 
         string targetId, 
         Coordinate targetCurrentHealth)
     {
-        throw new NotImplementedException();
+        foreach (var subscriber in _skillDamageSubscribers)
+            subscriber(skillName, sourceId, targetId, targetCurrentHealth);
     }
 }
