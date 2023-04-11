@@ -17,4 +17,9 @@ public interface IGameHubClient
         BattleRequest request);
     Task BattleCancelled(string cancellerId, Guid battleId);
     Task Attack(string source, string target, Coordinate currentHealth);
+    Task Skill(
+        string skillName, 
+        string source, 
+        string target, 
+        Coordinate currentHealth);
 }

@@ -3,6 +3,8 @@ using BattleSimulator.Server.Hubs;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces.Skills;
+using BattleSimulator.Server.Tests.Builders;
+using BattleSimulator.Server.Models;
 
 namespace BattleSimulator.Server.Tests;
 
@@ -90,5 +92,24 @@ public static class Utils
             value.Add(skill);
         }
         return value;
+    }
+
+    public static IGameHubState FakeStateWithRequest(BattleRequest request) {
+        IGameHubState state = new GameHubStateBuilder().Build();
+        AddRequestOnState(state, request);
+        return state;
+    }
+
+    public static void AddRequestOnState(IGameHubState state, BattleRequest request) {
+        A.CallTo(() => state.BattleRequests.Get(request.requestId))
+            .Returns(request);
+    }
+
+    public static IGameDb FakeDbWithEntities(params IEntity[] entities) {
+        IGameDb gameDb = A.Fake<IGameDb>();
+        foreach (var entity in entities)
+            A.CallTo(() => gameDb.SearchEntity(entity.Id))
+                .Returns(entity);
+        return gameDb;
     }
 }
