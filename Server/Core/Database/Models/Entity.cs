@@ -9,4 +9,6 @@ public class Entity
     public int Damage { get; set; }
 
     public double DefenseAbsorption { get; set; }
+
+    public List<string> Skills { get; set; } = new();
 }
