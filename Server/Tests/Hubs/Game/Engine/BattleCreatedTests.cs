@@ -75,6 +75,7 @@ public class BattleCreatedTests
         IGameHubState state = Utils.FakeStateWithRequest(request);
         IGameEngine engine = new GameEngineBuilder()
             .WithState(state)
+            .WithSkillProvider(new SkillProvider())
             .Build();
         await engine.AcceptBattleRequest(
             request.requestId, 
@@ -97,12 +98,31 @@ public class BattleCreatedTests
         && entity.DefensiveStats.DefenseAbsorption == 0.1
         && entity.State.HealthRadius == 25
         && entity.State.CurrentHealth.CoordinatesAreEqual(25, 25)
-        && WeaponIsDefault(entity.Weapon);
+        && WeaponIsDefault(entity.Weapon)
+        && HadDefaultSkills(entity.Skills);
     
 
     bool WeaponIsDefault(Weapon weapon) =>
         weapon.damageOnX == DamageDirection.Positive
         && weapon.damageOnY == DamageDirection.Neutral;
+
+    bool HadDefaultSkills(List<ISkillBase> skills) 
+    {
+        string[] defaultSkills = new[] {
+            "basicNegativeDamageOnX"
+        };
+        int defaultSkillCount = 0;
+        for (int i = 0; i < skills.Count; i++)
+        {
+            foreach(string defaultSkill in defaultSkills) {
+                if (defaultSkill == skills[i].Name) {
+                    defaultSkillCount++;
+                    break;
+                }
+            }
+        }
+        return defaultSkillCount == defaultSkills.Length;
+    }
 
     [TestMethod]
     public async Task When_Create_Battle_Get_Entity_Data_From_DB()

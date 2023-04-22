@@ -12,14 +12,17 @@ public class GameEngine : IGameEngine
     IGameHubState _state;
     ILogger<GameEngine> _logger;
     IGameDb _database;
+    ISkillProvider _skillProvider;
     public GameEngine(
         IGameHubState state, 
         ILogger<GameEngine> logger,
-        IGameDb database) {
+        IGameDb database,
+        ISkillProvider skillProvider) {
         _state = state;
         _logger = logger;
         _gameCalculator = new Calculator();
         _database = database;
+        _skillProvider = skillProvider;
     }
     public async Task HandleUserDisconnected(
         CurrentCallerContext caller)
@@ -328,7 +331,9 @@ public class GameEngine : IGameEngine
 
     IEntity CreateDefaultEntity(string userId) 
     {
-        return new Player(userId);
+        var player = new Player(userId);
+        player.Skills.Add(_skillProvider.Get("basicNegativeDamageOnX"));
+        return player;
     }
 
     void LogCanNotCreateBattle(Guid requesterId) {
