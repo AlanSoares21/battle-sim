@@ -9,63 +9,6 @@ namespace BattleSimulator.Server.Tests.Hubs.Game.Engine;
 
 [TestClass]
 public class EngineBattleRequestsTests {
-
-    [TestMethod]
-    public async Task Dont_Register_Duplicated_Request() {
-        string targetId = "targetId";
-        CurrentCallerContext callerContext = new(
-            "callerId",
-            "callerConnectionId",
-            Utils.FakeHubCallerContext());
-        List<BattleRequest> requests = new() {
-            new BattleRequest() {
-                target = targetId,
-                requester = callerContext.UserId
-            }
-        };
-        IGameHubState state = new GameHubStateBuilder().Build();
-        A.CallTo(() => state
-            .BattleRequests
-            .RequestsWithUser(""))
-                .WithAnyArguments()
-                .Returns(requests);
-        IGameEngine engine = new GameEngineBuilder()
-            .WithState(state)
-            .Build();
-        await engine.SendBattleRequest(targetId, callerContext);
-        A.CallTo(() => state.BattleRequests.TryAdd(new()))
-            .WithAnyArguments()
-            .MustNotHaveHappened();
-    }
-
-    [TestMethod]
-    public async Task Dont_Register_The_Request_When_The_Target_Alredy_Requested_The_Current_Requester() {
-        string targetId = "targetId";
-        CurrentCallerContext callerContext = new(
-            "callerId",
-            "callerConnectionId",
-            Utils.FakeHubCallerContext());
-        List<BattleRequest> requests = new() {
-            new BattleRequest() {
-                target = callerContext.UserId,
-                requester = targetId
-            }
-        };
-        IGameHubState state = new GameHubStateBuilder().Build();
-        A.CallTo(() => state
-            .BattleRequests
-            .RequestsWithUser(""))
-                .WithAnyArguments()
-                .Returns(requests);
-        IGameEngine engine = new GameEngineBuilder()
-            .WithState(state)
-            .Build();
-        await engine.SendBattleRequest(targetId, callerContext);
-        A.CallTo(() => state.BattleRequests.TryAdd(new()))
-            .WithAnyArguments()
-            .MustNotHaveHappened();
-    }
-
     [TestMethod]
     public async Task Remove_Request_When_A_User_Cancel() {
         CurrentCallerContext caller = new(

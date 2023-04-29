@@ -16,6 +16,13 @@ public class RequestsHandler
 
     public async Task SendTo(string target, CurrentCallerContext caller)
     {
+        if (AlreadyRequested(caller.UserId, target)) 
+        {
+            _Logger.LogInformation("A battle with those users has already been requested - requester: {requester} - target: {target}",
+                caller.UserId,
+                target);
+            return;
+        }
         var request = new BattleRequest() {
             requester = caller.UserId,
             requestId = Guid.NewGuid(),
@@ -39,5 +46,12 @@ public class RequestsHandler
             .NewBattleRequest(request);
         await caller.Connection.BattleRequestSent(request);
         await sendingToTarget;
+    }
+
+    bool AlreadyRequested(string requesterId, string targetId) {
+        return _Requests
+            .RequestsWithUser(requesterId)
+            .Any(request => 
+                request.UserIsOnRequest(targetId));
     }
 }

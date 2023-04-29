@@ -87,6 +87,68 @@ public class NewRequestsTests
     }
     
     // TODO:: dont send request if a request between users already exists
+
+    [TestMethod]
+    public async Task Dont_Register_Duplicated_Request() {
+        string targetId = "targetId";
+        CurrentCallerContext callerContext = new(
+            "callerId",
+            "callerConnectionId",
+            Utils.FakeHubCallerContext());
+        var requestList = new BattleRequest[] {
+            new() {
+                target = targetId,
+                requester = callerContext.UserId
+            }
+        };
+        var requestCollection = A.Fake<IBattleRequestCollection>();
+        SetRequestListForAnyUser(requestCollection, requestList);
+
+        RequestsHandler handler = new RequestsHandlerBuilder()
+            .WithRequestCollection(requestCollection)
+            .Build();
+        await handler.SendTo(targetId, callerContext);
+        
+        ShoudNotTryAddAnyRequest(requestCollection);
+    }
+
+    [TestMethod]
+    public async Task Dont_Register_The_Request_When_The_Target_Alredy_Requested_The_Current_Requester() {
+        string targetId = "targetId";
+        CurrentCallerContext callerContext = new(
+            "callerId",
+            "callerConnectionId",
+            Utils.FakeHubCallerContext());
+        var requestList = new BattleRequest[] {
+            new() {
+                target = callerContext.UserId,
+                requester = targetId
+            }
+        };
+        var requestCollection = A.Fake<IBattleRequestCollection>();
+        SetRequestListForAnyUser(requestCollection, requestList);
+        
+        RequestsHandler handler = new RequestsHandlerBuilder()
+            .WithRequestCollection(requestCollection)
+            .Build();
+        await handler.SendTo(targetId, callerContext);
+        
+        ShoudNotTryAddAnyRequest(requestCollection);
+    }
+
+    void ShoudNotTryAddAnyRequest(IBattleRequestCollection collection)
+    {
+        A.CallTo(() => collection.TryAdd(A<BattleRequest>.Ignored))
+            .MustNotHaveHappened();
+    }
+
+    void SetRequestListForAnyUser(
+        IBattleRequestCollection collection, 
+        IList<BattleRequest> requests)
+    {
+        A.CallTo(() => collection.RequestsWithUser(A<string>.Ignored))
+            .Returns(requests);   
+    }
     
     // TODO:: accept request
     // TODO:: requester can not accept the request
