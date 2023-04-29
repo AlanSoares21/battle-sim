@@ -1,5 +1,6 @@
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Models;
+using BattleSimulator.Server.Tests.Builders;
 using Microsoft.Extensions.Logging;
 
 namespace BattleSimulator.Server.Tests.Hubs.Game.RequestHandler;
@@ -8,7 +9,7 @@ namespace BattleSimulator.Server.Tests.Hubs.Game.RequestHandler;
 public class RequestsHandlerTests
 {
     [TestMethod]
-    public void Register_Request()
+    public async Task Register_Request()
     {
         var requestCollection = A.Fake<IBattleRequestCollection>();
         CurrentCallerContext callerContext = new() {
@@ -16,7 +17,7 @@ public class RequestsHandlerTests
         };
         string targetId = "targetId";
         var handler = CreateHandler(requestCollection);
-        handler.RequestDuel(targetId, callerContext);
+        await handler.SendTo(targetId, callerContext);
         RequestWithUsersHasBeenRegistered(
             callerContext.UserId, 
             targetId, 
@@ -42,7 +43,32 @@ public class RequestsHandlerTests
             A.Fake<ILogger<RequestsHandler>>());
     }
 
-    // TODO:: notify the target
+    [TestMethod]
+    public async Task Notify_The_Target_From_The_New_Request()
+    {
+        IGameHubClient targetConnection = A.Fake<IGameHubClient>();
+        string targetId = "targetId";
+        var hubClients = Utils.FakeHubCallerContext();
+        A.CallTo(() => hubClients.User(targetId))
+            .Returns(targetConnection);
+        CurrentCallerContext callerContext = new(
+            "callerId",
+            "callerConnectionId",
+            hubClients);
+
+        RequestsHandler handler = new RequestsHandlerBuilder().Build();
+        await handler.SendTo(targetId, callerContext);
+
+        SomeRequestSent(targetConnection);
+    }
+
+    void SomeRequestSent(IGameHubClient client)
+    {
+        A.CallTo(() => client.NewBattleRequest(A<BattleRequest>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    // TODO:: notify the requester
     // TODO:: dont send request if a request between users already exists
     
     // TODO:: accept request

@@ -14,22 +14,28 @@ public class RequestsHandler
         _Logger = logger;
     }
 
-    public void RequestDuel(string target, CurrentCallerContext caller)
+    public async Task SendTo(string target, CurrentCallerContext caller)
     {
         var request = new BattleRequest() {
             requester = caller.UserId,
             requestId = Guid.NewGuid(),
             target = target
         };
-        if (_Requests.TryAdd(request))
-            _Logger.LogInformation("New request {id} from {requester} to {target}", 
-                request.requestId,
-                request.requester,
-                request.target);
-        else
+        if (!_Requests.TryAdd(request)) 
+        {
             _Logger.LogError("Not possible request battle from {requester} to {target} - request id: {id}", 
                 request.requester, 
                 request.target, 
                 request.requestId);
+            return;
+        }
+        _Logger.LogInformation("New request {id} from {requester} to {target}", 
+            request.requestId,
+            request.requester,
+            request.target);
+        await caller
+            .HubClients
+            .User(target)
+            .NewBattleRequest(request);
     }
 }
