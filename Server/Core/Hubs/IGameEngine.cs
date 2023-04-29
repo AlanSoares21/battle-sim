@@ -10,9 +10,6 @@ public interface IGameEngine
     Task HandleUserConnected(CurrentCallerContext caller);
 
     Task ListUsers(CurrentCallerContext caller);
-    Task SendBattleRequest(
-        string targetId, 
-        CurrentCallerContext caller);
     Task CancelBattleRequest(
         Guid requestId, 
         CurrentCallerContext caller);

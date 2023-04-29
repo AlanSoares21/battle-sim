@@ -12,15 +12,18 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
     ILogger<GameHub> _logger;
     IGameEngine _engine;
     IBattleEventsHandler _eventsHandler;
+    RequestsHandler _RequestsHandler;
     public GameHub(
         ILogger<GameHub> logger, 
         IGameHubState hubState,
         IGameEngine engine,
-        IBattleEventsHandler eventsHandler) {
+        IBattleEventsHandler eventsHandler,
+        RequestsHandler requestsHandler) {
         _logger = logger;
         _hubState = hubState;
         _engine = engine;
         _eventsHandler = eventsHandler;
+        _RequestsHandler = requestsHandler;
     }
     public async Task ListUsers() 
     {
@@ -33,7 +36,7 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
         _logger.LogInformation("send new battle request from {requester} to {target}", 
             Context.UserIdentifier, 
             targetId);
-        await _engine.SendBattleRequest(
+        await _RequestsHandler.SendTo(
             targetId,
             GetCurrentCallerContext()
         );

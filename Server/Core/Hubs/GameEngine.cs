@@ -142,51 +142,6 @@ public class GameEngine : IGameEngine
             .Where(username => username != userId)
             .Select(username => new UserConnected() { name = username });
 
-    public async Task SendBattleRequest(
-        string targetId, 
-        CurrentCallerContext caller)
-    {
-        if (BattleAlreadyRequested(caller.UserId, targetId)) {
-            LogBattleAlreadyRequested(caller.UserId, targetId);
-            return;
-        }
-        var battleRequest = new BattleRequest() {
-            requester = caller.UserId,
-            requestId = Guid.NewGuid(),
-            target = targetId
-        };
-        if (!_state.BattleRequests.TryAdd(battleRequest)) {
-            LogNotPossibleRequestBattle(battleRequest);
-            return;
-        }
-        await caller
-            .HubClients
-            .User(targetId)
-            .NewBattleRequest(battleRequest);
-        await caller.Connection.BattleRequestSent(battleRequest);
-    }
-
-    bool BattleAlreadyRequested(string requesterId, string targetId) {
-        return _state
-            .BattleRequests
-            .RequestsWithUser(requesterId)
-            .Any(request => 
-                request.UserIsOnRequest(targetId));
-    }
-
-    void LogBattleAlreadyRequested(string requester, string target) {
-        _logger.LogInformation("A battle with those users has already been requested - requester: {requester} - target: {target}",
-            requester,
-            target);
-    }
-
-    void LogNotPossibleRequestBattle(BattleRequest request) {
-        _logger.LogError("Not was possible request battle from {requester} to {target} - request id: {id}", 
-            request.requester, 
-            request.target, 
-            request.requestId);
-    }
-
     public async Task CancelBattleRequest(
         Guid requestId,
         CurrentCallerContext caller)

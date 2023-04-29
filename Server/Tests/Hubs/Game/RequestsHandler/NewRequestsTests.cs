@@ -63,7 +63,6 @@ public class NewRequestsTests
             .MustHaveHappenedOnceExactly();
     }
 
-    // TODO:: notify the requester
     [TestMethod]
     public async Task Notify_Requester_When_Battle_Request_Sent() {
         string targetId = "targetId";
@@ -85,8 +84,6 @@ public class NewRequestsTests
         A.CallTo(() => client.BattleRequestSent(A<BattleRequest>.Ignored))
             .MustHaveHappenedOnceExactly();
     }
-    
-    // TODO:: dont send request if a request between users already exists
 
     [TestMethod]
     public async Task Dont_Register_Duplicated_Request() {
@@ -149,11 +146,4 @@ public class NewRequestsTests
         A.CallTo(() => collection.RequestsWithUser(A<string>.Ignored))
             .Returns(requests);   
     }
-    
-    // TODO:: accept request
-    // TODO:: requester can not accept the request
-    // TODO:: notify requester of the request accepted
-    // TODO:: request can not be accepted if one of users are in a battle
-    // TODO:: call BattleOpHandler creation method after the request been accepted
-    // TODO:: remove request register after accept
 }
