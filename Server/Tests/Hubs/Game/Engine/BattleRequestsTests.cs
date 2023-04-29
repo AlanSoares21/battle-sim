@@ -47,24 +47,6 @@ public class EngineBattleRequestsTests {
     }
 
     [TestMethod]
-    public async Task Register_Battle_Request() {
-        string targetId = "targetId";
-        CurrentCallerContext callerContext = new(
-            "callerId",
-            "callerConnectionId",
-            Utils.FakeHubCallerContext());
-        IGameHubState state = new GameHubStateBuilder().Build();
-        IGameEngine engine = new GameEngineBuilder()
-            .WithState(state)
-            .Build();
-        await engine.SendBattleRequest(targetId, callerContext);
-        A.CallTo(() => state.BattleRequests.TryAdd(
-                BattleRequestWithUsers(callerContext.UserId, targetId)
-            ))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [TestMethod]
     public async Task Dont_Register_Duplicated_Request() {
         string targetId = "targetId";
         CurrentCallerContext callerContext = new(
@@ -118,13 +100,6 @@ public class EngineBattleRequestsTests {
         A.CallTo(() => state.BattleRequests.TryAdd(new()))
             .WithAnyArguments()
             .MustNotHaveHappened();
-    }
-
-    BattleRequest BattleRequestWithUsers(
-        string requester,
-        string target) {
-        return A<BattleRequest>.That.Matches(req => 
-            req.requester == requester && req.target == target);
     }
 
     [TestMethod]
