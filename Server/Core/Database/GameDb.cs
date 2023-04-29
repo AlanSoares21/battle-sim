@@ -7,6 +7,9 @@ namespace BattleSimulator.Server.Database;
 
 public class GameDb : IGameDb
 {
+    public static List<string> DefaultSkills = new() {
+        "basicNegativeDamageOnX"
+    };
     ISkillProvider _skillProvider;
     List<Entity> _entities;
     ILogger<GameDb> _logger;
@@ -30,6 +33,21 @@ public class GameDb : IGameDb
             _entities = content;
     }
 
+    public IEntity GetEntityFor(string entityId)
+    {
+        var entity = SearchEntity(entityId);
+        if (entity is null)
+            return DefaultPlayer(entityId);
+        return entity;
+    }
+
+    Player DefaultPlayer(string id)
+    {
+        Player player = new(id);
+        SetSkills(player, DefaultSkills);
+        return player;
+    }
+
     public IEntity? SearchEntity(string entityId) 
     {
         var result = _entities
@@ -46,13 +64,18 @@ public class GameDb : IGameDb
         player.State.HealthRadius = entity.HealthRadius;
         player.DefensiveStats.DefenseAbsorption = entity.DefenseAbsorption;
         player.OffensiveStats.Damage = entity.Damage;
-        foreach (var skill in entity.Skills)
+        SetSkills(player, entity.Skills);
+        return player;
+    }
+
+    void SetSkills(Player player, List<string> skills) 
+    {
+        foreach (var skill in skills)
         {
             if (_skillProvider.Exists(skill))
                 player.Skills.Add(_skillProvider.Get(skill));
             else
-                _logger.LogWarning("Skill {skill} not found. User: {user}", skill, entity.Id);
+                _logger.LogWarning("Skill {skill} not found. Player: {player}", skill, player.Id);
         }
-        return player;
     }
 }
