@@ -34,7 +34,6 @@ public class AcceptRequestTests
             .MustHaveHappenedOnceExactly();
     }
 
-    // TODO:: call BattleOpHandler creation method after the request been accepted
     [TestMethod]
     public void When_Accept_A_Request_Create_A_Battle() {
         CurrentCallerContext caller = new(
@@ -59,19 +58,43 @@ public class AcceptRequestTests
         BattleWasCreated(battleHandler);
     }
 
-    void EnableRemoveRequest(IBattleRequestCollection collection, BattleRequest request)
-    {
-        A.CallTo(() => collection.TryRemove(request))
-            .Returns(true);
-    }
-
     void BattleWasCreated(IBattleHandler handler)
     {
         A.CallTo(() => handler.CreateBattle())
             .MustHaveHappenedOnceExactly();
     }
 
-    // TODO:: requester can not accept the request
+    [TestMethod]
+    public void When_The_Caller_Is_Not_The_Target_The_Request_Should_Not_Be_Accepted() {
+        CurrentCallerContext caller = new(
+            "callerId", 
+            "callerConnectionId",
+            Utils.FakeHubCallerContext());
+        BattleRequest request = new() { target = "iAmNotTheCaller" };
+        var requestCollection = A.Fake<IBattleRequestCollection>();
+        Utils.AddRequestOnCollection(requestCollection, request);
+        EnableRemoveRequest(requestCollection, request);
+        
+        IRequestsHandler handler = new RequestsHandlerBuilder()
+            .WithRequestCollection(requestCollection)
+            .Build();
+        handler.Accept(request.requestId, caller);
+
+        NoRequestsShouldBeRemoved(requestCollection);
+    }
+
+    void EnableRemoveRequest(IBattleRequestCollection collection, BattleRequest request)
+    {
+        A.CallTo(() => collection.TryRemove(request))
+            .Returns(true);
+    }
+
+    void NoRequestsShouldBeRemoved(IBattleRequestCollection collection)
+    {
+        A.CallTo(() => collection.TryRemove(A<BattleRequest>.Ignored))
+            .MustNotHaveHappened();
+    }
+
     // TODO:: request can not be accepted if one of users are in a battle
 
     // TODO:: notify requester of the request accepted

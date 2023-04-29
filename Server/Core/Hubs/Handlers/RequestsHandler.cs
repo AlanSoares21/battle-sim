@@ -58,9 +58,16 @@ public class RequestsHandler : IRequestsHandler
                 request.UserIsOnRequest(targetId));
     }
 
-    public void Accept(Guid requestId, CurrentCallerContext context)
+    public void Accept(Guid requestId, CurrentCallerContext caller)
     {
         var request = _Requests.Get(requestId);
+        if (request.target != caller.UserId) {
+            _Logger.LogError("User {user} try accept a request, but he is not the target - request: {id} - target: {target}",
+                request.requester,
+                request.requestId,
+                request.target);
+            return;
+        }
         if (!_Requests.TryRemove(request)) 
         {
             _Logger.LogError("Cannot remove request {id} - requester: {requester} - target: {target}",

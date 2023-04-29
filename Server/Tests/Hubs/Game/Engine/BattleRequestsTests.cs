@@ -92,29 +92,6 @@ public class EngineBattleRequestsTests {
     }
 
     [TestMethod]
-    public async Task Requester_Can_Not_Accept_Battle() {
-        CurrentCallerContext caller = new(
-            "callerId", 
-            "callerConnectionId",
-            Utils.FakeHubCallerContext());
-        BattleRequest request = new() {
-            requester = caller.UserId,
-            target = "target"
-        };
-        IGameHubState state = Utils.FakeStateWithRequest(request);
-        IGameEngine engine = new GameEngineBuilder()
-            .WithState(state)
-            .Build();
-        await engine.AcceptBattleRequest(
-            request.requestId, 
-            caller,
-            Utils.FakeGroupManager());
-        A.CallTo(() => state.BattleRequests.TryRemove(request))
-            .WithAnyArguments()
-            .MustNotHaveHappened();
-    }
-
-    [TestMethod]
     public async Task Create_Group_On_Hub_With_The_Users_Of_The_Battle() {
         string requesterId = "requesterId";
         string requesterConnectionId = "requesterConnectionId";
