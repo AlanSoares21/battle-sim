@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace BattleSimulator.Server.Tests.Hubs.Game.RequestHandler;
 
 [TestClass]
-public class RequestsHandlerTests
+public class NewRequestsTests
 {
     [TestMethod]
     public async Task Register_Request()
@@ -16,8 +16,12 @@ public class RequestsHandlerTests
             UserId = "callerId"
         };
         string targetId = "targetId";
-        var handler = CreateHandler(requestCollection);
+
+        var handler = new RequestsHandlerBuilder()
+            .WithRequestCollection(requestCollection)
+            .Build();
         await handler.SendTo(targetId, callerContext);
+        
         RequestWithUsersHasBeenRegistered(
             callerContext.UserId, 
             targetId, 
@@ -36,21 +40,12 @@ public class RequestsHandlerTests
         ).MustHaveHappenedOnceExactly();
     }
 
-    RequestsHandler CreateHandler(IBattleRequestCollection requestCollection) 
-    {
-        return new RequestsHandler(
-            requestCollection,
-            A.Fake<ILogger<RequestsHandler>>());
-    }
-
     [TestMethod]
     public async Task Notify_The_Target_From_The_New_Request()
     {
         IGameHubClient targetConnection = A.Fake<IGameHubClient>();
         string targetId = "targetId";
-        var hubClients = Utils.FakeHubCallerContext();
-        A.CallTo(() => hubClients.User(targetId))
-            .Returns(targetConnection);
+        var hubClients = Utils.FakeHubContextWithClientForUser(targetId, targetConnection);
         CurrentCallerContext callerContext = new(
             "callerId",
             "callerConnectionId",
@@ -69,6 +64,28 @@ public class RequestsHandlerTests
     }
 
     // TODO:: notify the requester
+    [TestMethod]
+    public async Task Notify_Requester_When_Battle_Request_Sent() {
+        string targetId = "targetId";
+        IGameHubClient callerConnection = A.Fake<IGameHubClient>();
+        var hubClients = Utils.FakeHubContextWithClientForCaller(callerConnection);
+        CurrentCallerContext callerContext = new(
+            "callerId",
+            "callerConnectionId",
+            hubClients);
+
+        RequestsHandler handler = new RequestsHandlerBuilder().Build();
+        await handler.SendTo(targetId, callerContext);
+
+        CheckBattleRequestSent(callerConnection);
+    }
+
+    void CheckBattleRequestSent(IGameHubClient client)
+    {
+        A.CallTo(() => client.BattleRequestSent(A<BattleRequest>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
+    
     // TODO:: dont send request if a request between users already exists
     
     // TODO:: accept request

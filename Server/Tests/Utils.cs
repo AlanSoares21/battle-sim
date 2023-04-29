@@ -23,6 +23,23 @@ public static class Utils
     public static IHubCallerClients<IGameHubClient> FakeHubCallerContext() => 
         A.Fake<IHubCallerClients<IGameHubClient>>();
 
+    public static IHubCallerClients<IGameHubClient> FakeHubContextWithClientForUser(
+        string user,
+        IGameHubClient client)
+    {
+        var context = A.Fake<IHubCallerClients<IGameHubClient>>();
+        A.CallTo(() => context.User(user)).Returns(client);
+        return context;
+    }
+
+    public static IHubCallerClients<IGameHubClient> FakeHubContextWithClientForCaller(
+        IGameHubClient client)
+    {
+        var context = A.Fake<IHubCallerClients<IGameHubClient>>();
+        A.CallTo(() => context.Caller).Returns(client);
+        return context;
+    }
+
     public static IGroupManager FakeGroupManager() => 
         A.Fake<IGroupManager>();
 

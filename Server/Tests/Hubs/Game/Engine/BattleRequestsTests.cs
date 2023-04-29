@@ -11,24 +11,6 @@ namespace BattleSimulator.Server.Tests.Hubs.Game.Engine;
 public class EngineBattleRequestsTests {
 
     [TestMethod]
-    public async Task Notify_Requester_When_Battle_Request_Sent() {
-        IGameHubClient callerConnection = A.Fake<IGameHubClient>();
-        var hubClients = Utils.FakeHubCallerContext();
-        A.CallTo(() => hubClients.Caller)
-            .Returns(callerConnection);
-        string targetId = "targetId";
-        CurrentCallerContext callerContext = new(
-            "callerId",
-            "callerConnectionId",
-            hubClients);
-        IGameEngine engine = new GameEngineBuilder().Build();
-        await engine.SendBattleRequest(targetId, callerContext);
-        A.CallTo(() => callerConnection.BattleRequestSent(new()))
-            .WithAnyArguments()
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [TestMethod]
     public async Task Dont_Register_Duplicated_Request() {
         string targetId = "targetId";
         CurrentCallerContext callerContext = new(

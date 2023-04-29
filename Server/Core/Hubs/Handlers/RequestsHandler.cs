@@ -33,9 +33,11 @@ public class RequestsHandler
             request.requestId,
             request.requester,
             request.target);
-        await caller
+        var sendingToTarget = caller
             .HubClients
             .User(target)
             .NewBattleRequest(request);
+        await caller.Connection.BattleRequestSent(request);
+        await sendingToTarget;
     }
 }
