@@ -51,7 +51,7 @@ public class NewRequestsTests
             "callerConnectionId",
             hubClients);
 
-        RequestsHandler handler = new RequestsHandlerBuilder().Build();
+        var handler = new RequestsHandlerBuilder().Build();
         await handler.SendTo(targetId, callerContext);
 
         SomeRequestSent(targetConnection);
@@ -73,7 +73,7 @@ public class NewRequestsTests
             "callerConnectionId",
             hubClients);
 
-        RequestsHandler handler = new RequestsHandlerBuilder().Build();
+        var handler = new RequestsHandlerBuilder().Build();
         await handler.SendTo(targetId, callerContext);
 
         CheckBattleRequestSent(callerConnection);
@@ -101,7 +101,7 @@ public class NewRequestsTests
         var requestCollection = A.Fake<IBattleRequestCollection>();
         SetRequestListForAnyUser(requestCollection, requestList);
 
-        RequestsHandler handler = new RequestsHandlerBuilder()
+        var handler = new RequestsHandlerBuilder()
             .WithRequestCollection(requestCollection)
             .Build();
         await handler.SendTo(targetId, callerContext);
@@ -125,7 +125,7 @@ public class NewRequestsTests
         var requestCollection = A.Fake<IBattleRequestCollection>();
         SetRequestListForAnyUser(requestCollection, requestList);
         
-        RequestsHandler handler = new RequestsHandlerBuilder()
+        var handler = new RequestsHandlerBuilder()
             .WithRequestCollection(requestCollection)
             .Build();
         await handler.SendTo(targetId, callerContext);

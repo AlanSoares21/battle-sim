@@ -6,6 +6,7 @@ namespace BattleSimulator.Server.Tests.Builders;
 public class RequestsHandlerBuilder
 {
     IBattleRequestCollection? _Requests;
+    IBattleHandler? _BattleHandler;
 
     public RequestsHandlerBuilder WithRequestCollection(IBattleRequestCollection collection)
     {
@@ -13,11 +14,22 @@ public class RequestsHandlerBuilder
         return this;
     }
 
-    public RequestsHandler Build()
+    public RequestsHandlerBuilder WithBattleHandler(IBattleHandler handler)
+    {
+        _BattleHandler = handler;
+        return this;
+    }
+
+    public IRequestsHandler Build()
     {
         if (_Requests is null)
             _Requests = FakeRequestCollection();
-        return new(_Requests, A.Fake<ILogger<RequestsHandler>>());
+        if (_BattleHandler is null)
+            _BattleHandler = A.Fake<IBattleHandler>();
+        return new RequestsHandler(
+            _Requests, 
+            _BattleHandler, 
+            A.Fake<ILogger<RequestsHandler>>());
     }
 
     IBattleRequestCollection FakeRequestCollection() {

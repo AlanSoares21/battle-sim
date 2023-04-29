@@ -122,6 +122,14 @@ public static class Utils
             .Returns(request);
     }
 
+    public static void AddRequestOnCollection(
+        IBattleRequestCollection collection, 
+        BattleRequest request) 
+    {
+        A.CallTo(() => collection.Get(request.requestId))
+            .Returns(request);
+    }
+
     public static IGameDb FakeDbWithEntities(params IEntity[] entities) {
         IGameDb gameDb = A.Fake<IGameDb>();
         foreach (var entity in entities)

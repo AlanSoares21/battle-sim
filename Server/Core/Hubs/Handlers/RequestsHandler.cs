@@ -2,16 +2,19 @@ using BattleSimulator.Server.Models;
 
 namespace BattleSimulator.Server.Hubs;
 
-public class RequestsHandler
+public class RequestsHandler : IRequestsHandler
 {
     IBattleRequestCollection _Requests;
     ILogger<RequestsHandler> _Logger;
+    IBattleHandler _BattleHandler;
     public RequestsHandler(
         IBattleRequestCollection requestCollection,
+        IBattleHandler battleHandler,
         ILogger<RequestsHandler> logger)
     {
         _Requests = requestCollection;
         _Logger = logger;
+        _BattleHandler = battleHandler;
     }
 
     public async Task SendTo(string target, CurrentCallerContext caller)
@@ -53,5 +56,23 @@ public class RequestsHandler
             .RequestsWithUser(requesterId)
             .Any(request => 
                 request.UserIsOnRequest(targetId));
+    }
+
+    public void Accept(Guid requestId, CurrentCallerContext context)
+    {
+        var request = _Requests.Get(requestId);
+        if (!_Requests.TryRemove(request)) 
+        {
+            _Logger.LogError("Cannot remove request {id} - requester: {requester} - target: {target}",
+                request.requestId,
+                request.requester,
+                request.target);
+            return;
+        }
+        _Logger.LogInformation("Request accepted request {id} - requester: {requester} - target: {target}",
+            request.requestId,
+            request.requester,
+            request.target);
+        _BattleHandler.CreateBattle();
     }
 }
