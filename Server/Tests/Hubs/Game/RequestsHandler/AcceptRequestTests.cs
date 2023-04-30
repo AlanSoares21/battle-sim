@@ -17,8 +17,7 @@ public class AcceptRequestTests
             requester = "requesterId",
             target = caller.UserId
         };
-        var requestCollection = A.Fake<IBattleRequestCollection>();
-        Utils.AddRequestOnCollection(requestCollection, request);
+        var requestCollection = Utils.FakeBattleRequestCollection(request);
 
         IRequestsHandler handler = new RequestsHandlerBuilder()
             .WithRequestCollection(requestCollection)
@@ -44,9 +43,9 @@ public class AcceptRequestTests
             requester = "requesterId",
             target = caller.UserId
         };
-        var requestCollection = A.Fake<IBattleRequestCollection>();
-        Utils.AddRequestOnCollection(requestCollection, request);
-        EnableRemoveRequest(requestCollection, request);
+        var requestCollection = Utils.FakeBattleRequestCollection(request);
+        Utils.EnableRemoveRequest(requestCollection, request);
+        
         var battleHandler = A.Fake<IBattleHandler>();
 
         IRequestsHandler handler = new RequestsHandlerBuilder()
@@ -56,12 +55,6 @@ public class AcceptRequestTests
         handler.Accept(request.requestId, caller);
 
         BattleWasCreated(battleHandler);
-    }
-
-    void EnableRemoveRequest(IBattleRequestCollection collection, BattleRequest request)
-    {
-        A.CallTo(() => collection.TryRemove(request))
-            .Returns(true);
     }
 
     void BattleWasCreated(IBattleHandler handler)
@@ -77,8 +70,8 @@ public class AcceptRequestTests
             "callerConnectionId",
             Utils.FakeHubCallerContext());
         BattleRequest request = new() { target = "iAmNotTheCaller" };
-        var requestCollection = A.Fake<IBattleRequestCollection>();
-        Utils.AddRequestOnCollection(requestCollection, request);
+        var requestCollection = Utils.FakeBattleRequestCollection(request);
+        Utils.EnableRemoveRequest(requestCollection, request);
         
         IRequestsHandler handler = new RequestsHandlerBuilder()
             .WithRequestCollection(requestCollection)
@@ -103,8 +96,8 @@ public class AcceptRequestTests
             requester = requester,
             target = caller.UserId
         };
-        var requestCollection = A.Fake<IBattleRequestCollection>();
-        Utils.AddRequestOnCollection(requestCollection, request);
+        var requestCollection = Utils.FakeBattleRequestCollection(request);
+        Utils.EnableRemoveRequest(requestCollection, request);
         IBattleCollection battleCollection = A.Fake<IBattleCollection>();
         
         A.CallTo(() => battleCollection.GetBattleIdByEntity(UserIsOnBattle()))

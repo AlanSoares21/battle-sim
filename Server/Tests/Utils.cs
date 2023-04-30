@@ -28,8 +28,16 @@ public static class Utils
         IGameHubClient client)
     {
         var context = A.Fake<IHubCallerClients<IGameHubClient>>();
-        A.CallTo(() => context.User(user)).Returns(client);
+        AddClientForUser(context, user, client);
         return context;
+    }
+
+    public static void AddClientForUser(
+        IHubCallerClients<IGameHubClient> context,
+        string user,
+        IGameHubClient client)
+    {
+        A.CallTo(() => context.User(user)).Returns(client);
     }
 
     public static IHubCallerClients<IGameHubClient> FakeHubContextWithClientForCaller(
@@ -122,12 +130,25 @@ public static class Utils
             .Returns(request);
     }
 
+    public static IBattleRequestCollection FakeBattleRequestCollection(params BattleRequest[] requests)
+    {
+        var collection = A.Fake<IBattleRequestCollection>(); 
+        foreach (var request in requests)
+            AddRequestOnCollection(collection, request);
+        return collection;
+    }
+
     public static void AddRequestOnCollection(
         IBattleRequestCollection collection, 
         BattleRequest request) 
     {
         A.CallTo(() => collection.Get(request.requestId))
             .Returns(request);
+    }
+
+    public static void EnableRemoveRequest(IBattleRequestCollection collection, BattleRequest request)
+    {
+        A.CallTo(() => collection.TryRemove(request)).Returns(true);
     }
 
     public static IGameDb FakeDbWithEntities(params IEntity[] entities) {

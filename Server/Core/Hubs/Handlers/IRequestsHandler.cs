@@ -6,4 +6,5 @@ public interface IRequestsHandler
 {
     Task SendTo(string target, CurrentCallerContext caller);
     void Accept(Guid requestId, CurrentCallerContext context);
+    Task Cancel(Guid requestId, CurrentCallerContext context);
 }

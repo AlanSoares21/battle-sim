@@ -106,4 +106,55 @@ public class RequestsHandler : IRequestsHandler
             return false;
         }
     }
+
+    public async Task Cancel(Guid requestId, CurrentCallerContext caller)
+    {
+        BattleRequest? request = GetBattleRequest(requestId);
+        if (request is null)
+            return;
+        if (!request.UserIsOnRequest(caller.UserId)) {
+            _Logger.LogError("Caller {caller} is not in the request {id} - requester: {requester} - target: {target}",
+                caller.UserId,
+                request.requestId,
+                request.requester,
+                request.target);
+            return;
+        }
+        if (!_Requests.TryRemove(request)) {
+            _Logger.LogError("Can not remove request {id} - requester: {requester} - target: {target}",
+                request.requestId,
+                request.requester,
+                request.target);
+            return;
+        }
+
+        var callerCancelNotification = caller
+            .Connection
+            .BattleRequestCancelled(caller.UserId, request);
+        await caller
+            .HubClients
+            .User(GetSecondUserId(caller.UserId, request))
+            .BattleRequestCancelled(caller.UserId, request);
+        await callerCancelNotification;
+    }
+
+    BattleRequest? GetBattleRequest(Guid requestId) {
+        try {
+            return _Requests
+                .Get(requestId);
+        }
+        catch (Exception ex) {
+            _Logger.LogInformation("Error on search request {id} - Message: {message}",
+                requestId,
+                ex.Message);
+            return null;
+        }
+    }
+
+    string GetSecondUserId(string caller, BattleRequest request)
+    {
+        if (request.requester != caller)
+            return request.requester;
+        return request.target;
+    }
 }
