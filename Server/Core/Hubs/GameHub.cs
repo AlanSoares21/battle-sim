@@ -45,14 +45,11 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
             targetId);
     }
 
-    public async Task AcceptBattle(Guid requestId) {
+    public void AcceptBattle(Guid requestId) {
         _logger.LogInformation("User {name} accept battle request {id} ", 
             Context.UserIdentifier, 
             requestId);
-        await _engine.AcceptBattleRequest(
-            requestId, 
-            GetCurrentCallerContext(),
-            Groups);
+        _RequestsHandler.Accept(requestId, GetCurrentCallerContext());
         _logger.LogInformation("Request {id} accept", requestId);
     }
 

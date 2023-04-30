@@ -8,14 +8,7 @@ public interface IGameEngine
 {
     Task HandleUserDisconnected(CurrentCallerContext caller);
     Task HandleUserConnected(CurrentCallerContext caller);
-
     Task ListUsers(CurrentCallerContext caller);
-
-    Task AcceptBattleRequest(
-        Guid requestId, 
-        CurrentCallerContext caller,
-        IGroupManager groupManager);
-
     Task CancelBattle(Guid battleId, CurrentCallerContext caller);
     void Move(Coordinate coordinate, CurrentCallerContext caller);
 }

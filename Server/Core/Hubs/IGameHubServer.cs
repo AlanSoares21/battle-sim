@@ -4,7 +4,7 @@ public interface IGameHubServer
 {
     Task ListUsers();
     Task SendBattleRequest(string targetUsername);
-    Task AcceptBattle(Guid requestId);
+    void AcceptBattle(Guid requestId);
     Task Move(int x, int y);
     Task CancelBattleRequest(Guid requesterId);
     Task CancelBattle(Guid battleId);
