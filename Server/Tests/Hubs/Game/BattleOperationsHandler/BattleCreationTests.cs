@@ -1,3 +1,4 @@
+using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Models;
@@ -187,6 +188,46 @@ public class BattleCreationTests
     void NewBattleEventShouldHappen(IGameHubClient client)
     {
         A.CallTo(() => client.NewBattle(A<BattleData>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [TestMethod]
+    public async Task Notify_Skill_Damage_Event_To_Users() 
+    {
+        string skillName = "someSkillName";
+        string target = "targetOffSkill";
+        Coordinate healthAfterSkill = new(0,0);
+        IEntity callerEntity = Utils.FakeEntity("callerId");
+        var client = A.Fake<IGameHubClient>();
+        CurrentCallerContext caller = new(
+            callerEntity.Id, 
+            "callerConnectionId",
+            Utils.FakeHubCallerContext(client));
+        var battles = new BattleCollection();
+
+        IBattleHandler battleHandler = new BattleHandlerBuilder()
+            .WithDb(Utils.FakeDbWithEntities(callerEntity))
+            .WithBattleCollection(battles)
+            .Build();
+        await battleHandler.CreateDuel("requesterEntityId", caller);
+        var battle = battles.Get(battles.GetBattleIdByEntity(callerEntity.Id));
+        battle.Notify.SkillDamage(
+            skillName, 
+            callerEntity.Id, 
+            target, 
+            healthAfterSkill);
+
+        SkillCallHappened(client, skillName, callerEntity.Id, target);
+    }
+
+    void SkillCallHappened(
+        IGameHubClient client, 
+        string skillName, 
+        string source, 
+        string target) 
+    {
+        A.CallTo(() => 
+            client.Skill(skillName, source, target, A<Coordinate>.Ignored))
             .MustHaveHappenedOnceExactly();
     }
 }

@@ -5,54 +5,40 @@ using BattleSimulator.Server.Models;
 using BattleSimulator.Server.Tests.Builders;
 using Microsoft.Extensions.Logging;
 using BattleSimulator.Engine.Skills;
+using BattleSimulator.Server.Hubs.EventHandling;
+using BattleSimulator.Server.Database;
+using BattleSimulator.Engine.Interfaces.Skills;
 
 namespace BattleSimulator.Server.Tests.Hubs.Game.BattleEvents;
 
 [TestClass]
 public class SkillTests 
 {
-
     [TestMethod]
-    public async Task Notify_Skill_Damage_Event_To_Users() 
+    public void Ensure_Is_Calling_Skill_Exec_Method()
     {
-        var client = A.Fake<IGameHubClient>();
-        var skill = new BasicNegativeDamageOnX();
-        IEntity callerEntity = Utils.FakeEntity("callerId", new() { skill });
-        IEntity requesterEntity = Utils.FakeEntity("requesterId");
-        CurrentCallerContext caller = new(
-            callerEntity.Id, 
+        var skill = Utils.FakeSkill("someSkillName");
+        IEntity target = Utils.FakeEntity("targetId");
+        IEntity caller = Utils.FakeEntity("callerId", new() { skill });
+        CurrentCallerContext callerContext = new(
+            caller.Id, 
             "callerConnectionId",
-            Utils.FakeHubCallerContext(client));
-        BattleRequest request = new() {
-            requester = requesterEntity.Id,
-            target = caller.UserId
-        };
-        IGameHubState state = FunctionalState();
-        state.BattleRequests.TryAdd(request);
-        IGameEngine engine = new GameEngineBuilder()
-            .WithState(state)
-            .WithDb(Utils.FakeDbWithEntities(callerEntity, requesterEntity))
+            Utils.FakeHubCallerContext());
+        IBattleCollection battles = 
+            Utils.BattleCollectionWithBattleFor(caller, target);
+
+        IBattleEventsHandler handler = new BattleEventsHandlerBuilder()
+            .WithBattles(battles)
             .Build();
-        await engine.AcceptBattleRequest(
-            request.requestId, 
-            caller,
-            Utils.FakeGroupManager());
-        await engine.Skill(skill.Name, requesterEntity.Id, caller);
-        A.CallTo(() => client.Skill(
-            skill.Name, 
-            callerEntity.Id, 
-            requesterEntity.Id,
-            A<Coordinate>.Ignored))
-            .MustHaveHappenedOnceExactly();
+
+        handler.Skill(skill.Name, target.Id, callerContext);
+
+        ShouldCallExecMethod(skill, target, caller);
     }
 
-    IGameHubState FunctionalState() 
+    void ShouldCallExecMethod(ISkillBase skill, IEntity target, IEntity caller)
     {
-        return new GameHubStateBuilder()
-            .WithBattleCollection(new BattleCollection())
-            .WithBattleRequestCollection(
-                new BattleRequestCollection(A.Fake<ILogger<BattleRequestCollection>>()
-            ))
-            .Build();
+        A.CallTo(() => skill.Exec(target, caller, A<IBattle>.Ignored))
+            .MustHaveHappenedOnceExactly();
     }
 }

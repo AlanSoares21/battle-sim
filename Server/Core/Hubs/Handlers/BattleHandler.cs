@@ -57,6 +57,11 @@ public class BattleHandler : IBattleHandler
     IEventsObserver CreateObserver(IGameHubClient client) 
     {
         var observer = new EventsObserver();
+        observer.SubscribeToSkillDamage(
+            (skillName, sourceId, targetId, targetCurrentHealth) => {
+                client.Skill(skillName, sourceId, targetId, targetCurrentHealth);
+            }
+        );
         return observer;
     }
 
