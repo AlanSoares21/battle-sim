@@ -7,7 +7,7 @@ public class RequestsHandlerBuilder
 {
     IBattleRequestCollection? _Requests;
     IBattleHandler? _BattleHandler;
-
+    IBattleCollection? _Battles;
     public RequestsHandlerBuilder WithRequestCollection(IBattleRequestCollection collection)
     {
         _Requests = collection;
@@ -20,16 +20,33 @@ public class RequestsHandlerBuilder
         return this;
     }
 
+    public RequestsHandlerBuilder WithBattleCollection(IBattleCollection collection)
+    {
+        _Battles = collection;
+        return this;
+    }
+
     public IRequestsHandler Build()
     {
         if (_Requests is null)
             _Requests = FakeRequestCollection();
         if (_BattleHandler is null)
             _BattleHandler = A.Fake<IBattleHandler>();
+        if (_Battles is null)
+            _Battles = FakeBattleCollection();
         return new RequestsHandler(
             _Requests, 
             _BattleHandler, 
+            _Battles,
             A.Fake<ILogger<RequestsHandler>>());
+    }
+
+    IBattleCollection FakeBattleCollection()
+    {
+        var collection = A.Fake<IBattleCollection>();
+        A.CallTo(() => collection.GetBattleIdByEntity(A<string>.Ignored))
+            .Throws<KeyNotFoundException>();
+        return collection;
     }
 
     IBattleRequestCollection FakeRequestCollection() {

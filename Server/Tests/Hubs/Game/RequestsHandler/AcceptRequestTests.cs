@@ -58,6 +58,12 @@ public class AcceptRequestTests
         BattleWasCreated(battleHandler);
     }
 
+    void EnableRemoveRequest(IBattleRequestCollection collection, BattleRequest request)
+    {
+        A.CallTo(() => collection.TryRemove(request))
+            .Returns(true);
+    }
+
     void BattleWasCreated(IBattleHandler handler)
     {
         A.CallTo(() => handler.CreateBattle())
@@ -73,7 +79,6 @@ public class AcceptRequestTests
         BattleRequest request = new() { target = "iAmNotTheCaller" };
         var requestCollection = A.Fake<IBattleRequestCollection>();
         Utils.AddRequestOnCollection(requestCollection, request);
-        EnableRemoveRequest(requestCollection, request);
         
         IRequestsHandler handler = new RequestsHandlerBuilder()
             .WithRequestCollection(requestCollection)
@@ -83,10 +88,40 @@ public class AcceptRequestTests
         NoRequestsShouldBeRemoved(requestCollection);
     }
 
-    void EnableRemoveRequest(IBattleRequestCollection collection, BattleRequest request)
+    [TestMethod]
+    [DataRow("iAmInBattle", "iAmNotInBattle")]
+    [DataRow("iAmNotInBattle", "iAmInBattle")]
+    public void Can_Not_Accept_The_Request_When_Requester_Is_In_Battle(
+        string requester,
+        string target)
     {
-        A.CallTo(() => collection.TryRemove(request))
-            .Returns(true);
+        CurrentCallerContext caller = new(
+            target, 
+            "callerConnectionId",
+            Utils.FakeHubCallerContext());
+        BattleRequest request = new() {
+            requester = requester,
+            target = caller.UserId
+        };
+        var requestCollection = A.Fake<IBattleRequestCollection>();
+        Utils.AddRequestOnCollection(requestCollection, request);
+        IBattleCollection battleCollection = A.Fake<IBattleCollection>();
+        
+        A.CallTo(() => battleCollection.GetBattleIdByEntity(UserIsOnBattle()))
+            .Returns(Guid.NewGuid());
+
+        IRequestsHandler handler = new RequestsHandlerBuilder()
+            .WithBattleCollection(battleCollection)
+            .WithRequestCollection(requestCollection)
+            .Build();
+        handler.Accept(request.requestId, caller);
+
+        NoRequestsShouldBeRemoved(requestCollection);
+    }
+
+    string UserIsOnBattle()
+    {
+        return A<string>.That.Matches(v => v == "iAmInBattle");
     }
 
     void NoRequestsShouldBeRemoved(IBattleRequestCollection collection)
@@ -94,8 +129,6 @@ public class AcceptRequestTests
         A.CallTo(() => collection.TryRemove(A<BattleRequest>.Ignored))
             .MustNotHaveHappened();
     }
-
-    // TODO:: request can not be accepted if one of users are in a battle
 
     // TODO:: notify requester of the request accepted
 }

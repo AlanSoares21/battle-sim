@@ -5,16 +5,19 @@ namespace BattleSimulator.Server.Hubs;
 public class RequestsHandler : IRequestsHandler
 {
     IBattleRequestCollection _Requests;
+    IBattleCollection _Battles;
     ILogger<RequestsHandler> _Logger;
     IBattleHandler _BattleHandler;
     public RequestsHandler(
         IBattleRequestCollection requestCollection,
         IBattleHandler battleHandler,
+        IBattleCollection battleCollection,
         ILogger<RequestsHandler> logger)
     {
         _Requests = requestCollection;
         _Logger = logger;
         _BattleHandler = battleHandler;
+        _Battles = battleCollection;
     }
 
     public async Task SendTo(string target, CurrentCallerContext caller)
@@ -62,10 +65,18 @@ public class RequestsHandler : IRequestsHandler
     {
         var request = _Requests.Get(requestId);
         if (request.target != caller.UserId) {
-            _Logger.LogError("User {user} try accept a request, but he is not the target - request: {id} - target: {target}",
+            _Logger.LogInformation("User {user} try accept a request, but he is not the target - request: {id} - target: {target}",
                 request.requester,
                 request.requestId,
                 request.target);
+            return;
+        }
+        if (UserIsInBattle(request.requester) || UserIsInBattle(request.target))
+        {
+            _Logger.LogInformation("One of users {requester}, {target} was in a battle when the target tried accept the request {id}",
+                request.requester,
+                request.target,
+                request.requestId);
             return;
         }
         if (!_Requests.TryRemove(request)) 
@@ -81,5 +92,18 @@ public class RequestsHandler : IRequestsHandler
             request.requester,
             request.target);
         _BattleHandler.CreateBattle();
+    }
+
+    bool UserIsInBattle(string userId)
+    {
+        try 
+        {
+            _Battles.GetBattleIdByEntity(userId);
+            return true;
+        }
+        catch (KeyNotFoundException)
+        {
+            return false;
+        }
     }
 }
