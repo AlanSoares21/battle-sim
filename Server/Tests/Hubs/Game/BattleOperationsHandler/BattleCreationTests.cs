@@ -36,7 +36,7 @@ public class BattleCreationTests
     public async Task Battle_Created_Has_User_Entities_From_Db()
     {
         IEntity caller = Utils.FakeEntity("callerId"); 
-        IEntity otherUser = Utils.FakeEntity("caller");
+        IEntity otherUser = Utils.FakeEntity("otherUserId");
         CurrentCallerContext callerContext = new() {
             UserId = caller.Id,
             HubClients = Utils.FakeHubCallerContext()
@@ -125,5 +125,68 @@ public class BattleCreationTests
         }
     }
 
-    // TODO:: notify the group about the new battle
+    [TestMethod]
+    public async Task Entities_Of_The_Users_Are_In_Battle_Data_Sent_To_The_Group()
+    {
+        IEntity caller = Utils.FakeEntity("callerId"); 
+        IEntity otherUser = Utils.FakeEntity("otherUserId");
+        var db = Utils.FakeDbWithEntities(caller, otherUser);
+        CurrentCallerContext callerContext = new() {
+            UserId = caller.Id,
+            HubClients = Utils.FakeHubCallerContext()
+        };
+        var client = A.Fake<IGameHubClient>();
+        ReturnClientForGroupCall(callerContext.HubClients, client);
+
+        IBattleHandler handler = new BattleHandlerBuilder()
+            .WithDb(db)
+            .Build();
+        await handler.CreateDuel(otherUser.Id, callerContext);
+
+        NewBattleDataContainsEntities(client, caller, otherUser);
+    }
+
+    void NewBattleDataContainsEntities(IGameHubClient client, params IEntity[] entities)
+    {
+        A.CallTo(() => 
+            client.NewBattle(EntitiesAreInBattleData(entities))
+        ).MustHaveHappenedOnceExactly();
+    }
+
+    BattleData EntitiesAreInBattleData(IEntity[] entities)
+    {
+        return A<BattleData>.That.Matches(b => 
+            b.entities.Count > 0
+            && b.entities.All(e => entities.Contains(e)));
+    }
+
+    [TestMethod]
+    public async Task Notify_New_Battle_To_The_Hub_Group()
+    {
+        var client = A.Fake<IGameHubClient>();
+        CurrentCallerContext caller = new() {
+            UserId = "callerId",
+            HubClients = Utils.FakeHubCallerContext()
+        };
+        ReturnClientForGroupCall(caller.HubClients, client);
+
+        IBattleHandler handler = new BattleHandlerBuilder().Build();
+        await handler.CreateDuel("secondUser", caller);
+
+        NewBattleEventShouldHappen(client);
+    }
+
+    void ReturnClientForGroupCall(
+        IHubCallerClients<IGameHubClient> hubCaller, 
+        IGameHubClient client)
+    {
+        A.CallTo(() => hubCaller.Group(A<string>.Ignored))
+            .Returns(client);
+    }
+
+    void NewBattleEventShouldHappen(IGameHubClient client)
+    {
+        A.CallTo(() => client.NewBattle(A<BattleData>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
 }

@@ -25,6 +25,7 @@ public class BattleHandler : IBattleHandler
         _HubContext = hubContext;
         _ConnMap = connectionMapping;
     }
+
     public async Task CreateDuel(string secondUser, CurrentCallerContext caller)
     {
         Guid battleId = Guid.NewGuid();
@@ -44,6 +45,8 @@ public class BattleHandler : IBattleHandler
             battleGroupName, 
             _ConnMap.GetConnectionId(secondUser));
         await addingCallerInGroup;
+        await caller.HubClients.Group(battleGroupName)
+            .NewBattle(GetBattleData(duel));
     }
 
     Task AddCallerInGroup(string groupName, CurrentCallerContext caller)
@@ -67,4 +70,33 @@ public class BattleHandler : IBattleHandler
     {
         return _HubContext.Groups.AddToGroupAsync(connectionId, groupName);
     }
+
+    BattleData GetBattleData(IBattle battle) => 
+        new BattleData() {
+            id = battle.Id,
+            board = GetBoardData(battle.Board),
+            entities = battle.Entities
+        };
+
+    BoardData GetBoardData(IBoard board) =>
+        new BoardData() {
+            entitiesPosition = GetEntitiesPosition(board),
+            size = new(board.Width, board.Height)
+        };
+
+    List<EntityPosition> GetEntitiesPosition(IBoard board) {
+        List<EntityPosition> coordinates = new();
+        foreach (string identifier in board.GetEntities())
+        {
+            var coordinate = board
+                .GetEntityPosition(identifier);
+            coordinates.Add(new EntityPosition() {
+                entityIdentifier= identifier,
+                x = coordinate.X,
+                y = coordinate.Y
+            });
+        }
+        return  coordinates;
+    }
+
 }
