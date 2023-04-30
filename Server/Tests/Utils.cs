@@ -154,8 +154,12 @@ public static class Utils
     public static IGameDb FakeDbWithEntities(params IEntity[] entities) {
         IGameDb gameDb = A.Fake<IGameDb>();
         foreach (var entity in entities)
+        {
             A.CallTo(() => gameDb.SearchEntity(entity.Id))
                 .Returns(entity);
+            A.CallTo(() => gameDb.GetEntityFor(entity.Id))
+                .Returns(entity);
+        }
         return gameDb;
     }
 }
