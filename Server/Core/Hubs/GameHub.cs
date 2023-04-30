@@ -67,7 +67,7 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
         _logger.LogInformation("Canceling battle request {id} - user: {user}",
             requesterId,
             Context.UserIdentifier);
-        await _engine.CancelBattleRequest(
+        await _RequestsHandler.Cancel(
             requesterId, 
             GetCurrentCallerContext());
         _logger.LogInformation("Battle request {id} cancelled by user: {user}",

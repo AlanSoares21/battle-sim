@@ -142,61 +142,6 @@ public class GameEngine : IGameEngine
             .Where(username => username != userId)
             .Select(username => new UserConnected() { name = username });
 
-    public async Task CancelBattleRequest(
-        Guid requestId,
-        CurrentCallerContext caller)
-    {
-        BattleRequest? request = GetBattleRequest(requestId);
-        if (request is null)
-            return;
-        if (!request.UserIsOnRequest(caller.UserId)) {
-            LogCallerIsNotInTheRequest(request, caller.UserId);
-            return;
-        }
-        if (!_state.BattleRequests.TryRemove(request)) {
-            LogCantRemoveRequest(request);
-            return;
-        }
-        await caller
-            .Connection
-            .BattleRequestCancelled(
-                caller.UserId,
-                request);
-        string secondUserId = request.target;
-        if (request.requester != caller.UserId)
-            secondUserId = request.requester;
-        await caller
-            .HubClients
-            .User(secondUserId)
-            .BattleRequestCancelled(
-                caller.UserId,
-                request);
-    }
-
-    BattleRequest? GetBattleRequest(Guid requestId) {
-        try {
-            return _state
-                .BattleRequests
-                .Get(requestId);
-        }
-        catch (Exception ex) {
-            _logger.LogError("Error on search request {id} - Message: {message}",
-                requestId,
-                ex.Message);
-            return null;
-        }
-    }
-
-    void LogCallerIsNotInTheRequest(
-        BattleRequest request, 
-        string callerId) {
-        _logger.LogError("Caller {caller} is not in the request {id} - requester: {requester} - target: {target}",
-            callerId,
-            request.requestId,
-            request.requester,
-            request.target);
-    }
-
     public async Task AcceptBattleRequest(
         Guid requestId, 
         CurrentCallerContext caller,
