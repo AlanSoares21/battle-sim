@@ -54,12 +54,15 @@ public class AcceptRequestTests
             .Build();
         handler.Accept(request.requestId, caller);
 
-        BattleWasCreated(battleHandler);
+        BattleWasCreated(battleHandler, request, caller);
     }
 
-    void BattleWasCreated(IBattleHandler handler)
+    void BattleWasCreated(
+        IBattleHandler handler, 
+        BattleRequest request,
+        CurrentCallerContext caller)
     {
-        A.CallTo(() => handler.CreateBattle())
+        A.CallTo(() => handler.CreateDuel(request, caller))
             .MustHaveHappenedOnceExactly();
     }
 

@@ -91,7 +91,7 @@ public class RequestsHandler : IRequestsHandler
             request.requestId,
             request.requester,
             request.target);
-        _BattleHandler.CreateBattle();
+        _BattleHandler.CreateDuel(request, caller);
     }
 
     bool UserIsInBattle(string userId)

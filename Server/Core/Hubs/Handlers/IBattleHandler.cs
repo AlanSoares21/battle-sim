@@ -1,6 +1,8 @@
+using BattleSimulator.Server.Models;
+
 namespace BattleSimulator.Server.Hubs;
 
 public interface IBattleHandler
 {
-    void CreateBattle();
+    void CreateDuel(BattleRequest request, CurrentCallerContext caller);
 }
