@@ -2,6 +2,7 @@ using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Hubs.EventHandling;
 using BattleSimulator.Server.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BattleSimulator.Server.Hubs;
 
@@ -10,24 +11,44 @@ public class BattleHandler : IBattleHandler
     ICalculator _Calculator;
     IBattleCollection _Battles;
     IGameDb _Db;
-    public BattleHandler(IBattleCollection battleCollection, IGameDb gameDb)
+    IHubContext<GameHub, IGameHubClient> _HubContext;
+    IConnectionMapping _ConnMap;
+    public BattleHandler(
+        IBattleCollection battleCollection, 
+        IGameDb gameDb,
+        IHubContext<GameHub, IGameHubClient> hubContext,
+        IConnectionMapping connectionMapping)
     {
         _Calculator = new Calculator();
         _Battles = battleCollection;
         _Db = gameDb;
+        _HubContext = hubContext;
+        _ConnMap = connectionMapping;
     }
-    public void CreateDuel(BattleRequest request, CurrentCallerContext caller)
+    public async Task CreateDuel(string secondUser, CurrentCallerContext caller)
     {
         Guid battleId = Guid.NewGuid();
         string battleGroupName = battleId.ToString();
+        
         IBattle duel = new Duel(
             battleId,
             GameBoard.WithDefaultSize(),
             _Calculator,
             CreateObserver(caller.HubClients.Group(battleGroupName))
         );
-        AddUsersOnBattle(duel, request.requester, request.target);
+        AddUsersOnBattle(duel, caller.UserId, secondUser);
         _Battles.TryAdd(duel);
+        
+        var addingCallerInGroup = AddCallerInGroup(battleGroupName, caller);
+        await AddUserInGroup(
+            battleGroupName, 
+            _ConnMap.GetConnectionId(secondUser));
+        await addingCallerInGroup;
+    }
+
+    Task AddCallerInGroup(string groupName, CurrentCallerContext caller)
+    {
+        return AddUserInGroup(groupName, caller.ConnectionId);
     }
 
     IEventsObserver CreateObserver(IGameHubClient client) 
@@ -38,7 +59,12 @@ public class BattleHandler : IBattleHandler
 
     void AddUsersOnBattle(IBattle battle, params string[] usersIds)
     {
-        foreach(var id in usersIds)
+        foreach(var id in usersIds) 
             battle.AddEntity(_Db.GetEntityFor(id));
+    }
+
+    Task AddUserInGroup(string groupName, string connectionId)
+    {
+        return _HubContext.Groups.AddToGroupAsync(connectionId, groupName);
     }
 }

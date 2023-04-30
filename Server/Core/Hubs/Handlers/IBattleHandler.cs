@@ -1,8 +1,9 @@
 using BattleSimulator.Server.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BattleSimulator.Server.Hubs;
 
 public interface IBattleHandler
 {
-    void CreateDuel(BattleRequest request, CurrentCallerContext caller);
+    Task CreateDuel(string secondUser, CurrentCallerContext caller);
 }

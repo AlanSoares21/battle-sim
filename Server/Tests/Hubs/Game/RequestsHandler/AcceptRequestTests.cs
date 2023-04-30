@@ -62,7 +62,7 @@ public class AcceptRequestTests
         BattleRequest request,
         CurrentCallerContext caller)
     {
-        A.CallTo(() => handler.CreateDuel(request, caller))
+        A.CallTo(() => handler.CreateDuel(request.requester, caller))
             .MustHaveHappenedOnceExactly();
     }
 
