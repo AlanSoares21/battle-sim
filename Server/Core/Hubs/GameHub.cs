@@ -91,6 +91,11 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
         _eventsHandler.Attack(targetId, GetCurrentUserId());
     }
 
+    public void Skill(string skillName, string targetId)
+    {
+        _eventsHandler.Skill(skillName, targetId, GetCurrentCallerContext());
+    }
+
     public override async Task OnConnectedAsync()
     {
         _logger.LogInformation("New user connected - user: {user}", Context.UserIdentifier);

@@ -13,17 +13,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// Database services
+builder.Services.AddScoped<IJsonSerializerWrapper, JsonSerializerWrapper>();
+builder.Services.AddSingleton<IGameDb, GameDb>();
+
+// state
+builder.Services.AddSingleton<IGameHubState, GameHubState>();
+builder.Services.AddSingleton<IBattleCollection, BattleCollection>();
 builder.Services.AddSingleton<IMovementIntentionCollection, MovementIntentionCollection>();
 builder.Services.AddSingleton<IConnectionMapping, ConnectionMapping>();
 builder.Services.AddSingleton<IBattleRequestCollection, BattleRequestCollection>();
-builder.Services.AddSingleton<IBattleCollection, BattleCollection>();
-builder.Services.AddSingleton<IGameHubState, GameHubState>();
-builder.Services.AddSingleton<IGameEngine, GameEngine>();
-builder.Services.AddSingleton<IJsonSerializerWrapper, JsonSerializerWrapper>();
-builder.Services.AddSingleton<IGameDb, GameDb>();
 builder.Services.AddSingleton<IAttacksRequestedList, AttacksRequestedList>();
-builder.Services.AddSingleton<IBattleEventsHandler, BattleEventsHandler>();
 
+// handlers
+builder.Services.AddSingleton<IBattleEventsHandler, BattleEventsHandler>();
+builder.Services.AddSingleton<IRequestsHandler, RequestsHandler>();
+builder.Services.AddSingleton<IBattleHandler, BattleHandler>();
+builder.Services.AddSingleton<IGameEngine, GameEngine>();
+
+// other services
+builder.Services.AddSingleton<ISkillProvider, SkillProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IServerConfig, ServerConfig>();
 

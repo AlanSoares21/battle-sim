@@ -9,4 +9,5 @@ public interface IGameHubServer
     Task CancelBattleRequest(Guid requesterId);
     Task CancelBattle(Guid battleId);
     void Attack(string targetId);
+    void Skill(string skillName, string targetId);
 }
