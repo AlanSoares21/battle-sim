@@ -12,13 +12,13 @@ public class GameHub : Hub<IGameHubClient>, IGameHubServer
     ILogger<GameHub> _logger;
     IGameEngine _engine;
     IBattleEventsHandler _eventsHandler;
-    RequestsHandler _RequestsHandler;
+    IRequestsHandler _RequestsHandler;
     public GameHub(
         ILogger<GameHub> logger, 
         IGameHubState hubState,
         IGameEngine engine,
         IBattleEventsHandler eventsHandler,
-        RequestsHandler requestsHandler) {
+        IRequestsHandler requestsHandler) {
         _logger = logger;
         _hubState = hubState;
         _engine = engine;
