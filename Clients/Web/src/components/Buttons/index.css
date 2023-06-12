@@ -18,6 +18,10 @@
     background-color: lightgreen;
 }
 
+.primary:disabled {
+    background-color: gray;
+}
+
 .cancel {
     color: white;
     background-color: crimson;

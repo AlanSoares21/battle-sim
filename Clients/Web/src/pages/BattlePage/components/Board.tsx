@@ -5,7 +5,10 @@ import { TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfac
 import BoardCanvas from "../../../BoardCanvas";
 import BoardRenderController from "../../../BoardRenderController";
 
-export interface IBoardProps { cellSize: number }
+export interface IBoardProps { 
+    cellSize: number;
+    onBoardClick: (cell: TBoardCoordinates) => any;
+}
 
 function getMiddleCoordinates(board: TBoard): TBoardCoordinates {
     return {
@@ -14,7 +17,7 @@ function getMiddleCoordinates(board: TBoard): TBoardCoordinates {
     }
 }
 
-const Board: React.FC<IBoardProps> = ({ cellSize }) => {
+const Board: React.FC<IBoardProps> = ({ cellSize, onBoardClick }) => {
     const { battle, server } = useContext(BattleContext);
 
     const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
@@ -51,18 +54,9 @@ const Board: React.FC<IBoardProps> = ({ cellSize }) => {
             .canvasToBoardCoordinates(canvasCoordinates);
         
         render.placePointer(boardCoordinates);
-
-        const index = battle.board.entitiesPosition.findIndex(p =>
-            p.x === boardCoordinates.x && p.y === boardCoordinates.y);
         
-        if (index === -1)
-            server.Move(boardCoordinates.x, boardCoordinates.y);
-        else {
-            const target = battle.board.entitiesPosition[index].entityIdentifier;
-            server.Attack(target);
-        }
-        
-    }, [render, canvasRef, server, battle.board.entitiesPosition]);
+        onBoardClick(boardCoordinates);
+    }, [render, canvasRef, server, battle.board.entitiesPosition, onBoardClick]);
 
     useEffect(() => {
         if (render !== undefined) {

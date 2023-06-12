@@ -4,11 +4,9 @@ import { CommomDataContext } from "../../contexts/CommomDataContext";
 import './index.css'
 import { CancelButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
-import LifeBar from "./components/LifeBar";
 import { BattleContext } from "./BattleContext";
-import Board from "./components/Board";
 import { IEntity } from "../../interfaces";
-import SkillBar from "./components/SkillBar";
+import { BattleController } from "./components/BattleController";
 
 export const BattlePage: React.FC = () => {
     const navigate = useNavigate();
@@ -37,9 +35,7 @@ export const BattlePage: React.FC = () => {
                 server: authContext.data.server,
                 player
             }}>
-                <LifeBar />
-                <Board cellSize={25} />
-                <SkillBar />
+                <BattleController />
             </BattleContext.Provider>
         }
         <CancelButton 

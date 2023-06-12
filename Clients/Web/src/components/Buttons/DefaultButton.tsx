@@ -4,13 +4,14 @@ import './index.css';
 export interface IDefaultButtonProps {
     text: string;
     color?: CSSProperties['color'];
+    enabled?: boolean;
     textColor?: CSSProperties['color'];
     className?: string;
     onClick?: () => any;
 }
 
 export const DefaultButton: React.FC<IDefaultButtonProps> = ({
-    text, color, textColor, className, onClick
+    text, color, textColor, className, onClick, enabled
 }) => {
     return (
         <button 
@@ -18,6 +19,7 @@ export const DefaultButton: React.FC<IDefaultButtonProps> = ({
             type='button' 
             style={{backgroundColor: color, color: textColor}}
             onClick={onClick}
+            disabled={!!enabled}
         >
             {text}
         </button>
