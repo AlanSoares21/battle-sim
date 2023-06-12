@@ -5,29 +5,40 @@ using BattleSimulator.Engine.Skills;
 namespace BattleSimulator.Engine.Tests.SkillsTests;
 
 [TestClass]
-public class BasicNegativeDamageOnXTests 
+public class CommomTestsToDamageSkills
 {
     [TestMethod]
-    public void After_Execute_Skill_Change_Target_Current_Life() 
+    [DataRow(16, 25, "basicNegativeDamageOnX")]
+    [DataRow(25, 16, "basicNegativeDamageOnY")]
+    [DataRow(25, 34, "basicPositiveDamageOnY")]
+    [DataRow(34, 25, "basicPositiveDamageOnX")]
+    public void After_Execute_Skill_Change_Target_Current_Life(
+        int expectedX,
+        int expectedY,
+        string skillName
+    ) 
     {
         var source = NewEntity("sourceId");
         var target = NewEntity("targetId");
-        Coordinate expectedLifeAfterSkill = 
-            new(16, target.State.CurrentHealth.Y);
+        Coordinate expectedLifeAfterSkill = new(expectedX, expectedY);
         var battle = BattleToTest(source, target);
-        var skill = CreateSkill();
+        var skill = GetSkill(skillName);
         skill.Exec(target, source, battle);
         Assert.AreEqual(expectedLifeAfterSkill, target.State.CurrentHealth);
     }
     
     [TestMethod]
-    public void After_Execute_Skill_Notify_Damage() 
+    [DataRow("basicNegativeDamageOnX")]
+    [DataRow("basicNegativeDamageOnY")]
+    [DataRow("basicPositiveDamageOnY")]
+    [DataRow("basicPositiveDamageOnX")]
+    public void After_Execute_Skill_Notify_Damage(string skillName) 
     {
         var notifier = A.Fake<IEventsObserver>();
         var source = NewEntity("sourceId");
         var target = NewEntity("targetId");
         var battle = BattleToTest(notifier, source, target);
-        var skill = CreateSkill();
+        var skill = GetSkill(skillName);
         skill.Exec(target, source, battle);
         A.CallTo(() => notifier
             .SkillDamage(
@@ -40,15 +51,22 @@ public class BasicNegativeDamageOnXTests
     }
     
     [TestMethod]
-    public void When_Notify_Skill_Damage_Send_The_Current_Target_Health() 
+    [DataRow(16, 25, "basicNegativeDamageOnX")]
+    [DataRow(25, 16, "basicNegativeDamageOnY")]
+    [DataRow(25, 34, "basicPositiveDamageOnY")]
+    [DataRow(34, 25, "basicPositiveDamageOnX")]
+    public void When_Notify_Skill_Damage_Send_The_Current_Target_Health(
+        int expectedX,
+        int expectedY,
+        string skillName
+    ) 
     {
         var notifier = A.Fake<IEventsObserver>();
         var source = NewEntity("sourceId");
         var target = NewEntity("targetId");
-        Coordinate expectedLifeAfterSkill = 
-            new(16, target.State.CurrentHealth.Y);
+        Coordinate expectedLifeAfterSkill = new(expectedX, expectedY);
         var battle = BattleToTest(notifier, source, target);
-        var skill = CreateSkill();
+        var skill = GetSkill(skillName);
         skill.Exec(target, source, battle);
         A.CallTo(() => notifier
             .SkillDamage(
@@ -60,7 +78,18 @@ public class BasicNegativeDamageOnXTests
             .MustHaveHappenedOnceExactly();
     }
 
-    ISkillBase CreateSkill() => new BasicNegativeDamageOnX();
+    ISkillBase GetSkill(string name) {
+        if (name == "basicNegativeDamageOnX")
+            return new BasicNegativeDamageOnX();
+        if (name == "basicNegativeDamageOnY")
+            return new BasicNegativeDamageOnY();
+        if (name == "basicPositiveDamageOnX")
+            return new BasicPositiveDamageOnX();
+        if (name == "basicPositiveDamageOnY")
+            return new BasicPositiveDamageOnY();
+        Assert.Fail($"Skill {name} is not registred, on GetSkill method");
+        return null;
+    }
     IBattle BattleToTest(params IEntity[] entities) => 
         BattleToTest(A.Fake<IEventsObserver>(), entities);
     
@@ -75,6 +104,5 @@ public class BasicNegativeDamageOnXTests
             battle.AddEntity(entity);
         return battle;
     }
-
     IEntity NewEntity(string id) => new Player(id);
 }
