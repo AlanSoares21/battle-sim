@@ -25,6 +25,7 @@ export interface IHubServer {
     CancelBattleRequest(requesterId: string): void;
     CancelBattle(battleId: string): void;
     Attack(targetId: string): void;
+    Skill(skillName: string, targetId: string): void;
 }
 
 // events sent by the server
@@ -39,6 +40,12 @@ export interface IServerEvents {
     BattleRequestCancelled(cancellerId: string, request: IBattleRequest): void;
     BattleCancelled(cancellerId: string, battleId: string): void;
     Attack(source: string, target: string, currentHealth: TCoordinates): void;
+    Skill(
+        skillName: string, 
+        source: string,
+        target: string, 
+        currentHealth: TCoordinates
+    ): void;
 }
 
 export class ServerConnection implements IHubServer
@@ -88,6 +95,10 @@ export class ServerConnection implements IHubServer
         this.conn.on('Attack', listener);
         return this;
     }
+    onSkill(listener: IServerEvents['Skill']) {
+        this.conn.on('Skill', listener);
+        return this;
+    }
     
     ListUsers(): void {
         this.conn.send('ListUsers');
@@ -109,5 +120,9 @@ export class ServerConnection implements IHubServer
     }
     Attack(targetId: string) {
         this.conn.send('Attack', targetId);
+    }
+    Skill(skillName: string, targetId: string): void {
+        console.log("usando skill", skillName)
+        this.conn.send('Skill', skillName, targetId);
     }
 }

@@ -1,8 +1,7 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import LifeBar from "./LifeBar";
 import { BattleContext } from "../BattleContext";
 import Board, { IBoardProps } from "./Board";
-import { IEntity } from "../../../interfaces";
 import SkillBar from "./SkillBar";
 
 export const BattleController: React.FC = () => {
@@ -14,15 +13,19 @@ export const BattleController: React.FC = () => {
         (cell) => {
             const index = battle.board.entitiesPosition.findIndex(p =>
                 p.x === cell.x && p.y === cell.y);
-            
-            if (index === -1)
-                server.Move(cell.x, cell.y);
-            else {
-                const target = battle.board.entitiesPosition[index].entityIdentifier;
-                server.Attack(target);
+            if (index === -1) {
+                server.Move(cell.x, cell.y)
+                return;
             }
+            const target = battle.board.entitiesPosition[index].entityIdentifier;
+            if (skillSelected !== undefined) {
+                server.Skill(skillSelected, target);    
+                setSkillSelected(s => s === skillSelected ? undefined : s);
+            }
+            else
+                server.Attack(target);
         }, 
-    [battle, server]);
+    [battle, server, skillSelected]);
 
     return(<>
         <LifeBar />

@@ -14,6 +14,14 @@ const onAttack = (render: LifeBarRender): IServerEvents['Attack'] =>
     }
 )
 
+const onSkill = (render: LifeBarRender): IServerEvents['Skill'] => 
+(
+    (_, source, target, currentHealth) => {
+        render.setEntityCurrentHealth(target, currentHealth);
+        render.render();
+    }
+)
+
 const LifeBar: React.FC<ILifeBarProps> = () => {
     const { battle: { entities }, server } = useContext(BattleContext);
     
@@ -42,7 +50,9 @@ const LifeBar: React.FC<ILifeBarProps> = () => {
 
     useEffect(() => {
         if (render !== undefined)
-            server.onAttack(onAttack(render));
+            server
+                .onAttack(onAttack(render))
+                .onSkill(onSkill(render));
     }, [ server, render ]);
 
     return (<div>

@@ -56,7 +56,7 @@ const Board: React.FC<IBoardProps> = ({ cellSize, onBoardClick }) => {
         render.placePointer(boardCoordinates);
         
         onBoardClick(boardCoordinates);
-    }, [render, canvasRef, server, battle.board.entitiesPosition, onBoardClick]);
+    }, [render, canvasRef, onBoardClick]);
 
     useEffect(() => {
         if (render !== undefined) {

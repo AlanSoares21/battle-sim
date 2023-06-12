@@ -79,12 +79,22 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
 
     const onAttack = useCallback<IServerEvents['Attack']>(
         async (source, target, currentHealth) => {
-            console.log({'new-attack': {
+            console.log('new-attack', {
                 source,
                 target,
                 currentHealth
-            }});
+            });
         }, []);
+
+    const onSkill = useCallback<IServerEvents['Skill']>(
+        async (skillName, source, target, currentHealth) => {
+            console.log('skill', {
+                skillName,
+                source,
+                target,
+                currentHealth
+        });
+    }, []);
 
     const updateEntitiesPosition = useCallback<IServerEvents['EntityMove']>(
         (entity, x, y) => {
@@ -117,7 +127,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     .onBattleRequestCancelled(onBattleRequestCancelled)
                     .onBattleCancelled(onBattleCancelled)
                     .onAttack(onAttack)
-                    .onEntityMove(updateEntitiesPosition);
+                    .onEntityMove(updateEntitiesPosition)
+                    .onSkill(onSkill);
             }
         }, 
         [
@@ -131,7 +142,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             onBattleRequestCancelled,
             onBattleCancelled,
             onAttack,
-            updateEntitiesPosition
+            updateEntitiesPosition,
+            onSkill
         ]
     )
 
