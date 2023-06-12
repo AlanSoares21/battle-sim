@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 import { CommomDataContext } from "../../contexts/CommomDataContext";
 import './index.css'
@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import LifeBar from "./components/LifeBar";
 import { BattleContext } from "./BattleContext";
 import Board from "./components/Board";
+import { IEntity } from "../../interfaces";
+import SkillBar from "./components/SkillBar";
 
 export const BattlePage: React.FC = () => {
     const navigate = useNavigate();
@@ -14,15 +16,30 @@ export const BattlePage: React.FC = () => {
     const authContext = useContext(AuthContext);
     const commomData = useContext(CommomDataContext);
 
+    const [player, setPlayer] = useState<IEntity>();
+
+    useEffect(() => {
+        if (player !== undefined)
+            return;
+        if (commomData.battle == undefined)
+            return;
+        if (authContext.data == undefined)
+            return;
+        const username = authContext.data.username;
+        setPlayer(commomData.battle.entities.find(p => p.id === username));
+    }, [commomData, authContext]);
+
     return(<>
         {
-            commomData.battle && authContext.data &&
+            player && commomData.battle && authContext.data &&
             <BattleContext.Provider value={{
                 battle: commomData.battle,
-                server: authContext.data.server
+                server: authContext.data.server,
+                player
             }}>
                 <LifeBar />
                 <Board cellSize={25} />
+                <SkillBar />
             </BattleContext.Provider>
         }
         <CancelButton 

@@ -1,10 +1,11 @@
 import { createContext } from "react";
-import { IBattleData } from "../../interfaces";
+import { DamageDirection, IBattleData, IEntity } from "../../interfaces";
 import { ServerConnection } from "../../server";
 import { HubConnectionBuilder } from '@microsoft/signalr';
 
 export interface IBattleContext {
     battle: IBattleData;
+    player: IEntity;
     server: ServerConnection;
 }
 
@@ -19,6 +20,25 @@ export const BattleContext = createContext<IBattleContext>({
         },
         entities: [],
         id: ''
+    },
+    player: {
+        id: '',
+        defensiveStats: {
+            defenseAbsorption: 0
+        },
+        offensiveStats: {
+            damage: 0
+        },
+        skills: [],
+        state: {
+            currentHealth: { x: 0, y: 0 },
+            healthRadius: 0
+        },
+        weapon: {
+            damageOnX: DamageDirection.Neutral,
+            damageOnY: DamageDirection.Neutral,
+            name: ''
+        }
     },
     server: new ServerConnection(
         new HubConnectionBuilder().withUrl('http://localhost').build()

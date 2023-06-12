@@ -76,10 +76,13 @@ export interface IWeapon {
     damageOnY: DamageDirection;
 }
 
-// TODO:: this will be implemented in the future
+export interface ISkill {
+    name: string
+}
+
 export interface IEntity {
     id: string;
-    skills: any[];
+    skills: ISkill[];
     weapon: IWeapon;
     state: {
         currentHealth: TCoordinates;
