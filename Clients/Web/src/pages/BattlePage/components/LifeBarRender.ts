@@ -80,7 +80,7 @@ export default class LifeBarRender {
             y: sphereCenter.y
         };
         
-        let y = Math.abs(currentHealth.y - healthRadius) * this.scale.life;
+        let y = Math.abs(currentHealth.y - healthRadius) * this.scale.life * -1;
         let x = Math.abs(currentHealth.x - healthRadius) * this.scale.life;
 
         if (healthRadius < currentHealth.x) {
