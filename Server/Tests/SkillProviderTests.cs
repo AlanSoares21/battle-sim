@@ -16,6 +16,9 @@ public class SkillProviderTests
 
     [TestMethod]
     [DataRow("basicNegativeDamageOnX")]
+    [DataRow("basicNegativeDamageOnY")]
+    [DataRow("basicPositiveDamageOnX")]
+    [DataRow("basicPositiveDamageOnY")]
     public void Returns_True_For_Valid_Skill_Names(string skillName) 
     {
 	    ISkillProvider provider = CreateProvider();
@@ -33,6 +36,9 @@ public class SkillProviderTests
 
     [TestMethod]
     [DataRow("basicNegativeDamageOnX")]
+    [DataRow("basicNegativeDamageOnY")]
+    [DataRow("basicPositiveDamageOnX")]
+    [DataRow("basicPositiveDamageOnY")]
     public void Returns_The_Rigth_Skill(string skillName) 
     {
 	    ISkillProvider provider = CreateProvider();

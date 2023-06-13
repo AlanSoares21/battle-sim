@@ -10,6 +10,9 @@ public class SkillProvider : ISkillProvider
     {
         _Skills = new();
         AddSkill(new BasicNegativeDamageOnX());
+        AddSkill(new BasicNegativeDamageOnY());
+        AddSkill(new BasicPositiveDamageOnX());
+        AddSkill(new BasicPositiveDamageOnY());
     }
 
     void AddSkill(ISkillBase skill) 
