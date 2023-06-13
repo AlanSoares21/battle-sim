@@ -8,7 +8,10 @@ namespace BattleSimulator.Server.Database;
 public class GameDb : IGameDb
 {
     public static List<string> DefaultSkills = new() {
-        "basicNegativeDamageOnX"
+        "basicNegativeDamageOnX",
+        "basicNegativeDamageOnY",
+        "basicPositiveDamageOnX",
+        "basicPositiveDamageOnY"
     };
     ISkillProvider _skillProvider;
     List<Entity> _entities;
