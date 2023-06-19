@@ -72,31 +72,19 @@ export default class LifeBarRender {
 
     calculeCurrentLifeCoord(
         sphereCenter: TCoordinates, 
-        currentHealth: TCoordinates,
-        healthRadius: number): TCoordinates
+        currentHealth: TCoordinates): TCoordinates
     {
         let currentLifeCoord: TCoordinates = {
             x: sphereCenter.x,
             y: sphereCenter.y
         };
         
-        let y = Math.abs(currentHealth.y - healthRadius) * this.scale.life * -1;
-        let x = Math.abs(currentHealth.x - healthRadius) * this.scale.life;
+        let y = currentHealth.y * this.scale.life;
+        let x = currentHealth.x * this.scale.life;
+        
+        currentLifeCoord.y -= y;
+        currentLifeCoord.x += x;
 
-        if (healthRadius < currentHealth.x) {
-            currentLifeCoord.x = sphereCenter.x + x;
-        }
-        else if (healthRadius > currentHealth.x) {
-            currentLifeCoord.x = sphereCenter.x - x;
-        }
-        
-        if (healthRadius < currentHealth.y) {
-            currentLifeCoord.y = sphereCenter.y + y;
-        }
-        else if (healthRadius > currentHealth.y) {
-            currentLifeCoord.y = sphereCenter.y - y;
-        }
-        
         return currentLifeCoord;
     }
 
@@ -125,8 +113,7 @@ export default class LifeBarRender {
                 this.scale.life, 
                 this.calculeCurrentLifeCoord(
                     coordinates.sphereCenter,
-                    entity.state.currentHealth,
-                    entity.state.healthRadius
+                    entity.state.currentHealth
                 )
             );
             coordinates.sphereCenter.x += circleRadius;
