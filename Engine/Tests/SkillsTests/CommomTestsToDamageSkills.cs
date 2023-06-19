@@ -8,10 +8,10 @@ namespace BattleSimulator.Engine.Tests.SkillsTests;
 public class CommomTestsToDamageSkills
 {
     [TestMethod]
-    [DataRow(16, 25, "basicNegativeDamageOnX")]
-    [DataRow(25, 16, "basicNegativeDamageOnY")]
-    [DataRow(25, 34, "basicPositiveDamageOnY")]
-    [DataRow(34, 25, "basicPositiveDamageOnX")]
+    [DataRow(-9, 0, "basicNegativeDamageOnX")]
+    [DataRow(0, -9, "basicNegativeDamageOnY")]
+    [DataRow(0, 9, "basicPositiveDamageOnY")]
+    [DataRow(9, 0, "basicPositiveDamageOnX")]
     public void After_Execute_Skill_Change_Target_Current_Life(
         int expectedX,
         int expectedY,
@@ -51,10 +51,10 @@ public class CommomTestsToDamageSkills
     }
     
     [TestMethod]
-    [DataRow(16, 25, "basicNegativeDamageOnX")]
-    [DataRow(25, 16, "basicNegativeDamageOnY")]
-    [DataRow(25, 34, "basicPositiveDamageOnY")]
-    [DataRow(34, 25, "basicPositiveDamageOnX")]
+    [DataRow(-9, 0, "basicNegativeDamageOnX")]
+    [DataRow(0, -9, "basicNegativeDamageOnY")]
+    [DataRow(0, 9, "basicPositiveDamageOnY")]
+    [DataRow(9, 0, "basicPositiveDamageOnX")]
     public void When_Notify_Skill_Damage_Send_The_Current_Target_Health(
         int expectedX,
         int expectedY,

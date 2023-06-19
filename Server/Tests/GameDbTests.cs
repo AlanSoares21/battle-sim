@@ -91,7 +91,7 @@ public class GameDbTests
 
     void StateAttributesAreDefault(IStateAttributes attributes) 
     {
-        Assert.IsTrue(new Coordinate(25,25).IsEqual(attributes.CurrentHealth));
+        Assert.IsTrue(new Coordinate(0,0).IsEqual(attributes.CurrentHealth));
         Assert.AreEqual(25, attributes.HealthRadius);
     }
 

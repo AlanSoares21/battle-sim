@@ -53,7 +53,7 @@ class State : IStateAttributes
     public State() 
     {
         HealthRadius = 25;
-        CurrentHealth = new(25, 25);
+        CurrentHealth = new(0, 0);
     }
 
     public int HealthRadius { get; set; }
