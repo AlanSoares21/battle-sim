@@ -56,7 +56,7 @@ public class Duel : IBattle
     Coordinate _GetTargetCellToMove(
         Coordinate sourceCell, MoveDirection direction
     ) {
-        int x = sourceCell.X, y = sourceCell.Y;
+        double x = sourceCell.X, y = sourceCell.Y;
         if (direction == MoveDirection.Up)
             y += 1;
         else if (direction == MoveDirection.Right)
@@ -89,10 +89,10 @@ public class Duel : IBattle
     public bool CanAttack(string targetId, string attackerId) {
         Coordinate attakcerPosition = Board.GetEntityPosition(attackerId);
         Coordinate targetPosition = Board.GetEntityPosition(targetId);
-        int xDiff = Math.Abs(targetPosition.X - attakcerPosition.X);
+        double xDiff = Math.Abs(targetPosition.X - attakcerPosition.X);
         if (xDiff > 1)
             return false;
-        int yDiff = Math.Abs(targetPosition.Y - attakcerPosition.Y);
+        double yDiff = Math.Abs(targetPosition.Y - attakcerPosition.Y);
         return yDiff <= 1;
     }
     
@@ -133,8 +133,8 @@ public class Duel : IBattle
         else if (damageOnY == Equipment.DamageDirection.Negative)
             yMul = -1;
 
-        int newX = targetState.CurrentHealth.X + damage * xMul;
-        int newY = targetState.CurrentHealth.Y + damage * yMul;
+        double newX = targetState.CurrentHealth.X + damage * xMul;
+        double newY = targetState.CurrentHealth.Y + damage * yMul;
         targetState.CurrentHealth = new(newX, newY);
     }
 

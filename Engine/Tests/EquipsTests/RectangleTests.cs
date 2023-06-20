@@ -13,8 +13,9 @@ public class RectangleTests
         V - valida diagonal do retangulo
         calcula os coeficientes para as retas dos lados do retangulo
 
-        verifica se um ponto esta dentro de sua area
-        diz qual seu efeito 
+        v - verifica se um ponto esta dentro de sua area
+        diz qual seu efeito
+        diz sua area 
     */
     [TestMethod]
     public void Throw_Exception_When_Try_Create_A_Rectangle_With_More_Than_4_Coordinates() 
@@ -59,5 +60,35 @@ public class RectangleTests
         Assert.ThrowsException<Exception>(() => {
             Rectangle rectangle = new(new[] { point1, point2, point3, point4 });
         }, $"When creating rectangle with invalid size, an exception should be throwed. points: {point1} {point2} {point3} {point4}");
+    }
+
+    [TestMethod]
+    [DataRow(1, 2)]
+    [DataRow(4, 2)]
+    [DataRow(2, 3)]
+    [DataRow(2, 1)]
+    public void Check_If_A_Point_Is_In_The_Rectangle(int x, int y) 
+    {
+        Coordinate pointA = new(1,1), pointB = new(1,3),
+        pointC = new(4,3), pointD = new(4,1);
+
+        Rectangle rectangle = new(new[] {pointA, pointB, pointC, pointD});
+        
+        Assert.IsTrue(rectangle.IsInner(new(x, y)));
+    }
+
+    [TestMethod]
+    [DataRow(2, 0)]
+    [DataRow(0, 2)]
+    [DataRow(2, 4)]
+    [DataRow(5, 2)]
+    public void Check_If_A_Point_Is_Out_The_Rectangle(int x, int y) 
+    {
+        Coordinate pointA = new(1,1), pointB = new(1,3),
+        pointC = new(4,3), pointD = new(4,1);
+
+        Rectangle rectangle = new(new[] {pointA, pointB, pointC, pointD});
+        
+        Assert.IsFalse(rectangle.IsInner(new(x, y)));
     }
 }

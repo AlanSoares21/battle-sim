@@ -11,7 +11,7 @@ public interface IGameHubClient
     Task NewBattleRequest(BattleRequest battleRequest);
     Task BattleRequestSent(BattleRequest battleRequest);
     Task NewBattle(BattleData battleData);
-    Task EntityMove(string entityIdentifier, int x, int y);
+    Task EntityMove(string entityIdentifier, double x, double y);
     Task BattleRequestCancelled(
         string cancellerId, 
         BattleRequest request);

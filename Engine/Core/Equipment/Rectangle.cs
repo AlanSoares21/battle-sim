@@ -8,9 +8,12 @@ public interface IEquip {
 
 public class Rectangle : IEquip
 {
-    public double Height { get; private set; } = 0;
-    public double Base { get; private set; } = 0;
+    public double Height { get; private set; }
+    public double HalfHeight { get; private set; }
+    public double Base { get; private set; }
+    public double HalfBase { get; private set; }
     public Coordinate[] Coordinates = new Coordinate[4];
+    LineFunction BaseLine, HeightLine;
 
     public Rectangle(Coordinate[] coordinates) 
     {
@@ -21,8 +24,8 @@ public class Rectangle : IEquip
     void setCoordinates(Coordinate[] points) 
     {
         Coordinates = points;
-        double distancePoint1And2 = distance(points[0], points[1]);
-        double distancePoint1And4 = distance(points[0], points[3]);
+        double distancePoint1And2 = points[0].Distance(points[1]);
+        double distancePoint1And4 = points[0].Distance(points[3]);
         bool secondPointDefineBase = distancePoint1And2 > distancePoint1And4;
         if (secondPointDefineBase) 
         {
@@ -34,51 +37,62 @@ public class Rectangle : IEquip
             Base = distancePoint1And4;
             Height = distancePoint1And2;
         }
-        double diameter = distance(points[0], points[2]);
+        HalfBase = Base/2;
+        HalfHeight = Height/2;
 
+        double diameter = points[0].Distance(points[2]);
         if (diameter <= Base)
             throw new Exception($"Diameter({diameter}) is equal or lower than the base({Base}) of the rectangle {points[0]} {points[1]} {points[2]} {points[3]} ");
 
-        double distancePoint3And4 = distance(points[2], points[3]);
+        double distancePoint3And4 = points[2].Distance(points[3]);
         if (distancePoint1And2 != distancePoint3And4)
             throw new Exception($"Distance between {points[0]} and {points[1]}(value: {distancePoint1And2}) is not equal to distance between {points[2]} and {points[3]}(value: {distancePoint3And4})");
         
-        double distancePoint3And2 = distance(points[2], points[1]);
+        double distancePoint3And2 = points[2].Distance(points[1]);
         if (distancePoint1And4 != distancePoint3And2)
             throw new Exception($"Distance between {points[0]} and {points[3]}(value: {distancePoint1And4}) is not equal to distance between {points[2]} and {points[1]}(value: {distancePoint3And2})");
-    }
-    double size = 0;
-    (float a, float b)[] funcComponents = new (float a, float b)[4];
 
-    (float a, float b) getFunc(Coordinate coord1, Coordinate coord2) {
-        float b = (coord2.Y - coord1.Y) / (coord2.X - coord1.X);
-        float a = coord1.Y - coord1.X * b;
-        return (a, b);
+        getSideFunctionsCoefficients(secondPointDefineBase);
     }
 
-    double distance(Coordinate coord1, Coordinate coord2) {
-        return Math.Sqrt(
-            Math.Pow(coord1.X - coord2.X, 2)
-            +
-            Math.Pow(coord1.Y - coord2.Y, 2)
-        );
-    }
-
-    public  bool IsInner(Coordinate coord)
+    void getSideFunctionsCoefficients(bool secondPointDefineBase) 
     {
-        for (int i = 0; i < funcComponents.Length; i++)
+        int baseStart = 0;
+        int heightStart = 1;
+        if (!secondPointDefineBase) 
         {
-            if (distancia(coord, i) > size)
-                return false;
+            baseStart = 1;
+            heightStart = 0;
         }
-        return true;
+        LineFunction baseLine = GetLineWithLowestDistanceFromOrigin(baseStart);
+        LineFunction heightLine = GetLineWithLowestDistanceFromOrigin(heightStart);
+        
+        BaseLine = baseLine.NewFarLine(this.HalfHeight);
+        HeightLine = heightLine.NewFarLine(this.HalfBase);
     }
 
-    double distancia(Coordinate coordinate, int funcIndex) {
-        var func = funcComponents[funcIndex];
-        return 
-            Math.Abs(func.b *  coordinate.X + 1 * coordinate.Y + func.a) 
-            / 
-            Math.Sqrt(Math.Pow(func.b, 2)+1);
+    LineFunction GetLineWithLowestDistanceFromOrigin(int start)
+    {
+        Coordinate origin = new(0, 0);
+
+        LineFunction firstLine = new LineFunction(Coordinates[start], Coordinates[start + 1]); 
+        
+        int next = start + 3;
+        if (next == Coordinates.Length) 
+            next = 0;
+        LineFunction secondLine = new LineFunction(Coordinates[start + 2], Coordinates[next]); 
+
+        if (firstLine.Distance(origin) < secondLine.Distance(origin))
+            return firstLine;
+        return secondLine;
     }
+
+    public bool IsInner(Coordinate coord)
+    {
+        if (BaseLine.Distance(coord) > HalfHeight)
+                return false;
+        if (HeightLine.Distance(coord) > HalfBase)
+            return false;
+        return true;
+    }    
 }

@@ -113,7 +113,7 @@ public class MovementWorkerTests
         MovementIntentionsWorker worker = new (hub, state, FakeLogger());
         worker.MoveEntities();
         A.CallTo(
-            () => groupClient.EntityMove(entityId, A<int>.Ignored, A<int>.Ignored))
+            () => groupClient.EntityMove(entityId, A<double>.Ignored, A<double>.Ignored))
             .MustHaveHappenedOnceExactly();
     }
 

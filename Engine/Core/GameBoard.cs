@@ -35,8 +35,8 @@ public class GameBoard : IBoard
     public Coordinate GetOppositeCoordinate(Coordinate coordinate) {
         if (!IsCoordinateValid(coordinate))
             throw new Exception("Can not get opposite coordinate from the invalid coordinate " + coordinate);
-        int oppositeX = (coordinate.X + 1 - this.Width) * -1;
-        int oppositeY = (coordinate.Y + 1 - this.Height) * -1;
+        double oppositeX = (coordinate.X + 1 - this.Width) * -1;
+        double oppositeY = (coordinate.Y + 1 - this.Height) * -1;
         return new(oppositeX, oppositeY);
     }
 

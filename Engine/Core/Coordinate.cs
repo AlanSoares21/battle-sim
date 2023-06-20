@@ -1,24 +1,32 @@
-using BattleSimulator.Engine.Interfaces;
+using System;
 
 namespace BattleSimulator.Engine;
 
 public struct Coordinate
 {
-    public Coordinate(int x, int y) {
+    public Coordinate(double x, double y) {
         X = x;
         Y = y;
     }
-    public int X { get; set; }
+    public double X { get; set; }
 
-    public int Y { get; set; }
+    public double Y { get; set; }
 
     public bool IsEqual(Coordinate coord) => 
         CoordinatesAreEqual(coord.X, coord.Y);
-    public bool CoordinatesAreEqual(int x, int y) =>
+    public bool CoordinatesAreEqual(double x, double y) =>
         X == x && Y == y;
 
     public override string ToString()
     {
         return $"({X},{Y})";
+    }
+
+    public double Distance(Coordinate coord) {
+        return Math.Sqrt(
+            Math.Pow(this.X - coord.X, 2)
+            +
+            Math.Pow(this.Y - coord.Y, 2)
+        );
     }
 }

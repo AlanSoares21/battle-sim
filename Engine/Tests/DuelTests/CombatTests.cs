@@ -1,3 +1,4 @@
+using System;
 using BattleSimulator.Engine.Interfaces;
 
 namespace BattleSimulator.Engine.Tests.DuelTests;
@@ -34,7 +35,7 @@ public class CombatTests {
         Coordinate targetPosition = new(4, 4);
         battle.AddEntity(target, targetPosition);
 
-        for (int x = 2; x <= targetPosition.X + 2; x += targetPosition.X)
+        for (int x = 2; x <= targetPosition.X + 2; x += Convert.ToInt32(Math.Floor(targetPosition.X)))
         for (int y = 2; y <= targetPosition.Y + 2; y++)
         {
             Coordinate attackerPosition = new(x, y);
@@ -59,7 +60,7 @@ public class CombatTests {
         Coordinate targetPosition = new(4, 4);
         battle.AddEntity(target, targetPosition);
 
-        for (int y = 2; y <= targetPosition.Y + 2; y += targetPosition.Y)
+        for (int y = 2; y <= targetPosition.Y + 2; y += Convert.ToInt32(Math.Floor(targetPosition.Y)))
         for (int x = 2; x <= targetPosition.X + 2; x++)
         {
             Coordinate attackerPosition = new(x, y);

@@ -135,14 +135,14 @@ public class MovementIntentionsWorker : BackgroundService
             diminui y
     */
     private MoveDirection GetDirectionToCell(Coordinate source, Coordinate destination) {
-        int sourceX = (int)source.X;
-        int sourceY = (int)source.Y;
+        double sourceX = source.X;
+        double sourceY = source.Y;
 
-        int destinationX = (int)destination.X;
-        int destinationY = (int)destination.Y;
+        double destinationX = destination.X;
+        double destinationY = destination.Y;
         
-        int diffX = Math.Abs(sourceX - destinationX);
-        int diffY = Math.Abs(sourceY - destinationY);
+        double diffX = Math.Abs(sourceX - destinationX);
+        double diffY = Math.Abs(sourceY - destinationY);
 
         if (diffX >= diffY)
             if (destination.X > source.X)
