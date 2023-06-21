@@ -2,13 +2,19 @@ using System;
 
 namespace BattleSimulator.Engine;
 
+/*
+    f(x) = ax + c
+    0 = ax + by + c
+*/
 public struct LineFunction {
     public bool vertical;
     public double x;
     public bool horizontal;
     public double y;
+    
     public double a;
     public double b;
+    public double c;
 
     public LineFunction(Coordinate coord1, Coordinate coord2) 
     {
@@ -24,11 +30,9 @@ public struct LineFunction {
         }
         else 
         {
-            /*
-                f(y) = ax + b;
-            */
-            this.b = (coord2.Y - coord1.Y) / (coord2.X - coord1.X);
-            this.a = coord1.Y - coord1.X * this.b;
+            this.a = (coord2.Y - coord1.Y) / (coord2.X - coord1.X);
+            this.c = coord1.Y - coord1.X * this.a;
+            this.b = (-(coord1.X * this.a) - this.c) / coord1.Y;
         }
     }
 
