@@ -57,12 +57,20 @@ public struct LineFunction {
     {
         if (this.horizontal) 
         {
-            double newY = this.c + distance;
+            double newY;
+            if (this.c > 0)
+                newY = this.c - distance;
+            else
+                newY = this.c + distance;
             return new LineFunction(new(0, newY), new(1, newY));
         }
         if (this.vertical) 
         {
-            double newX = this.x + distance;
+            double newX;
+            if (this.x > 0)
+                newX = this.x - distance;
+            else
+                newX = this.x + distance;
             return new LineFunction(new(newX, 0), new(newX, 1));
         }
         LineFunction newLine = new(new (0, this.GetY(0)), new (1, this.GetY(1)));

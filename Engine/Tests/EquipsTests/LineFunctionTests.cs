@@ -115,4 +115,32 @@ public class LineFunctionTests
         var farLine = line.LineMoreCloseToOrigin(distance);
         Assert.AreEqual(cExpected, farLine.c);
     }
+
+    [TestMethod]
+    [DataRow(-5,1, -5,2, 3, -2)]
+    [DataRow(5,1, 5,2, 3, 2)]
+    public void Create_Vertical_Line_More_Close_To_Origin(
+        int x1, int y1, 
+        int x2, int y2, 
+        double distance, 
+        double xExpected)
+    {
+        LineFunction line = new(new(x1,y1), new(x2,y2));
+        var farLine = line.LineMoreCloseToOrigin(distance);
+        Assert.AreEqual(xExpected, farLine.x);
+    }
+
+    [TestMethod]
+    [DataRow(1,-5, 2,-5, 3, -2)]
+    [DataRow(1,5, 2,5, 3, 2)]
+    public void Create_Horizontal_Line_More_Close_To_Origin(
+        int x1, int y1, 
+        int x2, int y2, 
+        double distance, 
+        double cExpected)
+    {
+        LineFunction line = new(new(x1,y1), new(x2,y2));
+        var farLine = line.LineMoreCloseToOrigin(distance);
+        Assert.AreEqual(cExpected, farLine.c);
+    }
 }
