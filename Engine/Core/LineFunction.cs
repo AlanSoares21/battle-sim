@@ -21,7 +21,9 @@ public struct LineFunction {
         if (coord1.Y == coord2.Y)
         {
             this.horizontal = true;
-            this.y = coord1.Y;
+            this.c = coord1.Y;
+            this.b = -this.c / coord1.Y;
+            this.a = 0;
         }
         else if (coord1.X == coord2.X) 
         {

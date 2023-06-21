@@ -5,9 +5,9 @@ namespace BattleSimulator.Engine.Tests.EquipsTests;
 public class LineFunctionTests
 {
     /*
-        _ - cria reta entre dois pontos
-        _ - trata retas verticais
-        _ - trata retas horizontais
+        V - cria reta entre dois pontos
+        V - trata retas verticais
+        V - trata retas horizontais
 
         _ - calcula corretamente a distancia para retas comuns
         _ - calcula corretamente a distancia para retas horizontais
@@ -28,6 +28,28 @@ public class LineFunctionTests
         Assert.AreEqual(-1, line.b);
         Assert.IsFalse(line.horizontal);
         Assert.IsFalse(line.vertical);
+    }
+
+    [TestMethod]
+    public void Create_Vertical_Line_With_Two_Coordinates()
+    {
+        Coordinate firstCoordinate = new(1, 1);
+        Coordinate secondCoordinate = new(firstCoordinate.X, 3);
+        LineFunction line = new(firstCoordinate, secondCoordinate);
+        Assert.IsTrue(line.vertical);
+        Assert.AreEqual(firstCoordinate.X, line.x);
+    }
+
+    [TestMethod]
+    public void Create_Horizontal_Line_With_Two_Coordinates()
+    {
+        Coordinate firstCoordinate = new(1,3);
+        Coordinate secondCoordinate = new(2,firstCoordinate.Y);
+        LineFunction line = new(firstCoordinate, secondCoordinate);
+        Assert.IsTrue(line.horizontal);
+        Assert.AreEqual(firstCoordinate.Y, line.c);
+        Assert.AreEqual(-1, line.b);
+        Assert.AreEqual(0, line.a);
     }
 
     /*
