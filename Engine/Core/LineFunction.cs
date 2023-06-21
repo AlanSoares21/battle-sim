@@ -10,7 +10,6 @@ public struct LineFunction {
     public bool vertical;
     public double x;
     public bool horizontal;
-    public double y;
     
     public double a;
     public double b;
@@ -41,20 +40,19 @@ public struct LineFunction {
     public double Distance(Coordinate coordinate) 
     {   
         if (this.horizontal)
-            return Math.Abs(coordinate.Y - this.y);
+            return Math.Abs(coordinate.Y - this.c);
         if (this.vertical)
             return Math.Abs(coordinate.X - this.x);
-        return 
-            Math.Abs(this.b *  coordinate.X + 1 * coordinate.Y + this.a) 
+        return Math.Abs(this.a *  coordinate.X + this.b * coordinate.Y + this.c) 
             / 
-            Math.Sqrt(Math.Pow(this.b, 2)+1);
+            Math.Sqrt(Math.Pow(this.a, 2) + Math.Pow(this.b, 2));
     }
 
     public LineFunction NewFarLine(double distance) 
     {
         if (this.horizontal) 
         {
-            double newY = this.y + distance;
+            double newY = this.c + distance;
             return new LineFunction(new(0, newY), new(1, newY));
         }
         if (this.vertical) 
@@ -73,14 +71,14 @@ public struct LineFunction {
             this.a == line.a;
     }
 
-    public double GetY(double x) => this.a * x + this.b;
+    public double GetY(double x) => this.a * x + this.c;
 
     public override string ToString()
     {
         if (horizontal)
-            return $"Function (horizontal, y = {y})";
+            return $"Function (horizontal, c = {c})";
         if (vertical)
             return $"Function (vertical, x = {x})";
-        return $"Function (a: {this.a}; b: {this.b})";
+        return $"Function f(x) = {a}x + {c}; b: {b}";
     }
 }
