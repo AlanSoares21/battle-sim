@@ -98,4 +98,21 @@ public class LineFunctionTests
         LineFunction line = new(new(1,2), new(3,2));
         Assert.AreEqual(expected, line.DistanceNotAbs(new(x, y)));
     }
+
+
+    [TestMethod]
+    [DataRow(-5,-6, -6,-5, 3, -6.757359312880714)]
+    [DataRow(-5,6, -6,5, 3, 6.757359312880714)]
+    [DataRow(5,6, 6,5, 3, 6.757359312880714)]
+    [DataRow(5,-6, 6,-5, 3, -6.757359312880714)]
+    public void Create_Line_More_Close_To_Origin(
+        int x1, int y1, 
+        int x2, int y2, 
+        double distance, 
+        double cExpected)
+    {
+        LineFunction line = new(new(x1,y1), new(x2,y2));
+        var farLine = line.LineMoreCloseToOrigin(distance);
+        Assert.AreEqual(cExpected, farLine.c);
+    }
 }

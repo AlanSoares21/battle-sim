@@ -53,7 +53,7 @@ public struct LineFunction {
             this.distanceConstant;
     }
 
-    public LineFunction NewFarLine(double distance) 
+    public LineFunction LineMoreCloseToOrigin(double distance) 
     {
         if (this.horizontal) 
         {
@@ -65,9 +65,12 @@ public struct LineFunction {
             double newX = this.x + distance;
             return new LineFunction(new(newX, 0), new(newX, 1));
         }
-        LineFunction middle = new(new (0, this.GetY(0)), new (1, this.GetY(1)));
-        middle.b += distance;
-        return middle;
+        LineFunction newLine = new(new (0, this.GetY(0)), new (1, this.GetY(1)));
+        if (this.c > 0)
+            newLine.c -= distance * this.distanceConstant;
+        else
+            newLine.c += distance * this.distanceConstant;
+        return newLine;
     }
 
     public bool Parallel(LineFunction line) {

@@ -67,8 +67,8 @@ public class Rectangle : IEquip
         LineFunction baseLine = GetLineWithLowestDistanceFromOrigin(baseStart);
         LineFunction heightLine = GetLineWithLowestDistanceFromOrigin(heightStart);
         
-        BaseLine = baseLine.NewFarLine(this.HalfHeight);
-        HeightLine = heightLine.NewFarLine(this.HalfBase);
+        BaseLine = baseLine.LineMoreCloseToOrigin(this.HalfHeight);
+        HeightLine = heightLine.LineMoreCloseToOrigin(this.HalfBase);
     }
 
     LineFunction GetLineWithLowestDistanceFromOrigin(int start)
