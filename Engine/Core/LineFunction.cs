@@ -14,6 +14,7 @@ public struct LineFunction {
     public double a;
     public double b;
     public double c;
+    double distanceConstant;
 
     public LineFunction(Coordinate coord1, Coordinate coord2) 
     {
@@ -21,8 +22,6 @@ public struct LineFunction {
         {
             this.horizontal = true;
             this.c = coord1.Y;
-            this.b = -this.c / coord1.Y;
-            this.a = 0;
         }
         else if (coord1.X == coord2.X) 
         {
@@ -34,18 +33,24 @@ public struct LineFunction {
             this.a = (coord2.Y - coord1.Y) / (coord2.X - coord1.X);
             this.c = coord1.Y - coord1.X * this.a;
             this.b = (-(coord1.X * this.a) - this.c) / coord1.Y;
+            this.distanceConstant = Math.Sqrt(Math.Pow(this.a, 2) + Math.Pow(this.b, 2));
         }
     }
 
     public double Distance(Coordinate coordinate) 
     {   
+        return Math.Abs(DistanceNotAbs(coordinate));
+    }
+
+    public double DistanceNotAbs(Coordinate coordinate) 
+    {   
         if (this.horizontal)
-            return Math.Abs(coordinate.Y - this.c);
+            return coordinate.Y - this.c;
         if (this.vertical)
-            return Math.Abs(coordinate.X - this.x);
-        return Math.Abs(this.a *  coordinate.X + this.b * coordinate.Y + this.c) 
+            return coordinate.X - this.x;
+        return (this.a *  coordinate.X + this.b * coordinate.Y + this.c) 
             / 
-            Math.Sqrt(Math.Pow(this.a, 2) + Math.Pow(this.b, 2));
+            this.distanceConstant;
     }
 
     public LineFunction NewFarLine(double distance) 
