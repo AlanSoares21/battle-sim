@@ -64,14 +64,14 @@ public class Rectangle : IEquip
             baseStart = 1;
             heightStart = 0;
         }
-        LineFunction baseLine = GetLineWithLowestDistanceFromOrigin(baseStart);
-        LineFunction heightLine = GetLineWithLowestDistanceFromOrigin(heightStart);
+        LineFunction baseLine = GetLineMoreFurtherFromOrigin(baseStart);
+        LineFunction heightLine = GetLineMoreFurtherFromOrigin(heightStart);
         
         BaseLine = baseLine.LineMoreCloseToOrigin(this.HalfHeight);
         HeightLine = heightLine.LineMoreCloseToOrigin(this.HalfBase);
     }
 
-    LineFunction GetLineWithLowestDistanceFromOrigin(int start)
+    LineFunction GetLineMoreFurtherFromOrigin(int start)
     {
         Coordinate origin = new(0, 0);
 
@@ -82,7 +82,7 @@ public class Rectangle : IEquip
             next = 0;
         LineFunction secondLine = new LineFunction(Coordinates[start + 2], Coordinates[next]); 
 
-        if (firstLine.Distance(origin) < secondLine.Distance(origin))
+        if (firstLine.Distance(origin) > secondLine.Distance(origin))
             return firstLine;
         return secondLine;
     }
