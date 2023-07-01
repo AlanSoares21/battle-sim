@@ -1,11 +1,17 @@
 # Battle Simulator
+Inicialmente, o propósito principal desse projeto era poder simular batalhas de um jogo específico e por isso o nome "Battle Simulator", porém, essa motivação foi abandonada com o tempo.
 
-Inicialmente, o propósito principal desse projeto era poder simular batalhas de um jogo específico e por isso o nome "Battle Simulator", porém, ao longo do desenvolvimento decidiu-se abandonar a inspiração.
+## Requirements
+- Docker
+- ... só isso mesmo.
 
-Um segundo motivo para esse projeto existir era possibilitar o estudo de, entre outras coisas, Testes Unitários em C#, essa motivação prevaleceu. Manter o código do backend 100% testado é um dos poucos objetivos atingidos.
 
+## Run
+Se você deseja rodar em sua máquina, clone o repositório e execute os scripts `build-server.sh` e `build-webclient.sh` para gerar as imagens do servidor e do cliente.
+Para configurar as variáveis de ambiente, execute:
+- `export JwtSecret=sua-secret-key`
+- `export ApiUrl=http://localhost:3002`
+- `export SiteUrl=http://localhost:3000`
 
-Mas afinal o que é esse projeto então?
-R: Hoje, consiste em um servidor que permite que dois usuários deem um passeio em um tabuleiro 8x8.
-
-É... não muito divertido, eu sei. Espero que com o tempo, adicione novas funcionalidades que façam os passeios do battlesim parecer mais com batalhas de fato.
+Para finalizar, execute os scripts `run-server.sh` e `run-webclient.sh`. 
+Obs: devido a um problema na forma como o WebClient é rodado você terá que esperar por um tempo antes de acessar http://localhhost:3000 e poder jogar no seu servidor local.
