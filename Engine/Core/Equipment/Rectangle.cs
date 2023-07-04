@@ -2,12 +2,7 @@ using System;
 
 namespace BattleSimulator.Engine.Equipment;
 
-public interface IEquip {
-    bool IsInner(Coordinate coord);
-    Coordinate? Intersect(Coordinate start, Coordinate end);
-}
-
-public class Rectangle : IEquip
+public class Rectangle : IEquipFormat
 {
     public double Height { get; private set; }
     public double HalfHeight { get; private set; }

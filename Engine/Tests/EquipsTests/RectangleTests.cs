@@ -108,7 +108,8 @@ public class RectangleTests
         Coordinate pointA = new(1,1), pointB = new(1,3),
         pointC = new(4,3), pointD = new(4,1);
 
-        IEquip rectangle = new Rectangle(new[] {pointA, pointB, pointC, pointD});
+        IEquipFormat rectangle = 
+            new Rectangle(new[] {pointA, pointB, pointC, pointD});
 
         Coordinate expected = new(expetedX, expetedY);
         Assert.AreEqual(expected, rectangle.Intersect(start, end));
@@ -128,7 +129,8 @@ public class RectangleTests
         Coordinate pointA = new(1,1), pointB = new(1,3),
         pointC = new(4,3), pointD = new(4,1);
 
-        IEquip rectangle = new Rectangle(new[] {pointA, pointB, pointC, pointD});
+        IEquipFormat rectangle = 
+            new Rectangle(new[] {pointA, pointB, pointC, pointD});
 
         Assert.IsNull(rectangle.Intersect(start, end));
     }
