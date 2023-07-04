@@ -27,6 +27,14 @@ public class Player : IEntity
     public IStateAttributes State { get; set; }
     public IOffensiveAttributes OffensiveStats { get; set; }
     public IDefensiveAttributes DefensiveStats { get; set; }
+
+    public void ApplyDamage(Coordinate damage)
+    {
+        this.State.CurrentHealth = new(
+            this.State.CurrentHealth.X + damage.X,
+            this.State.CurrentHealth.Y + damage.Y
+        );
+    }
 }
 
 class OffensiveStats : IOffensiveAttributes

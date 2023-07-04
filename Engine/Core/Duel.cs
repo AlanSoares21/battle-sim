@@ -99,27 +99,25 @@ public class Duel : IBattle
     void ExecuteAttack(string targetId, string attackerId) {
         (IEntity target, IEntity attacker) = GetEntities(targetId, attackerId);
         DealDamage(
-            attacker.OffensiveStats.Damage, 
-            target.DefensiveStats, 
-            target.State, 
+            attacker.OffensiveStats.Damage,
             attacker.OffensiveStats,
+            target, 
             attacker.Weapon.damageOnX,
             attacker.Weapon.damageOnY);
     }
 
     public void DealDamage(
         int damage, 
-        IDefensiveAttributes targetAttributes,
-        IStateAttributes targetState, 
         IOffensiveAttributes attackerAttributes,
+        IEntity target, 
         DamageDirection damageOnX,
         DamageDirection damageOnY) 
     {
         damage = Calc.Damage(
             damage, 
-            targetAttributes.DefenseAbsorption, 
+            target.DefensiveStats.DefenseAbsorption, 
             attackerAttributes, 
-            targetAttributes);
+            target.DefensiveStats);
         
         int xMul = 0;
         if (damageOnX == Equipment.DamageDirection.Positive)
@@ -133,9 +131,10 @@ public class Duel : IBattle
         else if (damageOnY == Equipment.DamageDirection.Negative)
             yMul = -1;
 
-        double newX = targetState.CurrentHealth.X + damage * xMul;
-        double newY = targetState.CurrentHealth.Y + damage * yMul;
-        targetState.CurrentHealth = new(newX, newY);
+        double newX = damage * xMul;
+        double newY = damage * yMul;
+        
+        target.ApplyDamage(new(newX, newY));
     }
 
     (IEntity target, IEntity attacker) GetEntities(string targetId, string attackerId) {

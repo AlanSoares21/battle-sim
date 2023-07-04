@@ -16,9 +16,8 @@ public abstract class CommomDamageSkill : ISkillBase
     {
         battle.DealDamage(
             skillDamage,
-            target.DefensiveStats,
-            target.State,
             source.OffensiveStats,
+            target,
             this.damageOnX,
             this.damageOnY
         );

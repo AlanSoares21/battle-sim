@@ -18,9 +18,8 @@ public interface IBattle
     void Attack(string targetId, string attackerId);
     void DealDamage(
         int damage, 
-        IDefensiveAttributes targetAttributes, 
-        IStateAttributes targetState,
         IOffensiveAttributes attackerAttributes,
+        IEntity target,
         DamageDirection damageOnX,
         DamageDirection damageOnY);
     bool CanAttack(string targetId, string attackerId);

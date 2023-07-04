@@ -75,7 +75,9 @@ public class CombatTests {
         int damage = 10;
         IEntity attacker = Utils.FakeEntity("attacker");
         DefineDamage(attacker, damage);
-        attacker.Weapon = new() { damageOnX = Equipment.DamageDirection.Negative };
+        attacker.Weapon = new() { 
+            damageOnX = Equipment.DamageDirection.Negative 
+        };
         IEntity target = Utils.FakeEntity("target");
         int health = 50;
         DefineHealth(target, health);
@@ -85,9 +87,9 @@ public class CombatTests {
         battle.AddEntity(target, new(1, 1));
         
         battle.Attack(target.Id, attacker.Id);
-        Coordinate expectedHealthAfterAttack = new(health - damage, health);
-        
-        Assert.AreEqual(expectedHealthAfterAttack, target.State.CurrentHealth);
+
+        A.CallTo(() => target.ApplyDamage(new (-damage, 0)))
+            .MustHaveHappenedOnceExactly();
     }
 
     void DefineDamage(IEntity entity, int value) {
@@ -96,6 +98,6 @@ public class CombatTests {
 
     void DefineHealth(IEntity entity, int value) {
         entity.State.HealthRadius = value;
-        entity.State.CurrentHealth = new(value, value);
+        entity.State.CurrentHealth = new(0, 0);
     }
 }
