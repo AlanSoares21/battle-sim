@@ -4,6 +4,7 @@ namespace BattleSimulator.Engine.Equipment;
 
 public interface IEquip {
     bool IsInner(Coordinate coord);
+    Coordinate? Intersect(Coordinate start, Coordinate end);
 }
 
 public class Rectangle : IEquip
@@ -95,4 +96,44 @@ public class Rectangle : IEquip
             return false;
         return true;
     }    
+
+    public Coordinate? Intersect(Coordinate start, Coordinate end)
+    {
+        double startEndDiffX = start.X - end.X;
+        double startEndDiffY = start.Y - end.Y;
+        for (int i = 0; i < 4; i++)
+        {
+            int next = i + 1;
+            if (next == Coordinates.Length)
+                next = 0;
+            double nextCurrentDiffX = Coordinates[next].X - Coordinates[i].X;
+            double nextCurrentDiffY = Coordinates[next].Y - Coordinates[i].Y;
+            
+            double startADiffX = start.X - Coordinates[i].X;
+            double startADiffY = start.Y - Coordinates[i].Y;
+            
+            double determinante =  
+                nextCurrentDiffX * startEndDiffY - startEndDiffX * nextCurrentDiffY;
+            double determinanteAlfa =  
+                startADiffX * startEndDiffY - startEndDiffX * startADiffY;
+            double determinanteBeta = 
+                nextCurrentDiffX * startADiffY - startADiffX * nextCurrentDiffY;
+            
+            var alfa = determinanteAlfa / determinante;
+            var beta = determinanteBeta / determinante;
+
+            if (1 >= alfa && alfa >= 0
+                &&
+                1 >= beta && beta >= 0)
+            {
+                return new Coordinate(
+                    Coordinates[i].X + alfa * nextCurrentDiffX,
+                    Coordinates[i].Y + alfa * nextCurrentDiffY
+                );
+            }
+        }
+        return null;
+    }
+
+
 }

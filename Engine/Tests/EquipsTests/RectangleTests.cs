@@ -91,4 +91,45 @@ public class RectangleTests
         
         Assert.IsFalse(rectangle.IsInner(new(x, y)));
     }
+
+    [TestMethod]
+    [DataRow(0,0, 5,5, 1,1)]
+    [DataRow(0,2, 3,2, 1,2)]
+    [DataRow(2,4, 2,2, 2,3)]
+    [DataRow(5,2, 3,2, 4,2)]
+    [DataRow(3,0, 3,2, 3,1)]
+    public void Return_Coordinate_If_The_Segment_Intersect_The_Rectangle(
+        int startX, int startY, int endX, int endY,
+        double expetedX, double expetedY
+    )
+    {
+        Coordinate start = new(startX, startY), end = new(endX, endY);
+        
+        Coordinate pointA = new(1,1), pointB = new(1,3),
+        pointC = new(4,3), pointD = new(4,1);
+
+        IEquip rectangle = new Rectangle(new[] {pointA, pointB, pointC, pointD});
+
+        Coordinate expected = new(expetedX, expetedY);
+        Assert.AreEqual(expected, rectangle.Intersect(start, end));
+    }
+
+    [TestMethod]
+    [DataRow(0,0, 0,5)]
+    [DataRow(0,4, 5,4)]
+    [DataRow(0,0, 5,0)]
+    [DataRow(5,0, 5,4)]
+    public void Return_Null_If_The_Segment_Dont_Intersect_The_Rectangle(
+        int startX, int startY, int endX, int endY
+    )
+    {
+        Coordinate start = new(startX, startY), end = new(endX, endY);
+        
+        Coordinate pointA = new(1,1), pointB = new(1,3),
+        pointC = new(4,3), pointD = new(4,1);
+
+        IEquip rectangle = new Rectangle(new[] {pointA, pointB, pointC, pointD});
+
+        Assert.IsNull(rectangle.Intersect(start, end));
+    }
 }
