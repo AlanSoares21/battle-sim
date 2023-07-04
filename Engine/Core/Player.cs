@@ -18,6 +18,7 @@ public class Player : IEntity
             damageOnX = DamageDirection.Positive,
             damageOnY = DamageDirection.Neutral
         };
+        Barriers = new();
     }
 
     public string Id { get; private set; }
@@ -28,12 +29,50 @@ public class Player : IEntity
     public IOffensiveAttributes OffensiveStats { get; set; }
     public IDefensiveAttributes DefensiveStats { get; set; }
 
+    List<IEquip> Barriers;
+
+    public void AddEquip(IEquip equip)
+    {
+        if (equip.Effect == EquipEffect.Barrier)
+            Barriers.Add(equip);
+    }
+
     public void ApplyDamage(Coordinate damage)
     {
-        this.State.CurrentHealth = new(
+        Coordinate newHealth = new (
             this.State.CurrentHealth.X + damage.X,
             this.State.CurrentHealth.Y + damage.Y
         );
+        foreach (var barrier in Barriers)
+        {
+            var limit = barrier
+                .Position.Intersect(State.CurrentHealth, newHealth);
+            if (limit is not null)
+            {
+                newHealth = limit.Value;
+                DecreaseDamageOn1(
+                    damage, 
+                    ref newHealth);
+                break;
+            }
+        }
+        this.State.CurrentHealth = newHealth;
+    }
+
+    void DecreaseDamageOn1(
+        Coordinate damage, 
+        ref Coordinate value)
+    {
+        if (damage.X != 0)
+            if (damage.X > 0)
+                value.X--;
+            else
+                value.X++;
+        if (damage.Y != 0)
+            if (damage.Y > 0)
+                value.Y--;
+            else
+                value.Y++;
     }
 }
 
