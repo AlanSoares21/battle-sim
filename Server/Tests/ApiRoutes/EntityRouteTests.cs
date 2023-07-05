@@ -24,13 +24,14 @@ public class EntityRouteTests
         EntityController controller = 
             new EntityController(
                 A.Fake<ILogger<EntityController>>(), 
-                db);
+                db
+            );
         
         SetUserAuthenticated(controller, username);
         var response = controller.Get() as ObjectResult;
         if (response is null)
             Assert.Fail("fail because response is null.");
-        Assert.AreEqual((int)HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.AreEqual((int)HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [TestMethod]
@@ -43,12 +44,36 @@ public class EntityRouteTests
         EntityController controller = 
             new EntityController(
                 A.Fake<ILogger<EntityController>>(), 
-                db);
+                db
+            );
         
         SetUserAuthenticated(controller, username);
         var response = controller.Get() as ObjectResult;
         if (response is null)
             Assert.Fail("fail because response is null.");
+        Assert.AreEqual((int)HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(entity, response.Value);
+    }
+
+    [TestMethod]
+    public void Update_Entity()
+    {
+        string username = "user";
+        Entity entity = CreateEntity(username);
+        IGameDb db = A.Fake<IGameDb>();
+        A.CallTo(() => db.SearchEntity(username)).Returns(entity);
+        EntityController controller = 
+            new EntityController(
+                A.Fake<ILogger<EntityController>>(), 
+                db
+            );
+        
+        SetUserAuthenticated(controller, username);
+        var response = controller.Update(entity) as ObjectResult;
+        if (response is null)
+            Assert.Fail("fail because response is null.");
+        A.CallTo(() => db.UpdateEntity(An<Entity>.Ignored))
+            .MustHaveHappenedOnceExactly();
         Assert.AreEqual((int)HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual(entity, response.Value);
     }
