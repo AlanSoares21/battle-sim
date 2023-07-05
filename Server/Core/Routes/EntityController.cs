@@ -13,12 +13,16 @@ public class EntityController : ControllerBase
     ILogger<EntityController> _logger;
     IGameDb _db;
 
+    IServerConfig _config;
+
     public EntityController(
         ILogger<EntityController> logger,
-        IGameDb gameDb)
+        IGameDb gameDb,
+        IServerConfig config)
     {
         _logger = logger;
         _db = gameDb;
+        _config = config;
     }
 
     [HttpGet]
@@ -33,9 +37,12 @@ public class EntityController : ControllerBase
         var result = _db.SearchEntity(User.Identity.Name);
         if (result is null)
         {
-            _logger.LogInformation("User {name} dont have a entity stored", 
+            _logger.LogInformation("User {name} dont have a entity stored.", 
                 User.Identity.Name);
-            return NotFound(new ApiError("You dont have an entity"));
+            result = _config.DefaultEntity(User.Identity.Name);
+            _logger.LogInformation("Creating entity for user {name}.", 
+                User.Identity.Name);
+            _db.AddEntity(result);
         }
         return Ok(result);
     }

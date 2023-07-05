@@ -16,22 +16,28 @@ namespace BattleSimulator.Server.Tests.ApiRoutes;
 public class EntityRouteTests
 {
     [TestMethod]
-    public void Return_Error_When_User_Dont_Have_Entity_Stored()
+    public void Register_A_Default_Entity_When_User_Dont_Have_Entity_Stored()
     {
         string username = "user";
         IGameDb db = A.Fake<IGameDb>();
         A.CallTo(() => db.SearchEntity(username)).Returns(null);
-        EntityController controller = 
-            new EntityController(
-                A.Fake<ILogger<EntityController>>(), 
-                db
-            );
+        IServerConfig config = A.Fake<IServerConfig>();
+        Entity defaultEntity = new() { Id = username };
+        A.CallTo(() => config.DefaultEntity(username))
+            .Returns(defaultEntity);
+        EntityController controller = CreateController(db, config);
         
         SetUserAuthenticated(controller, username);
         var response = controller.Get() as ObjectResult;
         if (response is null)
             Assert.Fail("fail because response is null.");
-        Assert.AreEqual((int)HttpStatusCode.NotFound, response.StatusCode);
+        
+        A.CallTo(() => config.DefaultEntity(username))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => db.AddEntity(defaultEntity))
+            .MustHaveHappenedOnceExactly();
+        Assert.AreEqual((int)HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(defaultEntity, response.Value);
     }
 
     [TestMethod]
@@ -41,11 +47,7 @@ public class EntityRouteTests
         Entity entity = CreateEntity(username);
         IGameDb db = A.Fake<IGameDb>();
         A.CallTo(() => db.SearchEntity(username)).Returns(entity);
-        EntityController controller = 
-            new EntityController(
-                A.Fake<ILogger<EntityController>>(), 
-                db
-            );
+        EntityController controller = CreateController(db);
         
         SetUserAuthenticated(controller, username);
         var response = controller.Get() as ObjectResult;
@@ -62,11 +64,7 @@ public class EntityRouteTests
         Entity entity = CreateEntity(username);
         IGameDb db = A.Fake<IGameDb>();
         A.CallTo(() => db.SearchEntity(username)).Returns(entity);
-        EntityController controller = 
-            new EntityController(
-                A.Fake<ILogger<EntityController>>(), 
-                db
-            );
+        EntityController controller = CreateController(db);
         
         SetUserAuthenticated(controller, username);
         var response = controller.Update(entity) as ObjectResult;
@@ -101,5 +99,16 @@ public class EntityRouteTests
         var controllerContext = new ControllerContext(actionContext);
         controller.ControllerContext = controllerContext;
     }
+    EntityController CreateController(IGameDb db) => 
+        CreateController(
+            db,
+            A.Fake<IServerConfig>()
+        );
+    EntityController CreateController(IGameDb db, IServerConfig config) => 
+        new EntityController(
+            A.Fake<ILogger<EntityController>>(), 
+            db,
+            config
+        );
 }
 
