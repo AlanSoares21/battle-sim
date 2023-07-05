@@ -62,7 +62,8 @@ public class BattleHandlerBuilder
             _Db, 
             _HubContext, 
             _ConnectionMapping,
-            _converter);
+            _converter,
+            A.Fake<ServerConfig>());
     }
 
     IGameDb FakeDb()

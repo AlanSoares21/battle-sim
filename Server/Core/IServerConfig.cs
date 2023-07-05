@@ -1,3 +1,5 @@
+using BattleSimulator.Server.Database.Models;
+
 namespace BattleSimulator.Server;
 
 public interface IServerConfig
@@ -9,4 +11,5 @@ public interface IServerConfig
     byte[] SecretKey  { get; }
     string  AllowedOrigin { get; }
     string? DbFilePath { get; }
+    Entity DefaultEntity(string id);
 }

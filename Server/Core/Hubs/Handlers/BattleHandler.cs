@@ -1,6 +1,7 @@
 using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Database;
+using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs.EventHandling;
 using BattleSimulator.Server.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -15,12 +16,14 @@ public class BattleHandler : IBattleHandler
     IGameDbConverter _converter;
     IHubContext<GameHub, IGameHubClient> _HubContext;
     IConnectionMapping _ConnMap;
+    IServerConfig _config;
     public BattleHandler(
         IBattleCollection battleCollection, 
         IGameDb gameDb,
         IHubContext<GameHub, IGameHubClient> hubContext,
         IConnectionMapping connectionMapping,
-        IGameDbConverter converter)
+        IGameDbConverter converter,
+        IServerConfig config)
     {
         _Calculator = new Calculator();
         _Battles = battleCollection;
@@ -28,6 +31,7 @@ public class BattleHandler : IBattleHandler
         _HubContext = hubContext;
         _ConnMap = connectionMapping;
         _converter = converter;
+        _config = config;
     }
 
     public async Task CreateDuel(string secondUser, CurrentCallerContext caller)
@@ -41,7 +45,10 @@ public class BattleHandler : IBattleHandler
             _Calculator,
             CreateObserver(caller.HubClients.Group(battleGroupName))
         );
-        AddUsersOnBattle(duel, caller.UserId, secondUser);
+        
+        Entity callerEntity = GetEntityOrDefault(caller.UserId), 
+        secondUserEntity = GetEntityOrDefault(secondUser);
+        AddUsersOnBattle(duel, callerEntity, secondUserEntity);
         _Battles.TryAdd(duel);
         
         var addingCallerInGroup = AddCallerInGroup(battleGroupName, caller);
@@ -49,8 +56,17 @@ public class BattleHandler : IBattleHandler
             battleGroupName, 
             _ConnMap.GetConnectionId(secondUser));
         await addingCallerInGroup;
+        List<Entity> entities = new() { callerEntity, secondUserEntity };
         await caller.HubClients.Group(battleGroupName)
-            .NewBattle(GetBattleData(duel));
+            .NewBattle(GetBattleData(duel, entities));
+    }
+
+    Entity GetEntityOrDefault(string id)
+    {
+        var entityOnDb = _Db.SearchEntity(id);
+        if (entityOnDb is null)
+            return _config.DefaultEntity(id);
+        return entityOnDb;
     }
 
     Task AddCallerInGroup(string groupName, CurrentCallerContext caller)
@@ -69,18 +85,10 @@ public class BattleHandler : IBattleHandler
         return observer;
     }
 
-    void AddUsersOnBattle(IBattle battle, params string[] usersIds)
+    void AddUsersOnBattle(IBattle battle, params Entity[] users)
     {
-        foreach(var id in usersIds) 
-            battle.AddEntity(GetEntityFor(id));
-    }
-
-    IEntity GetEntityFor(string id)
-    {
-        var r = _Db.SearchEntity(id);
-        if (r is null)
-            return _converter.DefaultEntity(id);
-        return _converter.Entity(r);
+        foreach(var user in users) 
+            battle.AddEntity(_converter.Entity(user));
     }
 
     Task AddUserInGroup(string groupName, string connectionId)
@@ -88,11 +96,11 @@ public class BattleHandler : IBattleHandler
         return _HubContext.Groups.AddToGroupAsync(connectionId, groupName);
     }
 
-    BattleData GetBattleData(IBattle battle) => 
+    BattleData GetBattleData(IBattle battle, List<Entity> entities) => 
         new BattleData() {
             id = battle.Id,
             board = GetBoardData(battle.Board),
-            entities = battle.Entities
+            entities = entities
         };
 
     BoardData GetBoardData(IBoard board) =>

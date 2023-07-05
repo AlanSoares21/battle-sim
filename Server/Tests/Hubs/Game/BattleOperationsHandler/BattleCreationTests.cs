@@ -157,7 +157,7 @@ public class BattleCreationTests
     {
         return A<BattleData>.That.Matches(b => 
             b.entities.Count > 0
-            && b.entities.All(e => entities.Contains(e)));
+            && b.entities.All(e => entities.Any(eg => e.Id == eg.Id)));
     }
 
     [TestMethod]
