@@ -11,4 +11,6 @@ public class Entity
     public double DefenseAbsorption { get; set; }
 
     public List<string> Skills { get; set; } = new();
+
+    public List<EntityEquip> Equips { get; set; } = new();
 }

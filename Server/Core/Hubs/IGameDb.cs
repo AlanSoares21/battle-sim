@@ -1,8 +1,8 @@
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Database.Models;
 
 namespace BattleSimulator.Server.Hubs;
 
 public interface IGameDb {
-    IEntity? SearchEntity(string entityId);
-    IEntity GetEntityFor(string entityId);
+    Entity? SearchEntity(string entityId);
 }

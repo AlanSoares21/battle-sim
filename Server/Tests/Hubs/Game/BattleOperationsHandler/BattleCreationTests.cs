@@ -42,11 +42,10 @@ public class BattleCreationTests
             UserId = caller.Id,
             HubClients = Utils.FakeHubCallerContext()
         };
-        var db = Utils.FakeDbWithEntities(caller, otherUser);
         var battleCollection = A.Fake<IBattleCollection>();
-
         IBattleHandler handler = new BattleHandlerBuilder()
-            .WithDb(db)
+            .WithDb(Utils.FakeDbWithEntities(caller.Id, otherUser.Id))
+            .WithConverter(Utils.FakeConverterWithEntities(caller, otherUser))
             .WithBattleCollection(battleCollection)
             .Build();
         await handler.CreateDuel(otherUser.Id, callerContext);
@@ -131,7 +130,6 @@ public class BattleCreationTests
     {
         IEntity caller = Utils.FakeEntity("callerId"); 
         IEntity otherUser = Utils.FakeEntity("otherUserId");
-        var db = Utils.FakeDbWithEntities(caller, otherUser);
         CurrentCallerContext callerContext = new() {
             UserId = caller.Id,
             HubClients = Utils.FakeHubCallerContext()
@@ -140,7 +138,8 @@ public class BattleCreationTests
         ReturnClientForGroupCall(callerContext.HubClients, client);
 
         IBattleHandler handler = new BattleHandlerBuilder()
-            .WithDb(db)
+            .WithDb(Utils.FakeDbWithEntities(caller.Id, otherUser.Id))
+            .WithConverter(Utils.FakeConverterWithEntities(caller, otherUser))
             .Build();
         await handler.CreateDuel(otherUser.Id, callerContext);
 
@@ -206,7 +205,8 @@ public class BattleCreationTests
         var battles = new BattleCollection();
 
         IBattleHandler battleHandler = new BattleHandlerBuilder()
-            .WithDb(Utils.FakeDbWithEntities(callerEntity))
+            .WithDb(Utils.FakeDbWithEntities(callerEntity.Id))
+            .WithConverter(Utils.FakeConverterWithEntities(callerEntity))
             .WithBattleCollection(battles)
             .Build();
         await battleHandler.CreateDuel("requesterEntityId", caller);

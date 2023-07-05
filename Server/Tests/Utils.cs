@@ -5,6 +5,7 @@ using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces.Skills;
 using BattleSimulator.Server.Tests.Builders;
 using BattleSimulator.Server.Models;
+using BattleSimulator.Server.Database.Models;
 
 namespace BattleSimulator.Server.Tests;
 
@@ -151,15 +152,33 @@ public static class Utils
         A.CallTo(() => collection.TryRemove(request)).Returns(true);
     }
 
-    public static IGameDb FakeDbWithEntities(params IEntity[] entities) {
+    public static IGameDb FakeDbWithEntities(params string[] entities) {
         IGameDb gameDb = A.Fake<IGameDb>();
         foreach (var entity in entities)
-        {
-            A.CallTo(() => gameDb.SearchEntity(entity.Id))
-                .Returns(entity);
-            A.CallTo(() => gameDb.GetEntityFor(entity.Id))
-                .Returns(entity);
-        }
+            A.CallTo(() => gameDb.SearchEntity(entity))
+                .Returns(NewDbEntity(entity));
         return gameDb;
+    }
+
+    public static Entity NewDbEntity(string id)
+    {
+        return new Entity() {
+            Id = id
+        };
+    }
+
+    public static IGameDbConverter FakeConverterWithEntities(
+        params IEntity[] entities) 
+    {
+        var converter = A.Fake<IGameDbConverter>();
+        foreach (var entity in entities)
+            A.CallTo(() => converter.Entity(EntityWithId(entity.Id)))
+                .Returns(entity);
+        return converter;
+    }
+
+    static Entity EntityWithId(string id)
+    {
+        return An<Entity>.That.Matches(e => e.Id == id);
     }
 }

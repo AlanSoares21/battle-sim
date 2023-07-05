@@ -1,4 +1,5 @@
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,6 +8,7 @@ namespace BattleSimulator.Server.Tests.Builders;
 public class BattleHandlerBuilder
 {
     IGameDb? _Db;
+    IGameDbConverter? _converter;
     IBattleCollection? _BattleCollection;
     IHubContext<GameHub, IGameHubClient>? _HubContext;
     IConnectionMapping? _ConnectionMapping;
@@ -20,6 +22,12 @@ public class BattleHandlerBuilder
     public BattleHandlerBuilder WithDb(IGameDb db)
     {
         _Db = db;
+        return this;
+    }
+
+    public BattleHandlerBuilder WithConverter(IGameDbConverter value)
+    {
+        _converter = value;
         return this;
     }
 
@@ -41,23 +49,42 @@ public class BattleHandlerBuilder
             _BattleCollection = A.Fake<IBattleCollection>();
         if (_Db is null)
             _Db = FakeDb();
+        if (_converter is null)
+            _converter = FakeConverter();
         if (_HubContext is null)
             _HubContext = A.Fake<IHubContext<GameHub, IGameHubClient>>();
         if (_ConnectionMapping is null)
             _ConnectionMapping = A.Fake<IConnectionMapping>();
 
-        return new BattleHandler(_BattleCollection, _Db, _HubContext, _ConnectionMapping);
+        return new BattleHandler(
+            _BattleCollection, 
+            _Db, 
+            _HubContext, 
+            _ConnectionMapping,
+            _converter);
     }
 
     IGameDb FakeDb()
     {
         var db = A.Fake<IGameDb>();
         A.CallTo(db)
+            .WithReturnType<Entity>()
+            .ReturnsNextFromSequence(
+                new Entity() { Id = "fakeEntity1" },
+                new Entity() { Id = "fakeEntity2" }
+            );
+        return db;
+    }
+
+    IGameDbConverter FakeConverter()
+    {
+        var converter = A.Fake<IGameDbConverter>();
+        A.CallTo(converter)
             .WithReturnType<IEntity>()
             .ReturnsNextFromSequence(
                 Utils.FakeEntity("fakeEntity1"),
                 Utils.FakeEntity("fakeEntity2")
             );
-        return db;
+        return converter;
     }
 }

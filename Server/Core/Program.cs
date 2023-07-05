@@ -15,6 +15,7 @@ builder.Services.AddControllers();
 
 // Database services
 builder.Services.AddScoped<IJsonSerializerWrapper, JsonSerializerWrapper>();
+builder.Services.AddSingleton<IGameDbConverter, GameDbConverter>();
 builder.Services.AddSingleton<IGameDb, GameDb>();
 
 // state

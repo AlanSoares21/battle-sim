@@ -11,19 +11,22 @@ public class BattleHandler : IBattleHandler
     ICalculator _Calculator;
     IBattleCollection _Battles;
     IGameDb _Db;
+    IGameDbConverter _converter;
     IHubContext<GameHub, IGameHubClient> _HubContext;
     IConnectionMapping _ConnMap;
     public BattleHandler(
         IBattleCollection battleCollection, 
         IGameDb gameDb,
         IHubContext<GameHub, IGameHubClient> hubContext,
-        IConnectionMapping connectionMapping)
+        IConnectionMapping connectionMapping,
+        IGameDbConverter converter)
     {
         _Calculator = new Calculator();
         _Battles = battleCollection;
         _Db = gameDb;
         _HubContext = hubContext;
         _ConnMap = connectionMapping;
+        _converter = converter;
     }
 
     public async Task CreateDuel(string secondUser, CurrentCallerContext caller)
@@ -68,7 +71,15 @@ public class BattleHandler : IBattleHandler
     void AddUsersOnBattle(IBattle battle, params string[] usersIds)
     {
         foreach(var id in usersIds) 
-            battle.AddEntity(_Db.GetEntityFor(id));
+            battle.AddEntity(GetEntityFor(id));
+    }
+
+    IEntity GetEntityFor(string id)
+    {
+        var r = _Db.SearchEntity(id);
+        if (r is null)
+            return _converter.DefaultEntity(id);
+        return _converter.Entity(r);
     }
 
     Task AddUserInGroup(string groupName, string connectionId)
