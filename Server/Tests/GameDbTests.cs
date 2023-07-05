@@ -80,6 +80,23 @@ public class GameDbTests
         EntitiesAreEqual(newEntity, dbEntity);
     }
 
+    [TestMethod]
+    public void Register_Entity()
+    {
+        var entity = Utils.NewDbEntity("entity");
+        entity.Damage = 10;
+        AddEquipToEntity(entity, DefaultEquips[0].Id);
+        IGameDb db = CreateDb(
+            SerializerWithDbStructre(new()), 
+            new SkillProvider()
+        );
+        db.AddEntity(entity);
+        var dbEntity = db.SearchEntity(entity.Id);
+        if (dbEntity is null)
+            Assert.Fail($"{entity.Id} not registered on db");
+        EntitiesAreEqual(entity, dbEntity);
+    }
+
     Equip[] DefaultEquips = new Equip[] 
     {
         new Equip() {

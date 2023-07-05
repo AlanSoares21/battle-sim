@@ -37,6 +37,11 @@ public class GameDb : IGameDb
         }
     }
 
+    public void AddEntity(Entity entity)
+    {
+        _entities.Add(entity);
+    }
+
     public List<Equip> GetEquips() => _equips;
 
     public Entity? SearchEntity(string entityId) =>_entities
