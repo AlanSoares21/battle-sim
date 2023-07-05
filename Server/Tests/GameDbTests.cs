@@ -16,8 +16,11 @@ public class GameDbTests
     public void Return_Entities_Correct() 
     {
         var entity = new Entity() { Id = "entityOne" };
-        List<Entity> entities = new() { entity };
-        var serializer = SerializerWithEntities(entity);
+        string equipId = DefaultEquips[0].Id;
+        AddEquipToEntity(entity, equipId);
+        DbStructure dbStructure = new();
+        AddEntitiesInDbStructure(dbStructure, entity);
+        var serializer = SerializerWithDbStructre(dbStructure);
         IGameDb gameDb = CreateDb(serializer);
         var result = gameDb.SearchEntity(entity.Id);
         A.CallTo(() => 
@@ -25,12 +28,33 @@ public class GameDbTests
             .MustHaveHappenedOnceExactly();
         Assert.IsNotNull(result);
         Assert.AreEqual(entity.Id, result.Id);
+        Assert.IsTrue(result.Equips.Exists(e => e.EquipId == equipId));
+    }
+    
+    [TestMethod]
+    public void Return_Equips_Correct() 
+    {
+        DbStructure dbStructure = new();
+        AddEquipsInDbStructure(dbStructure, DefaultEquips);
+        var serializer = SerializerWithDbStructre(dbStructure);
+        IGameDb gameDb = CreateDb(serializer);
+        var result = gameDb.GetEquips();
+        A.CallTo(() => 
+            serializer.DeserializeFile<DbStructure>(An<string>.Ignored))
+            .MustHaveHappenedOnceExactly();
+        Assert.IsNotNull(result);
+        Assert.IsTrue(DefaultEquips.All(e1 => 
+            result.Exists(e2 => e2.Id == e1.Id)));
+    }
+
+    void AddEquipsInDbStructure(DbStructure db, params Equip[] equips)
+    {
+        db.Equips = equips.ToList();
     }
 
     IGameDb CreateDb(IJsonSerializerWrapper serializer) => 
         CreateDb(serializer, A.Fake<ISkillProvider>());
 
-    // todo:: serializa e recupera equips corretamente
 
     [TestMethod]
     public void Update_Entity()
@@ -38,8 +62,10 @@ public class GameDbTests
         var firstEntity = Utils.NewDbEntity("entity");
         firstEntity.Damage = 10;
         AddEquipToEntity(firstEntity, DefaultEquips[0].Id);
+        DbStructure dbStructure = new();
+        AddEntitiesInDbStructure(dbStructure, firstEntity);
         IGameDb db = CreateDb(
-            SerializerWithEntities(firstEntity), 
+            SerializerWithDbStructre(dbStructure), 
             new SkillProvider()
         );
         var newEntity = Utils.NewDbEntity(firstEntity.Id);
@@ -82,20 +108,24 @@ public class GameDbTests
         Assert.IsTrue(first.Equips.All(e1 => 
             second.Equips.Any(e2 => e1.EquipId == e2.EquipId)));
     }
-    
-    IJsonSerializerWrapper SerializerWithEntities(
-        params Entity[] entities) 
+
+    void AddEntitiesInDbStructure(
+        DbStructure db, 
+        params Entity[] entities)
     {
-        DbStructure db = new();
-        db.Entities = entities.ToList();
-        db.Equips = DefaultEquips.ToList();
         foreach (var entity in entities)
         {
+            db.Entities.Add(entity);
             foreach (var equip in entity.Equips)
             {
                 db.EntitiesEquips.Add(equip);
             }
-        }
+        }   
+    }
+    
+    IJsonSerializerWrapper SerializerWithDbStructre(
+        DbStructure db) 
+    {
         var serializer = A.Fake<IJsonSerializerWrapper>();
         A.CallTo(() => 
             serializer.DeserializeFile<DbStructure>(An<string>.Ignored))
