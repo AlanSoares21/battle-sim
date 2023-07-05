@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Database;
 
 namespace BattleSimulator.Server.Tests.Builders;
 

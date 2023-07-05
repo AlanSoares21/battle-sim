@@ -1,4 +1,5 @@
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Database;
 using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;

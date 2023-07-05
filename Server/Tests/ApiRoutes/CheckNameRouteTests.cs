@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using BattleSimulator.Server.Models;
 
-namespace BattleSimulator.Server.Tests;
+namespace BattleSimulator.Server.Tests.ApiRoutes;
 
 [TestClass]
 public class CheckNameRouteTests

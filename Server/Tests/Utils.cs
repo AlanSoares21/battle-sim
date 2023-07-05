@@ -6,6 +6,7 @@ using BattleSimulator.Engine.Interfaces.Skills;
 using BattleSimulator.Server.Tests.Builders;
 using BattleSimulator.Server.Models;
 using BattleSimulator.Server.Database.Models;
+using BattleSimulator.Server.Database;
 
 namespace BattleSimulator.Server.Tests;
 

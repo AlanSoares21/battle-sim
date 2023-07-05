@@ -3,6 +3,7 @@ using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Models;
 using BattleSimulator.Server.Hubs.EventHandling;
+using BattleSimulator.Server.Database;
 
 namespace BattleSimulator.Server.Hubs;
 
