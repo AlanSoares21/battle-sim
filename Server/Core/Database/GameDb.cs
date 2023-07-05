@@ -35,4 +35,10 @@ public class GameDb : IGameDb
     public Entity? SearchEntity(string entityId) =>_entities
             .Where(e => e.Id == entityId)
             .SingleOrDefault();
+
+    public void UpdateEntity(Entity entity)
+    {
+        int index = _entities.FindIndex(e => e.Id == entity.Id);
+        _entities[index] = entity;
+    }
 }

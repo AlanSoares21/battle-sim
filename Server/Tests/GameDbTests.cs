@@ -30,12 +30,58 @@ public class GameDbTests
     IGameDb CreateDb(IJsonSerializerWrapper serializer) => 
         CreateDb(serializer, A.Fake<ISkillProvider>());
 
+    // todo:: serializa e recupera equips corretamente
+
+    [TestMethod]
+    public void Update_Entity()
+    {
+        var firstEntity = Utils.NewDbEntity("entity");
+        firstEntity.Damage = 10;
+        AddEquipToEntity(firstEntity, DefaultEquips[0].Id);
+        IGameDb db = CreateDb(
+            SerializerWithEntities(firstEntity), 
+            new SkillProvider()
+        );
+        var newEntity = Utils.NewDbEntity(firstEntity.Id);
+        newEntity.Damage = 11;
+        newEntity.HealthRadius = 3;
+        newEntity.DefenseAbsorption = 30;
+        AddEquipToEntity(firstEntity, DefaultEquips[1].Id);
+        db.UpdateEntity(newEntity);
+        var dbEntity = db.SearchEntity(firstEntity.Id);
+        if (dbEntity is null)
+            Assert.Fail($"{firstEntity.Id} not found on db");
+        EntitiesAreEqual(newEntity, dbEntity);
+    }
+
     Equip[] DefaultEquips = new Equip[] 
     {
         new Equip() {
             Id = "equip01"
+        },
+        new Equip() {
+            Id = "equip02"
         }
     };
+
+    void AddEquipToEntity(Entity entity, string equipId)
+    {
+        entity.Equips.Add(new EntityEquip() {
+            EntityId = entity.Id,
+            EquipId = equipId
+        });
+    }
+
+    void EntitiesAreEqual(Entity first, Entity second)
+    {
+        Assert.AreEqual(first.Id, second.Id);
+        Assert.AreEqual(first.HealthRadius, second.HealthRadius);
+        Assert.AreEqual(first.Damage, second.Damage);
+        Assert.AreEqual(first.DefenseAbsorption, second.DefenseAbsorption);
+        Assert.IsTrue(first.Skills.All(s => second.Skills.Contains(s)));
+        Assert.IsTrue(first.Equips.All(e1 => 
+            second.Equips.Any(e2 => e1.EquipId == e2.EquipId)));
+    }
     
     IJsonSerializerWrapper SerializerWithEntities(
         params Entity[] entities) 
@@ -65,4 +111,5 @@ public class GameDbTests
             A.Fake<IServerConfig>(), 
             skillProvider, 
             A.Fake<ILogger<GameDb>>());
+
 }
