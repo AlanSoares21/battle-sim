@@ -48,6 +48,8 @@ public class GameDb : IGameDb
             .Where(e => e.Id == entityId)
             .SingleOrDefault();
 
+    public Equip? SearchEquip(string id) => _equips.Find(e => e.Id == id);
+
     public void UpdateEntity(Entity entity)
     {
         int index = _entities.FindIndex(e => e.Id == entity.Id);

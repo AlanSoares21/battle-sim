@@ -80,6 +80,20 @@ public class GameDbTests
         EntitiesAreEqual(newEntity, dbEntity);
     }
 
+    void AddEntitiesInDbStructure(
+        DbStructure db, 
+        params Entity[] entities)
+    {
+        foreach (var entity in entities)
+        {
+            db.Entities.Add(entity);
+            foreach (var equip in entity.Equips)
+            {
+                db.EntitiesEquips.Add(equip);
+            }
+        }   
+    }
+
     [TestMethod]
     public void Register_Entity()
     {
@@ -126,18 +140,31 @@ public class GameDbTests
             second.Equips.Any(e2 => e1.EquipId == e2.EquipId)));
     }
 
-    void AddEntitiesInDbStructure(
-        DbStructure db, 
-        params Entity[] entities)
+    [TestMethod]
+    public void Return_Equip_On_Searching_By_Id()
     {
-        foreach (var entity in entities)
-        {
-            db.Entities.Add(entity);
-            foreach (var equip in entity.Equips)
-            {
-                db.EntitiesEquips.Add(equip);
-            }
-        }   
+        DbStructure dbStructure = new() {
+            Equips = DefaultEquips.ToList()
+        };
+        IGameDb db = CreateDb(
+            SerializerWithDbStructre(dbStructure), 
+            new SkillProvider()
+        );
+        var dbEquip = db.SearchEquip(DefaultEquips[0].Id);
+        if (dbEquip is null)
+            Assert.Fail($"{DefaultEquips[0].Id} not registered on db");
+        Assert.AreEqual(DefaultEquips[0], dbEquip);
+    }
+
+    [TestMethod]
+    public void Return_Null_When_Searching_An_Equip_That_Dont_Exists()
+    {
+        IGameDb db = CreateDb(
+            SerializerWithDbStructre(new()), 
+            new SkillProvider()
+        );
+        var dbEquip = db.SearchEquip("thisEquipDontExists");
+        Assert.IsNull(dbEquip);
     }
     
     IJsonSerializerWrapper SerializerWithDbStructre(
