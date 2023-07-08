@@ -1,4 +1,5 @@
 using BattleSimulator.Engine;
+using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 using BattleSimulator.Engine.Interfaces.Skills;
@@ -62,56 +63,62 @@ public class ConverterTests
     }
 
     [TestMethod]
-    public void Return_Default_Entity()
+    public void Throw_Exception_When_Try_Convert_Equip_That_Dont_Exists() 
     {
-        IGameDbConverter converter = CreateConverter(
-            new SkillProvider());
-        var entity = converter.DefaultEntity("someEntityId");
-        EntityIsDefault(entity);
-    }
-
-    void EntityIsDefault(IEntity entity)
-    {
-        OffensiveAttributesAreDefault(entity.OffensiveStats);
-        DefensiveAttributesAreDefault(entity.DefensiveStats);
-        StateAttributesAreDefault(entity.State);
-        IsTheDefaultSkillSet(entity.Skills);
-    }
-
-    void OffensiveAttributesAreDefault(IOffensiveAttributes attributes) 
-    {
-        Assert.AreEqual(10, attributes.Damage);
-    }
-
-    void DefensiveAttributesAreDefault(IDefensiveAttributes attributes) 
-    {
-        Assert.AreEqual(0.1, attributes.DefenseAbsorption);
-    }
-
-    void StateAttributesAreDefault(IStateAttributes attributes) 
-    {
-        Assert.IsTrue(new Coordinate(0,0).IsEqual(attributes.CurrentHealth));
-        Assert.AreEqual(25, attributes.HealthRadius);
-    }
-
-    void IsTheDefaultSkillSet(List<ISkillBase> skillsSet)
-    {
-        List<string> defaultSkills = GameDbConverter.DefaultSkills;
-        Assert.AreEqual(defaultSkills.Count, skillsSet.Count, 
-            $"Expect {defaultSkills.Count} skills, but the entity has {skillsSet.Count} skills.");
-        bool[] skillIsPresent = new bool[defaultSkills.Count];
-        foreach (var skill in skillsSet)
-        {
-            for (int i = 0; i < defaultSkills.Count; i++)
-            {
-                if (skill.Name == defaultSkills[i])
-                    skillIsPresent[i] = true;
+        string equipId = Utils.DefaultEquips[1].Id;
+        var equip = new EntityEquip() {
+            EquipId = equipId,
+            Coordinates = new() {
+                new(0, 1),
+                new(0,2),
+                new(4,2),
+                new(4,1)
             }
-        }
-        for (int i = 0; i < skillIsPresent.Length; i++)
-            Assert.IsTrue(skillIsPresent[i], $"Skill {defaultSkills[i]} is missing.");    
+        };
+        IGameDb db = A.Fake<IGameDb>();
+        A.CallTo(() => db.SearchEquip(equipId))
+            .Returns(null);
+        IGameDbConverter converter = CreateConverter(db);
+        Assert.ThrowsException<Exception>(() => converter.Equip(equip));
     }
 
+    [TestMethod]
+    public void Convert_Equip() 
+    {
+        Equip equip = Utils.DefaultEquips[1];
+        var entityEquip = new EntityEquip() {
+            EquipId = equip.Id,
+            Coordinates = new() {
+                new(0,1),
+                new(0,2),
+                new(4,2),
+                new(4,1)
+            }
+        };
+        IGameDb db = A.Fake<IGameDb>();
+        A.CallTo(() => db.SearchEquip(equip.Id))
+            .Returns(Utils.DefaultEquips[1]);
+        IGameDbConverter converter = CreateConverter(db);
+        var gameEquip = converter.Equip(entityEquip);
+        A.CallTo(() => db.SearchEquip(equip.Id))
+            .MustHaveHappenedOnceExactly();
+        Assert.AreEqual(equip.Effect, gameEquip.Effect);
+        Assert.AreEqual(entityEquip.Coordinates.Count, 
+            gameEquip.Position.Coordinates.Length);
+        for (int i = 0; i < entityEquip.Coordinates.Count; i++)
+        {
+            Assert.AreEqual(
+                entityEquip.Coordinates[i], 
+                gameEquip.Position.Coordinates[i], 
+                $"cordinate {entityEquip.Coordinates[i]} is not equal to {gameEquip.Position.Coordinates[i]} in position {i}");
+        }
+    }
+
+    IGameDbConverter CreateConverter(IGameDb db) =>
+        new GameDbConverter(
+            A.Fake<ISkillProvider>(), 
+            A.Fake<ILogger<GameDbConverter>>(),
+            db);
 
     IGameDbConverter CreateConverter() =>
         CreateConverter(A.Fake<ISkillProvider>());
@@ -119,5 +126,6 @@ public class ConverterTests
     IGameDbConverter CreateConverter(ISkillProvider provider) =>
         new GameDbConverter(
             provider, 
-            A.Fake<ILogger<GameDbConverter>>());
+            A.Fake<ILogger<GameDbConverter>>(),
+            A.Fake<IGameDb>());
 }

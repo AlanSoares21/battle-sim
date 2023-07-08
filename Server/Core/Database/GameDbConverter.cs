@@ -1,4 +1,6 @@
 using BattleSimulator.Engine;
+using BattleSimulator.Engine.Equipment;
+using BattleSimulator.Engine.Equipment.Armor;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs;
@@ -15,12 +17,15 @@ public class GameDbConverter : IGameDbConverter
     };
     ISkillProvider _skillProvider;
     ILogger<GameDbConverter> _logger;
+    IGameDb _db;
     public GameDbConverter(
         ISkillProvider provider,
-        ILogger<GameDbConverter> logger)
+        ILogger<GameDbConverter> logger,
+        IGameDb db)
     {
         _skillProvider = provider;
         _logger = logger;
+        _db = db;
     }
     public IEntity DefaultEntity(string entityId)
     {
@@ -48,5 +53,18 @@ public class GameDbConverter : IGameDbConverter
             else
                 _logger.LogWarning("Skill {skill} not found. Player: {player}", skill, player.Id);
         }
+    }
+
+    public IEquip Equip(EntityEquip entityEquip)
+    {
+        Equip? equipDefinition = _db.SearchEquip(entityEquip.EquipId);
+        if (equipDefinition is null)
+            throw new Exception($"Equip {entityEquip.EquipId} not found.");
+        return new CommomBarrierEquip(GetEquipFormat(entityEquip.Coordinates));
+    }
+
+    IEquipFormat GetEquipFormat(List<Coordinate> coordinates)
+    {
+        return new Rectangle(coordinates.ToArray());
     }
 }

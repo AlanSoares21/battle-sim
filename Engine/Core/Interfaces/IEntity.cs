@@ -10,6 +10,7 @@ public interface IEntity
     string Id { get; }
     void ApplyDamage(Coordinate damage);
     void AddEquip(IEquip equip);
+    List<IEquip> Equips { get; }
     List<ISkillBase> Skills { get; }
     Weapon Weapon { get; set; }
     IStateAttributes State { get; set; }

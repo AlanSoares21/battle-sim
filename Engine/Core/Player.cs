@@ -29,6 +29,8 @@ public class Player : IEntity
     public IOffensiveAttributes OffensiveStats { get; set; }
     public IDefensiveAttributes DefensiveStats { get; set; }
 
+    public List<IEquip> Equips => Barriers;
+
     List<IEquip> Barriers;
 
     public void AddEquip(IEquip equip)

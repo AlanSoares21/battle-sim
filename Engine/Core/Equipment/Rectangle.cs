@@ -8,7 +8,7 @@ public class Rectangle : IEquipFormat
     public double HalfHeight { get; private set; }
     public double Base { get; private set; }
     public double HalfBase { get; private set; }
-    public Coordinate[] Coordinates = new Coordinate[4];
+    public Coordinate[] Coordinates { get; private set; } = new Coordinate[4];
     LineFunction BaseLine, HeightLine;
 
     public Rectangle(Coordinate[] coordinates) 

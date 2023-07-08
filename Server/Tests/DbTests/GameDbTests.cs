@@ -7,7 +7,7 @@ using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs;
 using Microsoft.Extensions.Logging;
 
-namespace BattleSimulator.Server.Tests;
+namespace BattleSimulator.Server.Tests.DbTests;
 
 [TestClass]
 public class GameDbTests
@@ -16,7 +16,7 @@ public class GameDbTests
     public void Return_Entities_Correct() 
     {
         var entity = new Entity() { Id = "entityOne" };
-        string equipId = DefaultEquips[0].Id;
+        string equipId = Utils.DefaultEquips[0].Id;
         AddEquipToEntity(entity, equipId);
         DbStructure dbStructure = new();
         AddEntitiesInDbStructure(dbStructure, entity);
@@ -35,7 +35,7 @@ public class GameDbTests
     public void Return_Equips_Correct() 
     {
         DbStructure dbStructure = new();
-        AddEquipsInDbStructure(dbStructure, DefaultEquips);
+        AddEquipsInDbStructure(dbStructure, Utils.DefaultEquips);
         var serializer = SerializerWithDbStructre(dbStructure);
         IGameDb gameDb = CreateDb(serializer);
         var result = gameDb.GetEquips();
@@ -43,7 +43,7 @@ public class GameDbTests
             serializer.DeserializeFile<DbStructure>(An<string>.Ignored))
             .MustHaveHappenedOnceExactly();
         Assert.IsNotNull(result);
-        Assert.IsTrue(DefaultEquips.All(e1 => 
+        Assert.IsTrue(Utils.DefaultEquips.All(e1 => 
             result.Exists(e2 => e2.Id == e1.Id)));
     }
 
@@ -61,7 +61,7 @@ public class GameDbTests
     {
         var firstEntity = Utils.NewDbEntity("entity");
         firstEntity.Damage = 10;
-        AddEquipToEntity(firstEntity, DefaultEquips[0].Id);
+        AddEquipToEntity(firstEntity, Utils.DefaultEquips[0].Id);
         DbStructure dbStructure = new();
         AddEntitiesInDbStructure(dbStructure, firstEntity);
         IGameDb db = CreateDb(
@@ -72,7 +72,7 @@ public class GameDbTests
         newEntity.Damage = 11;
         newEntity.HealthRadius = 3;
         newEntity.DefenseAbsorption = 30;
-        AddEquipToEntity(firstEntity, DefaultEquips[1].Id);
+        AddEquipToEntity(firstEntity, Utils.DefaultEquips[1].Id);
         db.UpdateEntity(newEntity);
         var dbEntity = db.SearchEntity(firstEntity.Id);
         if (dbEntity is null)
@@ -99,7 +99,7 @@ public class GameDbTests
     {
         var entity = Utils.NewDbEntity("entity");
         entity.Damage = 10;
-        AddEquipToEntity(entity, DefaultEquips[0].Id);
+        AddEquipToEntity(entity, Utils.DefaultEquips[0].Id);
         IGameDb db = CreateDb(
             SerializerWithDbStructre(new()), 
             new SkillProvider()
@@ -110,16 +110,6 @@ public class GameDbTests
             Assert.Fail($"{entity.Id} not registered on db");
         EntitiesAreEqual(entity, dbEntity);
     }
-
-    Equip[] DefaultEquips = new Equip[] 
-    {
-        new Equip() {
-            Id = "equip01"
-        },
-        new Equip() {
-            Id = "equip02"
-        }
-    };
 
     void AddEquipToEntity(Entity entity, string equipId)
     {
@@ -144,16 +134,16 @@ public class GameDbTests
     public void Return_Equip_On_Searching_By_Id()
     {
         DbStructure dbStructure = new() {
-            Equips = DefaultEquips.ToList()
+            Equips = Utils.DefaultEquips.ToList()
         };
         IGameDb db = CreateDb(
             SerializerWithDbStructre(dbStructure), 
             new SkillProvider()
         );
-        var dbEquip = db.SearchEquip(DefaultEquips[0].Id);
+        var dbEquip = db.SearchEquip(Utils.DefaultEquips[0].Id);
         if (dbEquip is null)
-            Assert.Fail($"{DefaultEquips[0].Id} not registered on db");
-        Assert.AreEqual(DefaultEquips[0], dbEquip);
+            Assert.Fail($"{Utils.DefaultEquips[0].Id} not registered on db");
+        Assert.AreEqual(Utils.DefaultEquips[0], dbEquip);
     }
 
     [TestMethod]
