@@ -45,6 +45,29 @@ public class AuthService: IAuthService
         return (accessToken, refreshToken);
     }
 
+    private static string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+    public async Task<string> NewAccessToken(string username, string refreshToken)
+    {
+        var json = await _cache.GetStringAsync(username);
+        if (json is null || json.Length == 0)
+            throw new KeyNotFoundException($"Not found key {username} in the cache");
+        var user = JsonSerializer.Deserialize<UserAuthenticated>(json);
+        if (user is null)
+            throw new Exception($"On deserializing cache entry returned an null reference. cache entry: {json}. username: {username}");
+        if (user.RefreshToken != refreshToken)
+            throw new Exception($"refresh token {user.RefreshToken} registered to user {username} is different than {refreshToken}");
+        if (user.RefreshTokenExpiryTime < DateTime.UtcNow)
+            throw new SecurityTokenExpiredException($"refresh token to user {username} expired {user.RefreshTokenExpiryTime}");
+        return GenerateJwtToken(username);
+    }
+
     string GenerateJwtToken(string username)
     {
         var claims = new Claim[] { 
@@ -66,13 +89,4 @@ public class AuthService: IAuthService
         new SymmetricSecurityKey(_serverConfig.SecretKey), 
         SecurityAlgorithms.HmacSha256Signature
     );
-
-    private static string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
-
 }

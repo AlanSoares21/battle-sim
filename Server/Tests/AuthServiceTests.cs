@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BattleSimulator.Server.Tests;
 
@@ -59,8 +60,7 @@ public class AuthServiceTests
         IServerConfig serverConfig = FakeServerConfig();
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
         var (jwtToken, _) = await authService.GenerateTokens(username);
-        var tokenHandler = new JwtSecurityTokenHandler();
-        Assert.IsTrue(tokenHandler.CanReadToken(jwtToken));
+        JwtTokenCanBeRead(jwtToken);
     }
 
     [TestMethod]
@@ -106,6 +106,91 @@ public class AuthServiceTests
             tokens.refreshToken, 
             $"The refresh token stored in the cahce is different than the token returned from the method. cache: {register.RefreshToken} - returned: {tokens.refreshToken}"
         );
+    }
+
+    [TestMethod]
+    public async Task Throw_Exception_When_Try_Get_New_Access_Token_To_An_Unregistered_User()
+    {
+        string unregisteredUsername = "unregistered";
+        var authService = CreateAuthServiceWithCache(
+            A.Fake<IDistributedCache>()
+        );
+        await Assert.ThrowsExceptionAsync<KeyNotFoundException>(() =>
+            authService.NewAccessToken(unregisteredUsername, "")
+        );
+    }
+
+    [TestMethod]
+    public async Task Throw_Exception_When_Try_Get_New_Access_Token_To_An_Unregistered_Refresh_Token()
+    {
+        string registeredUsername = "registered";
+        var cache = CreateCache();
+        string cacheEntry = JsonSerializer.Serialize(
+            new UserAuthenticated() {
+                Id = registeredUsername,
+                RefreshToken = "registered_refresh_token",
+                RefreshTokenExpiryTime = DateTime.MaxValue
+            }
+        );
+        cache.SetString(registeredUsername, cacheEntry);
+        var authService = CreateAuthServiceWithCache(cache);
+        await Assert.ThrowsExceptionAsync<Exception>(() =>
+            authService.NewAccessToken(
+                registeredUsername, 
+                "unregistered_refresh_token"
+            )
+        );
+    }
+
+    [TestMethod]
+    public async Task Throw_Exception_When_Try_Get_New_Access_Token_With_An_Expired_Refresh_Token()
+    {
+
+        string username = "registered";
+        string refreshToken = "registered_refresh_token";
+        var cache = CreateCache();
+        string cacheEntry = JsonSerializer.Serialize(
+            new UserAuthenticated() {
+                Id = username,
+                RefreshToken = refreshToken,
+                RefreshTokenExpiryTime = DateTime.MinValue
+            }
+        );
+        cache.SetString(username, cacheEntry);
+        var authService = CreateAuthServiceWithCache(cache);
+        await Assert.ThrowsExceptionAsync<SecurityTokenExpiredException>(() =>
+            authService.NewAccessToken(
+                username, 
+                refreshToken
+            )
+        );
+    }
+
+    [TestMethod]
+    public async Task Return_New_Access_Token()
+    {
+
+        string username = "registered";
+        string refreshToken = "registered_refresh_token";
+        var cache = CreateCache();
+        string cacheEntry = JsonSerializer.Serialize(
+            new UserAuthenticated() {
+                Id = username,
+                RefreshToken = refreshToken,
+                RefreshTokenExpiryTime = DateTime.MaxValue
+            }
+        );
+        cache.SetString(username, cacheEntry);
+        var authService = CreateAuthServiceWithCache(cache);
+        string newToken = 
+            await authService.NewAccessToken(username, refreshToken);
+        JwtTokenCanBeRead(newToken);
+    }
+
+    void JwtTokenCanBeRead(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        Assert.IsTrue(tokenHandler.CanReadToken(token));
     }
 
     IDistributedCache CreateCache()
