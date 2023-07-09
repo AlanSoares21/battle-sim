@@ -30,28 +30,23 @@ public class AuthService: IAuthService
         .UsersIds()
         .Any(name => name == username);
 
-    public async Task<(string accessToken, string refreshToken)> GenerateTokens(
-        string username
-    )
+    public string CreateRefreshToken()
     {
-        var accessToken = GetAccessToken(username);
-        string refreshToken = GenerateRefreshToken();
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    public async Task StoreRefreshToken(string username, string refreshToken)
+    {
         UserAuthenticated user = new() {
             Id = username,
             RefreshToken = refreshToken,
             RefreshTokenExpiryTime = DateTime.Now.AddHours(1)
         };
         await _cache.SetStringAsync(user.Id, JsonSerializer.Serialize(user));
-        return (accessToken, refreshToken);
     }
-
-    private static string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
 
     public async Task<string> NewAccessToken(string username, string refreshToken)
     {
@@ -65,10 +60,21 @@ public class AuthService: IAuthService
             throw new Exception($"refresh token {user.RefreshToken} registered to user {username} is different than {refreshToken}");
         if (user.RefreshTokenExpiryTime < DateTime.UtcNow)
             throw new SecurityTokenExpiredException($"refresh token to user {username} expired {user.RefreshTokenExpiryTime}");
-        return GetAccessToken(username);
+        return CreateAccessToken(username);
     }
 
-    public string GetAccessToken(string username)
+    public async Task<UserAuthenticated> GetUserAuthenticated(string username)
+    {
+        var json = await _cache.GetStringAsync(username);
+        if (json is null || json.Length == 0)
+            throw new KeyNotFoundException($"Not found key {username} in the cache");
+        var user = JsonSerializer.Deserialize<UserAuthenticated>(json);
+        if (user is null)
+            throw new Exception($"On deserializing cache entry returned an null reference. cache entry: {json}. username: {username}");
+        return user;
+    }
+
+    public string CreateAccessToken(string username)
     {
         var claims = new Claim[] { 
             new(_serverConfig.ClaimTypeName, username) 

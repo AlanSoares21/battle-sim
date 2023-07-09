@@ -5,8 +5,9 @@ namespace BattleSimulator.Server.Auth;
 public interface IAuthService
 {
     bool NameIsBeingUsed(string username);
-    Task<(string accessToken, string refreshToken)> GenerateTokens(string username);
-    string GetAccessToken(string username);
+    string CreateAccessToken(string username);
+    string CreateRefreshToken();
+    Task StoreRefreshToken(string username, string refreshToken);
     string GetUsernameFromAccessToken(string accessToken);
-    Task<string> NewAccessToken(string username, string refreshToken);
+    Task<UserAuthenticated> GetUserAuthenticated(string username);
 }

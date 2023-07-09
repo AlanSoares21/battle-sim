@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using BattleSimulator.Server.Auth;
 using BattleSimulator.Server.Hubs;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -41,12 +40,12 @@ public class AuthServiceTests
     }
 
     [TestMethod]
-    public async Task The_Server_Config_Is_Being_Used() 
+    public void The_Server_Config_Is_Being_Used_To_Create_Access_Tokens() 
     {
         const string username = "username";
         IServerConfig serverConfig = FakeServerConfig();
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        await authService.GenerateTokens(username);
+        authService.CreateAccessToken(username);
         A.CallTo(() => serverConfig.Audience).MustHaveHappenedOnceOrMore();
         A.CallTo(() => serverConfig.ClaimTypeName).MustHaveHappenedOnceOrMore();
         A.CallTo(() => serverConfig.Issuer).MustHaveHappenedOnceOrMore();
@@ -55,24 +54,24 @@ public class AuthServiceTests
     }
 
     [TestMethod]
-    public async Task Generate_Valid_JWT_Token() 
+    public void Generate_Valid_JWT_Token() 
     {
         const string username = "username";
         IServerConfig serverConfig = FakeServerConfig();
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        var (jwtToken, _) = await authService.GenerateTokens(username);
+        var jwtToken = authService.CreateAccessToken(username);
         JwtTokenCanBeRead(jwtToken);
     }
 
     [TestMethod]
-    public async Task Generate_JWT_Token_With_The_ClaimIndentity_Of_Server_Config() 
+    public void Generate_JWT_Token_With_The_ClaimIndentity_Of_Server_Config() 
     {
         const string username = "username";
         IServerConfig serverConfig = FakeServerConfig();
         string claimTypeName = "SomeValuToClaimTypeName";
         A.CallTo(() => serverConfig.ClaimTypeName).Returns(claimTypeName);
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        var (jwtToken, _) = await authService.GenerateTokens(username);
+        var jwtToken = authService.CreateAccessToken(username);
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtTokenData = tokenHandler.ReadJwtToken(jwtToken);
         Assert.IsTrue(
@@ -81,21 +80,14 @@ public class AuthServiceTests
         );
     }
 
-    IAuthService CreateAuthServiceWithThisServerConfig(IServerConfig serverConfig) {
-        IGameHubState gameHubState = A.Fake<IGameHubState>();
-        return new AuthService(
-            serverConfig, 
-            gameHubState, 
-            A.Fake<IDistributedCache>());
-    }
-
     [TestMethod]
     public async Task Register_Refresh_Token_On_Cache()
     {
         const string username = "username";
+        const string refreshToken = "some_refresh_token";
         var cache = CreateCache();
         var authService = CreateAuthServiceWithCache(cache);
-        var tokens = await authService.GenerateTokens(username);
+        await authService.StoreRefreshToken(username, refreshToken);
         var jsonRegister = cache.GetString(username);
         Assert.IsNotNull(jsonRegister, "cache dont have a register with username as key");
         var register = JsonSerializer
@@ -103,9 +95,9 @@ public class AuthServiceTests
         Assert.IsNotNull(register, $"The json information stored in the cache dont match the model. {jsonRegister}");
         Assert.IsNotNull(register.RefreshToken, "The refresh token stored in the cache is null");
         Assert.AreEqual(
+            refreshToken, 
             register.RefreshToken, 
-            tokens.refreshToken, 
-            $"The refresh token stored in the cahce is different than the token returned from the method. cache: {register.RefreshToken} - returned: {tokens.refreshToken}"
+            $"The refresh token stored in the cahce is different than the token used. cache: {register.RefreshToken} - original token: {refreshToken}"
         );
     }
 
@@ -117,75 +109,8 @@ public class AuthServiceTests
             A.Fake<IDistributedCache>()
         );
         await Assert.ThrowsExceptionAsync<KeyNotFoundException>(() =>
-            authService.NewAccessToken(unregisteredUsername, "")
+            authService.GetUserAuthenticated(unregisteredUsername)
         );
-    }
-
-    [TestMethod]
-    public async Task Throw_Exception_When_Try_Get_New_Access_Token_To_An_Unregistered_Refresh_Token()
-    {
-        string registeredUsername = "registered";
-        var cache = CreateCache();
-        string cacheEntry = JsonSerializer.Serialize(
-            new UserAuthenticated() {
-                Id = registeredUsername,
-                RefreshToken = "registered_refresh_token",
-                RefreshTokenExpiryTime = DateTime.MaxValue
-            }
-        );
-        cache.SetString(registeredUsername, cacheEntry);
-        var authService = CreateAuthServiceWithCache(cache);
-        await Assert.ThrowsExceptionAsync<Exception>(() =>
-            authService.NewAccessToken(
-                registeredUsername, 
-                "unregistered_refresh_token"
-            )
-        );
-    }
-
-    [TestMethod]
-    public async Task Throw_Exception_When_Try_Get_New_Access_Token_With_An_Expired_Refresh_Token()
-    {
-
-        string username = "registered";
-        string refreshToken = "registered_refresh_token";
-        var cache = CreateCache();
-        string cacheEntry = JsonSerializer.Serialize(
-            new UserAuthenticated() {
-                Id = username,
-                RefreshToken = refreshToken,
-                RefreshTokenExpiryTime = DateTime.MinValue
-            }
-        );
-        cache.SetString(username, cacheEntry);
-        var authService = CreateAuthServiceWithCache(cache);
-        await Assert.ThrowsExceptionAsync<SecurityTokenExpiredException>(() =>
-            authService.NewAccessToken(
-                username, 
-                refreshToken
-            )
-        );
-    }
-
-    [TestMethod]
-    public async Task Return_New_Access_Token()
-    {
-
-        string username = "registered";
-        string refreshToken = "registered_refresh_token";
-        var cache = CreateCache();
-        string cacheEntry = JsonSerializer.Serialize(
-            new UserAuthenticated() {
-                Id = username,
-                RefreshToken = refreshToken,
-                RefreshTokenExpiryTime = DateTime.MaxValue
-            }
-        );
-        cache.SetString(username, cacheEntry);
-        var authService = CreateAuthServiceWithCache(cache);
-        string newToken = 
-            await authService.NewAccessToken(username, refreshToken);
-        JwtTokenCanBeRead(newToken);
     }
 
     void JwtTokenCanBeRead(string token)
@@ -221,9 +146,17 @@ public class AuthServiceTests
         A.CallTo(() => serverConfig.Issuer).Returns("issuer");
         A.CallTo(() => serverConfig.ClaimTypeName).Returns(ClaimTypes.NameIdentifier);
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        string token  = authService.GetAccessToken(username);
+        string token  = authService.CreateAccessToken(username);
         var tokenUsername = authService.GetUsernameFromAccessToken(token);
         Assert.AreEqual(username, tokenUsername);
+    }
+
+    IAuthService CreateAuthServiceWithThisServerConfig(IServerConfig serverConfig) {
+        IGameHubState gameHubState = A.Fake<IGameHubState>();
+        return new AuthService(
+            serverConfig, 
+            gameHubState, 
+            A.Fake<IDistributedCache>());
     }
 
     IAuthService CreateAuthServiceWithCache(IDistributedCache cache) {
