@@ -3,7 +3,6 @@ using BattleSimulator.Server.Routes;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Security.Claims;

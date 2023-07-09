@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddDistributedMemoryCache();
+
 // Database services
 builder.Services.AddScoped<IJsonSerializerWrapper, JsonSerializerWrapper>();
 builder.Services.AddSingleton<IGameDbConverter, GameDbConverter>();
