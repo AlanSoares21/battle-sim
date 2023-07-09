@@ -20,7 +20,7 @@ public class LoginController: ControllerBase
     }
     [HttpPost]
     [AllowAnonymous]
-    public ActionResult AuthenticateUser(
+    public async Task<ActionResult> AuthenticateUser(
         [FromBody] NewUser user
     ) {
         _logger.LogInformation("New user: {name}", user.name);
@@ -30,7 +30,7 @@ public class LoginController: ControllerBase
             return NameHasInvalidCharacters(user.name);
         if (_authService.NameIsBeingUsed(user.name))
             return NameIsBeingUsed(user.name);
-        return GenerateJwtToken(user);
+        return await GenerateJwtToken(user);
     }
 
     BadRequestObjectResult NameIsEmpty() {
@@ -58,9 +58,12 @@ public class LoginController: ControllerBase
         return BadRequest(new ApiError($"Name {name} already being used."));
     }
 
-    OkObjectResult GenerateJwtToken(NewUser user) {
-        var tokenString = _authService.GenerateJwtToken(user.name);
-        _logger.LogInformation("New token generated to user {user}.", user.name);
-        return Ok(new SuccessLoginResponse() { Token = tokenString });
+    async Task<OkObjectResult> GenerateJwtToken(NewUser user) {
+        var tokens = await _authService.GenerateTokens(user.name);
+        _logger.LogInformation("New tokens generated to user {user}.", user.name);
+        return Ok(new SuccessLoginResponse() { 
+            AccessToken = tokens.accessToken,
+            RefreshToken = tokens.refreshToken
+        });
     }
 }

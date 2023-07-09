@@ -25,16 +25,11 @@ public class AuthService: IAuthService
         _gameHubState = hubState;
         _cache = cache;
     }
+
     public bool NameIsBeingUsed(string username) => _gameHubState.Connections
         .UsersIds()
         .Any(name => name == username);
-    public string GenerateJwtToken(string username)
-    {
-        var claims = new Claim[] { 
-            new(_serverConfig.ClaimTypeName, username) 
-        };
-        return new JwtSecurityTokenHandler().WriteToken(JwtToken(claims));
-    }
+
     public async Task<(string accessToken, string refreshToken)> GenerateTokens(
         string username
     )
@@ -48,6 +43,14 @@ public class AuthService: IAuthService
         };
         await _cache.SetStringAsync(user.Id, JsonSerializer.Serialize(user));
         return (accessToken, refreshToken);
+    }
+
+    string GenerateJwtToken(string username)
+    {
+        var claims = new Claim[] { 
+            new(_serverConfig.ClaimTypeName, username) 
+        };
+        return new JwtSecurityTokenHandler().WriteToken(JwtToken(claims));
     }
 
     JwtSecurityToken JwtToken(Claim[] claims) => new JwtSecurityToken(

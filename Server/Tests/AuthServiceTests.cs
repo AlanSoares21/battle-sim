@@ -39,11 +39,12 @@ public class AuthServiceTests
     }
 
     [TestMethod]
-    public void The_Server_Config_Is_Being_Used() {
+    public async Task The_Server_Config_Is_Being_Used() 
+    {
         const string username = "username";
         IServerConfig serverConfig = FakeServerConfig();
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        authService.GenerateJwtToken(username);
+        await authService.GenerateTokens(username);
         A.CallTo(() => serverConfig.Audience).MustHaveHappenedOnceOrMore();
         A.CallTo(() => serverConfig.ClaimTypeName).MustHaveHappenedOnceOrMore();
         A.CallTo(() => serverConfig.Issuer).MustHaveHappenedOnceOrMore();
@@ -52,23 +53,25 @@ public class AuthServiceTests
     }
 
     [TestMethod]
-    public void Generate_Valid_JWT_Token() {
+    public async Task Generate_Valid_JWT_Token() 
+    {
         const string username = "username";
         IServerConfig serverConfig = FakeServerConfig();
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        string jwtToken= authService.GenerateJwtToken(username);
+        var (jwtToken, _) = await authService.GenerateTokens(username);
         var tokenHandler = new JwtSecurityTokenHandler();
         Assert.IsTrue(tokenHandler.CanReadToken(jwtToken));
     }
 
     [TestMethod]
-    public void Generate_JWT_Token_With_The_ClaimIndentity_Of_Server_Config() {
+    public async Task Generate_JWT_Token_With_The_ClaimIndentity_Of_Server_Config() 
+    {
         const string username = "username";
         IServerConfig serverConfig = FakeServerConfig();
         string claimTypeName = "SomeValuToClaimTypeName";
         A.CallTo(() => serverConfig.ClaimTypeName).Returns(claimTypeName);
         var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
-        string jwtToken= authService.GenerateJwtToken(username);
+        var (jwtToken, _) = await authService.GenerateTokens(username);
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtTokenData = tokenHandler.ReadJwtToken(jwtToken);
         Assert.IsTrue(
