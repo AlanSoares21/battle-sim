@@ -36,6 +36,33 @@ public class CheckNameRouteTests
         Assert.AreEqual((int)HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    /*
+    [TestMethod]
+    public async Task Return_Bad_Request_When_Try_Get_New_Access_Token_With_An_Unregistered_Refresh_Token() 
+    {
+        SuccessLoginResponse oldTokens = new() {
+            AccessToken = "old",
+            RefreshToken = "your refresh-token"
+        }
+        var newUser = new NewUser() { name = "" };
+        IAuthService authService = A.Fake<IAuthService>();
+        A.CallTo(() => authService.NameIsBeingUsed(newUser.name)).Returns(false);
+        LoginController loginController = CreateTestableLoginController(authService);
+        
+        var response = loginController.RefreshTokens();
+        var response = await loginController.AuthenticateUser(newUser) as ObjectResult;
+        if (response is null)
+            Assert.Fail("fail because response is null.");
+        Assert.AreEqual((int)HttpStatusCode.BadRequest, response.StatusCode);
+    }
+    */
+    /*
+        todo
+            testar falha quando tenta gerar new access token mas o antigo acess token fornecido é invalido
+            testar falha quando tenta gerar new access token com refresh token expirado
+            testar 
+    */
+
     [TestMethod]
     [DataRow("4name")]
     [DataRow("-name")]

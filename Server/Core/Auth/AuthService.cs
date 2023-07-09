@@ -34,7 +34,7 @@ public class AuthService: IAuthService
         string username
     )
     {
-        var accessToken = GenerateJwtToken(username);
+        var accessToken = GetAccessToken(username);
         string refreshToken = GenerateRefreshToken();
         UserAuthenticated user = new() {
             Id = username,
@@ -65,10 +65,10 @@ public class AuthService: IAuthService
             throw new Exception($"refresh token {user.RefreshToken} registered to user {username} is different than {refreshToken}");
         if (user.RefreshTokenExpiryTime < DateTime.UtcNow)
             throw new SecurityTokenExpiredException($"refresh token to user {username} expired {user.RefreshTokenExpiryTime}");
-        return GenerateJwtToken(username);
+        return GetAccessToken(username);
     }
 
-    string GenerateJwtToken(string username)
+    public string GetAccessToken(string username)
     {
         var claims = new Claim[] { 
             new(_serverConfig.ClaimTypeName, username) 
@@ -86,7 +86,38 @@ public class AuthService: IAuthService
     );
 
     SigningCredentials GetSigningCredentials() => new SigningCredentials(
-        new SymmetricSecurityKey(_serverConfig.SecretKey), 
+        GetSecurityKey(), 
         SecurityAlgorithms.HmacSha256Signature
     );
+
+    SymmetricSecurityKey GetSecurityKey() => 
+        new SymmetricSecurityKey(_serverConfig.SecretKey);
+
+    public string GetUsernameFromAccessToken(string accessToken)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        if (!tokenHandler.CanReadToken(accessToken))
+            throw new Exception($"Not possible read token {accessToken}");
+        var validationParameters = GetValidationParameters();
+        ClaimsPrincipal principal = tokenHandler.ValidateToken(
+            accessToken, 
+            validationParameters, 
+            out SecurityToken token
+        );
+        Claim? claim = principal
+            .FindFirst(c => c.Type == _serverConfig.ClaimTypeName);
+        if (claim is null)
+            throw new Exception($"{_serverConfig.ClaimTypeName} is null on token {accessToken}");
+        return claim.Value;
+    }
+
+    TokenValidationParameters GetValidationParameters() =>
+        new TokenValidationParameters() {
+            ValidateIssuer = true,
+            ValidateIssuerSigningKey = true,
+            ValidateAudience = true,
+            ValidAudience = _serverConfig.Audience,
+            ValidIssuer = _serverConfig.Issuer,
+            IssuerSigningKey = GetSecurityKey()
+        };
 }

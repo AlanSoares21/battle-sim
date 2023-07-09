@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text.Json;
 using BattleSimulator.Server.Auth;
 using BattleSimulator.Server.Hubs;
@@ -201,6 +202,30 @@ public class AuthServiceTests
         return new MemoryDistributedCache(opts);
     }
 
+    [TestMethod]
+    public void Throw_Exception_When_Try_Get_Username_From_Malformed_Access_Token()
+    {
+        string malFormedAccessToken = "malformed.access.token";
+        var authService = CreateAuthServiceWithCache(A.Fake<IDistributedCache>());
+        Assert.ThrowsException<ArgumentException>(() => 
+            authService.GetUsernameFromAccessToken(malFormedAccessToken)
+        );
+    }
+
+    [TestMethod]
+    public void Return_Username_From_An_Access_Token()
+    {
+        string username = "someUsername";
+        var serverConfig = FakeServerConfig();
+        A.CallTo(() => serverConfig.Audience).Returns("audience");
+        A.CallTo(() => serverConfig.Issuer).Returns("issuer");
+        A.CallTo(() => serverConfig.ClaimTypeName).Returns(ClaimTypes.NameIdentifier);
+        var authService = CreateAuthServiceWithThisServerConfig(serverConfig);
+        string token  = authService.GetAccessToken(username);
+        var tokenUsername = authService.GetUsernameFromAccessToken(token);
+        Assert.AreEqual(username, tokenUsername);
+    }
+
     IAuthService CreateAuthServiceWithCache(IDistributedCache cache) {
         IGameHubState gameHubState = A.Fake<IGameHubState>();
         return new AuthService(
@@ -214,10 +239,5 @@ public class AuthServiceTests
         IServerConfig serverConfig = A.Fake<IServerConfig>();
         A.CallTo(() => serverConfig.SecretKey).Returns(secretKey);
         return serverConfig;
-    }
-
-    string StringContains(string token)
-    {
-        return A<string>.That.Matches(v => v.Contains(token));
     }
 }
