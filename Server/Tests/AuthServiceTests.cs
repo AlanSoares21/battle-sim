@@ -1,6 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
 using BattleSimulator.Server.Auth;
 using BattleSimulator.Server.Hubs;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace BattleSimulator.Server.Tests;
 
@@ -27,7 +32,10 @@ public class AuthServiceTests
         IServerConfig serverConfig = A.Fake<IServerConfig>();
         IGameHubState gameHubState = A.Fake<IGameHubState>();
         A.CallTo(() => gameHubState.Connections.UsersIds()).Returns(usersConnected);
-        return new AuthService(serverConfig, gameHubState);
+        return new AuthService(
+            serverConfig, 
+            gameHubState, 
+            A.Fake<IDistributedCache>());
     }
 
     [TestMethod]
@@ -69,15 +77,59 @@ public class AuthServiceTests
         );
     }
 
-    public IAuthService CreateAuthServiceWithThisServerConfig(IServerConfig serverConfig) {
+    IAuthService CreateAuthServiceWithThisServerConfig(IServerConfig serverConfig) {
         IGameHubState gameHubState = A.Fake<IGameHubState>();
-        return new AuthService(serverConfig, gameHubState);
+        return new AuthService(
+            serverConfig, 
+            gameHubState, 
+            A.Fake<IDistributedCache>());
     }
 
-    public IServerConfig FakeServerConfig() {
+    [TestMethod]
+    public async Task Register_Refresh_Token_On_Cache()
+    {
+        const string username = "username";
+        var cache = CreateCache();
+        var authService = CreateAuthServiceWithCache(cache);
+        var tokens = await authService.GenerateTokens(username);
+        var jsonRegister = cache.GetString(username);
+        Assert.IsNotNull(jsonRegister, "cache dont have a register with username as key");
+        var register = JsonSerializer
+            .Deserialize<UserAuthenticated>(jsonRegister);
+        Assert.IsNotNull(register, $"The json information stored in the cache dont match the model. {jsonRegister}");
+        Assert.IsNotNull(register.RefreshToken, "The refresh token stored in the cache is null");
+        Assert.AreEqual(
+            register.RefreshToken, 
+            tokens.refreshToken, 
+            $"The refresh token stored in the cahce is different than the token returned from the method. cache: {register.RefreshToken} - returned: {tokens.refreshToken}"
+        );
+    }
+
+    IDistributedCache CreateCache()
+    {
+        var opts = Options.Create<MemoryDistributedCacheOptions>(
+            new MemoryDistributedCacheOptions()
+        );
+        return new MemoryDistributedCache(opts);
+    }
+
+    IAuthService CreateAuthServiceWithCache(IDistributedCache cache) {
+        IGameHubState gameHubState = A.Fake<IGameHubState>();
+        return new AuthService(
+            FakeServerConfig(), 
+            gameHubState, 
+            cache);
+    }
+
+    IServerConfig FakeServerConfig() {
         byte[] secretKey = System.Text.Encoding.ASCII.GetBytes("someSecretKeyToUse");
         IServerConfig serverConfig = A.Fake<IServerConfig>();
         A.CallTo(() => serverConfig.SecretKey).Returns(secretKey);
         return serverConfig;
+    }
+
+    string StringContains(string token)
+    {
+        return A<string>.That.Matches(v => v.Contains(token));
     }
 }
