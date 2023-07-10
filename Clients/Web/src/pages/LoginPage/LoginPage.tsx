@@ -19,7 +19,7 @@ export const LoginPage: React.FC = () => {
         setIsCheckingName(false);
         if (!isCheckNameResponse(response)) 
             return alert(`Erro ao validar nome. Erro: ${response.message}`);
-        authContext.setToken(response.token, username);
+        authContext.setToken(response.accessToken, username);
     }, [username, authContext]);
 
     return (<div className="padding-around stack-vertical child-margin10">

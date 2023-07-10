@@ -23,17 +23,10 @@ export const BattleContext = createContext<IBattleContext>({
     },
     player: {
         id: '',
-        defensiveStats: {
-            defenseAbsorption: 0
-        },
-        offensiveStats: {
-            damage: 0
-        },
+        defenseAbsorption: 0,
+        damage: 0,
         skills: [],
-        state: {
-            currentHealth: { x: 0, y: 0 },
-            healthRadius: 0
-        },
+        healthRadius: 0,
         weapon: {
             damageOnX: DamageDirection.Neutral,
             damageOnY: DamageDirection.Neutral,

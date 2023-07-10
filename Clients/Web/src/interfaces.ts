@@ -34,7 +34,8 @@ export interface IApiError {
 }
 
 export interface ICheckNameResponse {
-    token: string;
+    accessToken: string;
+    refreshToken: string;
 }
 
 export interface IUserConnected {
@@ -76,24 +77,13 @@ export interface IWeapon {
     damageOnY: DamageDirection;
 }
 
-export interface ISkill {
-    name: string
-}
-
 export interface IEntity {
     id: string;
-    skills: ISkill[];
+    skills: string[];
     weapon: IWeapon;
-    state: {
-        currentHealth: TCoordinates;
-        healthRadius: number;
-    };
-    offensiveStats: {
-        damage: number;
-    };
-    defensiveStats: {
-        defenseAbsorption: number;
-    }
+    healthRadius: number;
+    damage: number;
+    defenseAbsorption: number;
 }
 
 export interface IBattleData {

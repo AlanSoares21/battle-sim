@@ -4,7 +4,7 @@ import { IApiError, IBattleData, IBattleRequest, ICheckNameResponse, IUserConnec
 
 export async function login(name: string): 
     Promise<ICheckNameResponse | IApiError> {
-    const response = await fetch(`${configs.serverApiUrl}/Login`, {
+    const response = await fetch(`${configs.serverApiUrl}/Auth/Login`, {
         method: 'POST',
         body: JSON.stringify({ name }),
         headers: [
@@ -13,7 +13,6 @@ export async function login(name: string):
     })
     .then(r => r.blob())
     .then(r => r.text());
-
     return JSON.parse(response) as ICheckNameResponse | IApiError;
 } 
 

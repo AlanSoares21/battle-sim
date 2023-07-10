@@ -21,8 +21,23 @@ const config = {
     },
     baseCoord: { x: 0, y: 0 }
 }
+
+interface IPlayer {
+    id: string;
+    life: TCoordinates;
+    healthRadius: number;
+}
+
+function entityToPlayer(entity: IEntity): IPlayer {
+    return {
+        id: entity.id,
+        healthRadius: entity.healthRadius,
+        life: { x: 0, y: 0 }
+    }
+}
+
 export default class LifeBarRender {
-    private entities: IEntity[] = [];
+    private entities: IPlayer[] = [];
     private scale = {
         life: 2
     };
@@ -58,15 +73,15 @@ export default class LifeBarRender {
     setEntity(entity: IEntity) {
         const index = this.entities.findIndex(e => e.id === entity.id);
         if (index === -1)
-            this.entities.push(entity);
+            this.entities.push(entityToPlayer(entity));
         else
-            this.entities[index] = entity;
+            this.entities[index] = entityToPlayer(entity);
     }
     
     setEntityCurrentHealth(id: string, health: TCoordinates) {
         const index = this.entities.findIndex(e => e.id === id);
         if (index !== -1) {
-            this.entities[index].state.currentHealth = health;
+            this.entities[index].life = health;
         }
     }
 
@@ -105,7 +120,7 @@ export default class LifeBarRender {
         for (const entity of this.entities) {
             this.drawName(entity.id, coordinates.name);
             
-            let circleRadius = entity.state.healthRadius * this.scale.life;
+            let circleRadius = entity.healthRadius * this.scale.life;
             
             coordinates.sphereCenter.x += circleRadius;
             this.drawLifeSphere(circleRadius, coordinates.sphereCenter);
@@ -113,7 +128,7 @@ export default class LifeBarRender {
                 this.scale.life, 
                 this.calculeCurrentLifeCoord(
                     coordinates.sphereCenter,
-                    entity.state.currentHealth
+                    entity.life
                 )
             );
             coordinates.sphereCenter.x += circleRadius;

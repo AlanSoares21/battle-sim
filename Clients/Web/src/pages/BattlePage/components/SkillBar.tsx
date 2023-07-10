@@ -1,18 +1,17 @@
 import React, { useContext, useState } from "react";
 import { BattleContext } from "../BattleContext";
-import { ISkill } from "../../../interfaces";
 import { IDefaultButtonProps, PrimaryButton } from "../../../components/Buttons";
 import "./skillBar.css"
 
 interface ISkillCardProps {
-    data: ISkill,
+    data: string,
     enabled: boolean,
     onClick: IDefaultButtonProps['onClick']
 }
 
 const SkillCard : React.FC<ISkillCardProps> = ({data: skill, enabled, onClick}) => {
     
-    return(<PrimaryButton text={skill.name} enabled={enabled} onClick={onClick} />)
+    return(<PrimaryButton text={skill} enabled={enabled} onClick={onClick} />)
 }
 
 export interface ISkillBarProps {
@@ -30,10 +29,10 @@ const SkillBar: React.FC<ISkillBarProps> = ({
             {
                 player.skills.map(s => 
                     (<SkillCard 
-                        key={s.name} 
+                        key={s} 
                         data={s} 
-                        enabled={selected === s.name} 
-                        onClick={(() => onSkillSelect(s.name))}
+                        enabled={selected === s} 
+                        onClick={(() => onSkillSelect(s))}
                     />)
                 )
             }
