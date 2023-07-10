@@ -1,0 +1,43 @@
+{
+    "Entities": [
+        {
+            "Id": "entity01",
+
+            "HealthRadius": 400,
+
+            "Damage": 15,
+
+            "DefenseAbsorption": 0.15,
+
+            "Skills": [
+                "basicNegativeDamageOnX",
+                "basicNegativeDamageOnY",
+                "basicPositiveDamageOnX",
+                "basicPositiveDamageOnY"
+            ]
+        },
+        {
+            "Id": "entity02",
+
+            "HealthRadius": 450,
+
+            "Damage": 13,
+
+            "DefenseAbsorption": 0.16,
+
+            "Skills": [
+                "basicNegativeDamageOnX",
+                "basicNegativeDamageOnY",
+                "basicPositiveDamageOnX",
+                "basicPositiveDamageOnY"
+            ]
+        }
+    ],
+    "Equips": [
+        {
+            "Id": "shirt",
+            "Effect": 0,
+            "Shape": 0
+        }
+    ]
+}
