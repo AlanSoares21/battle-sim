@@ -1,5 +1,10 @@
 import CanvasWrapper from "../../../CanvasWrapper"
 import { IEntity, TCoordinates } from "../../../interfaces";
+import { 
+    LifeCoordRender,
+    LifeSphereRender,
+    NameRender
+} from "./LifeSphereRenderComponents";
 
 const config = {
     background: {
@@ -36,8 +41,16 @@ function entityToPlayer(entity: IEntity): IPlayer {
     }
 }
 
+interface IPlayerRenders {
+    lifeSphere: LifeSphereRender;
+    name: NameRender;
+    lifeCoord: LifeCoordRender;
+}
+
 export default class LifeBarRender {
-    private entities: IPlayer[] = [];
+    private players: IPlayer[] = [];
+    private renders: IPlayerRenders[] = [];
+    private maxSphereSize = 100;
     private scale = {
         life: 2
     };
@@ -46,9 +59,41 @@ export default class LifeBarRender {
 
     constructor(canvas: CanvasWrapper) {
         this.canvas = canvas;
+        
     }
 
-    
+    addPlayer(player: IPlayer)
+    {
+        const index = this.players.push(player) - 1;
+        this.renders.push(this.createPlayerRenders(player, index));
+    }
+
+    createPlayerRenders(player: IPlayer, index: number): IPlayerRenders {
+        const nameHeigth = 15;
+        
+        const sphereScale = Math.abs(this.maxSphereSize / (player.healthRadius * 2));
+        const healthRadiusInScale = player.healthRadius * sphereScale;
+        
+        return {
+            name: new NameRender(
+                this.canvas, 
+                { x: this.maxSphereSize * index, y: nameHeigth },
+                player.id
+            ),
+            lifeSphere: new LifeSphereRender(
+                this.canvas,
+                { x: index * this.maxSphereSize, y: 0 + nameHeigth },
+                healthRadiusInScale
+            ),
+            lifeCoord: new LifeCoordRender(
+                this.canvas,
+                { x: index * this.maxSphereSize, y: nameHeigth },
+                sphereScale,
+                healthRadiusInScale
+            )
+        }
+    }
+
     drawBackground() {
         const size = this.canvas.getSize();
         this.canvas.drawRect(
@@ -58,30 +103,19 @@ export default class LifeBarRender {
         );
     }
 
-    drawName(name: string, start: TCoordinates) {
-        this.canvas.writeText(start, name, config.name.color);
-    }
-
-    drawLifeSphere(radius: number, center: TCoordinates) {
-        this.canvas.drawCircle(center, radius, config.life.circle.color);
-    }
-
-    drawCurrentLifePoint(radius: number, center: TCoordinates) {
-        this.canvas.drawCircle(center, radius, config.life.point.color);
-    }
-
     setEntity(entity: IEntity) {
-        const index = this.entities.findIndex(e => e.id === entity.id);
+        const index = this.players.findIndex(p => p.id === entity.id);
         if (index === -1)
-            this.entities.push(entityToPlayer(entity));
+            this.addPlayer(entityToPlayer(entity));
         else
-            this.entities[index] = entityToPlayer(entity);
+            this.players[index] = entityToPlayer(entity);
     }
     
     setEntityCurrentHealth(id: string, health: TCoordinates) {
-        const index = this.entities.findIndex(e => e.id === id);
+        const index = this.players.findIndex(e => e.id === id);
         if (index !== -1) {
-            this.entities[index].life = health;
+            this.players[index].life = health;
+            this.renders[index].lifeCoord.setLife(health);
         }
     }
 
@@ -105,36 +139,15 @@ export default class LifeBarRender {
 
     render() {
         this.drawBackground();
-        let coordinates: {
-            base: TCoordinates;
-            name: TCoordinates;
-            sphereCenter: TCoordinates;
-        } = {
-            base: { x: config.baseCoord.x, y: config.baseCoord.y },
-            name: { x: config.name.initialCoord.x, y: config.name.initialCoord.y },
-            sphereCenter: { 
-                x: config.life.circle.initialCoord.x, 
-                y: config.life.circle.initialCoord.y 
-            }
-        };
-        for (const entity of this.entities) {
-            this.drawName(entity.id, coordinates.name);
-            
-            let circleRadius = entity.healthRadius * this.scale.life;
-            
-            coordinates.sphereCenter.x += circleRadius;
-            this.drawLifeSphere(circleRadius, coordinates.sphereCenter);
-            this.drawCurrentLifePoint(
-                this.scale.life, 
-                this.calculeCurrentLifeCoord(
-                    coordinates.sphereCenter,
-                    entity.life
-                )
-            );
-            coordinates.sphereCenter.x += circleRadius;
-
-            coordinates.base.x += coordinates.sphereCenter.x;
-            coordinates.name.x = coordinates.base.x + config.name.gap;
+        for (let index = 0; index < this.players.length; index++) {
+            this.renderPlayer(index);
         }
+    }
+
+    renderPlayer(index: number) {
+        const render = this.renders[index];
+        render.lifeSphere.render();
+        render.lifeCoord.render();
+        render.name.render();
     }
 }
