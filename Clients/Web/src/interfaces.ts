@@ -6,25 +6,6 @@ export type TCanvasCoordinates = TCoordinates;
 
 export type TBoard = { width: number, height: number };
 
-export interface IBoardColors {
-    background: string;
-    grid: string;
-    pointer: string;
-    player: {
-        circle: string;
-        name: string;
-    }
-}
-
-export type TRenderElementFunction = (element: TRenderElement) => any;
-
-export type RenderElementsHandlers = {
-    'pointer': TRenderElementFunction,
-    'player': TRenderElementFunction
-}
-
-export type TRenderElement = { cell: TBoardCoordinates, type: keyof RenderElementsHandlers, data?: any };
-
 export interface IPlayerRenderData {
     name: string;
 }

@@ -2,23 +2,16 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from "re
 import { BattleContext } from "../BattleContext";
 import CanvasWrapper from "../../../CanvasWrapper";
 import { TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
-import BoardCanvas from "../../../BoardCanvas";
-import BoardRenderController from "../../../BoardRenderController";
+import BoardRenderController from "./BoardRenderController";
+import { canvasToBoardCoordinates } from "./BoardRenderComponents";
 
 export interface IBoardProps { 
     cellSize: number;
     onBoardClick: (cell: TBoardCoordinates) => any;
 }
 
-function getMiddleCoordinates(board: TBoard): TBoardCoordinates {
-    return {
-        x: board.width / 2,
-        y: board.height / 2
-    }
-}
-
 const Board: React.FC<IBoardProps> = ({ cellSize, onBoardClick }) => {
-    const { battle, server } = useContext(BattleContext);
+    const { battle } = useContext(BattleContext);
 
     const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
 
@@ -34,9 +27,11 @@ const Board: React.FC<IBoardProps> = ({ cellSize, onBoardClick }) => {
         }
         const canvasWrapper = new CanvasWrapper(context)
         const board: TBoard = battle.board.size;
-        const boardCanvas = new BoardCanvas(board, canvasWrapper, cellSize);
-        const value = new BoardRenderController(boardCanvas);
-        value.placePointer(getMiddleCoordinates(battle.board.size));
+        const value = new BoardRenderController(
+            canvasWrapper,
+            board,
+            cellSize
+        );
         return value;
     }, [ canvasRef, battle.board.size, cellSize ])
 
@@ -50,24 +45,20 @@ const Board: React.FC<IBoardProps> = ({ cellSize, onBoardClick }) => {
             y: ev.clientY - (canvasRef !== null ? canvasRef.offsetTop : 0)
         };
 
-        const boardCoordinates = render.boardCanvas
-            .canvasToBoardCoordinates(canvasCoordinates);
+        const boardCoordinates = canvasToBoardCoordinates(canvasCoordinates, cellSize);
         
-        render.placePointer(boardCoordinates);
-        
+        render.pointer.setPosition(boardCoordinates);
+
         onBoardClick(boardCoordinates);
     }, [render, canvasRef, onBoardClick]);
 
     useEffect(() => {
         if (render !== undefined) {
             for (const entity of battle.board.entitiesPosition) {
-                render.placePlayer({
-                    x: entity.x,
-                    y: entity.y
-                }, 
-                {
-                    name: entity.entityIdentifier
-                });
+                render.setPlayer(
+                    { name: entity.entityIdentifier },
+                    { x: entity.x, y: entity.y }
+                );
             }
             render.render();
         }
