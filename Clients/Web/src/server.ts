@@ -60,12 +60,19 @@ async function refreshTokens() {
     return JSON.parse(response) as ILoginResponse | IApiError;
 }
 
-async function requestApi(route: string, dontHandleUnauthError?: boolean): Promise<{
+async function requestApi(route: string, method?: 'GET' | 'PUT', body?: any, dontHandleUnauthError?: boolean): Promise<{
     text: string;
     status: number
 }> {
+    if (method === undefined)
+        method = 'GET';
+    let bodyString = undefined;
+    if (body)
+        bodyString = JSON.stringify(body);
+
     const fetchResult = await fetch(`${configs.serverApiUrl}${route}`, {
-        method: 'GET',
+        method,
+        body: bodyString,
         headers: [
             ["Content-Type", "application/json"],
             [ACCESS_TOKEN_HEADER, ACCESS_TOKEN]
@@ -77,7 +84,7 @@ async function requestApi(route: string, dontHandleUnauthError?: boolean): Promi
         const newTokens = await refreshTokens();
         if (isLoginResponse(newTokens)) {
             setTokens(newTokens.accessToken, newTokens.refreshToken)
-            return requestApi(route, true);
+            return requestApi(route, method, body, true);
         }
     }
 
@@ -98,6 +105,11 @@ export async function getEntity(): Promise<IEntity | IApiError> {
 export async function getEquips(): Promise<IEquip[] | IApiError> {
     const response = await requestApi(`/Equip`);
     return JSON.parse(response.text) as IApiError | IEquip[];
+}
+
+export async function updateEntity(data: IEntity): Promise<IEntity | IApiError> {
+    const response = await requestApi(`/Entity`, 'PUT', data);
+    return JSON.parse(response.text) as IApiError | IEntity;
 }
 
 export interface IHubServer {
