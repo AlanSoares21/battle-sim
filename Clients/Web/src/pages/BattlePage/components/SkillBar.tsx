@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { BattleContext } from "../BattleContext";
 import { IDefaultButtonProps, PrimaryButton } from "../../../components/Buttons";
 import "./skillBar.css"

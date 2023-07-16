@@ -3,7 +3,7 @@ import { PrimaryButton } from "../../components/Buttons";
 import { TextBox } from "../../components/TextBox";
 import { AuthContext } from "../../contexts/AuthContext";
 import { login } from "../../server";
-import { isCheckNameResponse } from "../../typeCheck";
+import { isLoginResponse } from "../../typeCheck";
 import './index.css'
 
 export const LoginPage: React.FC = () => {
@@ -17,9 +17,9 @@ export const LoginPage: React.FC = () => {
         setIsCheckingName(true);
         const response = await login(username);
         setIsCheckingName(false);
-        if (!isCheckNameResponse(response)) 
+        if (!isLoginResponse(response)) 
             return alert(`Erro ao validar nome. Erro: ${response.message}`);
-        authContext.setToken(response.accessToken, username);
+        authContext.setToken(response.accessToken, response.refreshToken, username);
     }, [username, authContext]);
 
     return (<div className="padding-around stack-vertical child-margin10">

@@ -1,9 +1,10 @@
 import { HubConnection } from "@microsoft/signalr";
 import configs from "./configs";
-import { IApiError, IBattleData, IBattleRequest, ICheckNameResponse, IUserConnected, TCoordinates } from "./interfaces";
+import { IApiError, IBattleData, IBattleRequest, IEntity, IEquip, ILoginResponse, IUserConnected, TCoordinates } from "./interfaces";
+import { isLoginResponse } from "./typeCheck";
 
 export async function login(name: string): 
-    Promise<ICheckNameResponse | IApiError> {
+Promise<ILoginResponse | IApiError> {
     const response = await fetch(`${configs.serverApiUrl}/Auth/Login`, {
         method: 'POST',
         body: JSON.stringify({ name }),
@@ -13,8 +14,91 @@ export async function login(name: string):
     })
     .then(r => r.blob())
     .then(r => r.text());
-    return JSON.parse(response) as ICheckNameResponse | IApiError;
-} 
+    return JSON.parse(response) as ILoginResponse | IApiError;
+}
+
+const REFRESH_TOKEN_KEY = "refreshToken";
+const ACCESS_TOKEN_KEY = "accessToken";
+let ACCESS_TOKEN_HEADER = "Authorization";
+let ACCESS_TOKEN = "";
+
+export async function setTokens(accessToken: string, refreshToken: string) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    ACCESS_TOKEN = `Bearer ${accessToken}`;
+}
+
+export function removeTokens() {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+async function refreshTokens() {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refreshToken)
+        return { message: 'Refresh token on storage not found' } as IApiError;
+    
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!accessToken)
+        return { message: 'Access token on storage not found' } as IApiError;
+    
+    removeTokens();
+
+    const body: ILoginResponse = {
+        accessToken,
+        refreshToken,
+    }
+
+    const response = await fetch(`${configs.serverApiUrl}/Auth/Refresh`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: [
+            ["Content-Type", "application/json"]
+        ]
+    })
+    .then(r => r.text());
+    return JSON.parse(response) as ILoginResponse | IApiError;
+}
+
+async function requestApi(route: string, dontHandleUnauthError?: boolean): Promise<{
+    text: string;
+    status: number
+}> {
+    const fetchResult = await fetch(`${configs.serverApiUrl}${route}`, {
+        method: 'GET',
+        headers: [
+            ["Content-Type", "application/json"],
+            [ACCESS_TOKEN_HEADER, ACCESS_TOKEN]
+        ]
+    })
+    .catch(e => console.log("request server error", e));
+    
+    if (!dontHandleUnauthError && (!fetchResult || fetchResult.status === 401)) {
+        const newTokens = await refreshTokens();
+        if (isLoginResponse(newTokens)) {
+            setTokens(newTokens.accessToken, newTokens.refreshToken)
+            return requestApi(route, true);
+        }
+    }
+
+    if (!fetchResult)
+        return { status: 400, text: JSON.stringify({ message: 'Error on trying to request ' + route } as IApiError) };
+    
+    return {
+        text: await fetchResult.text(),
+        status: fetchResult.status
+    }
+}
+
+export async function getEntity(): Promise<IEntity | IApiError> {
+    const response = await requestApi(`/Entity`);
+    return JSON.parse(response.text) as IApiError | IEntity;
+}
+
+export async function getEquips(): Promise<IEquip[] | IApiError> {
+    const response = await requestApi(`/Entity`);
+    return JSON.parse(response.text) as IApiError | IEquip[];
+}
 
 export interface IHubServer {
     ListUsers(): void;

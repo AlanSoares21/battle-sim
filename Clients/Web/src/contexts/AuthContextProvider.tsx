@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import * as signalR from '@microsoft/signalr';
 import { AuthContext, IAuthContext } from "./AuthContext";
 import configs from "../configs";
-import { ServerConnection } from "../server";
+import { ServerConnection, setTokens } from "../server";
 
 export const AuthContextProvider: React.FC<PropsWithChildren> = ({ 
     children 
@@ -13,7 +13,8 @@ export const AuthContextProvider: React.FC<PropsWithChildren> = ({
     const [isValidatingUser, setIsValidatingUser] = useState(false);
     const [data, setData] = useState<IAuthContext['data']>(undefined);
 
-    const onSetToken = useCallback<IAuthContext['setToken']>(async (token, userId) => {
+    const onSetToken = useCallback<IAuthContext['setToken']>(async (token, refreshToken, userId) => {
+        setTokens(token, refreshToken);
         setIsValidatingUser(true);
         const conn = new signalR.HubConnectionBuilder()
             .withUrl(configs.serverWsUrl, { 

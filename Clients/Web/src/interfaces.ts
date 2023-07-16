@@ -16,7 +16,7 @@ export interface IApiError {
     message: string;
 }
 
-export interface ICheckNameResponse {
+export interface ILoginResponse {
     accessToken: string;
     refreshToken: string;
 }
@@ -73,4 +73,18 @@ export interface IBattleData {
     id: string;
     board: IBoardData;
     entities: IEntity[];
+}
+
+export enum EquipEffect {
+    Barrier
+}
+
+export enum EquipShape {
+    Rectangle
+}
+
+export interface IEquip {
+    id: string;
+    effect: EquipEffect;
+    shape: EquipShape
 }

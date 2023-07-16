@@ -1,5 +1,5 @@
-import { ICheckNameResponse } from "./interfaces";
+import { ILoginResponse } from "./interfaces";
 
-export function isCheckNameResponse(value: any): value is ICheckNameResponse {
+export function isLoginResponse(value: any): value is ILoginResponse {
     return typeof value["accessToken"] === "string" && typeof value["refreshToken"] === "string";
 }

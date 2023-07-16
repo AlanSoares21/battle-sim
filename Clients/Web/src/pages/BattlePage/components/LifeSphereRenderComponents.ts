@@ -1,5 +1,4 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
-import { sumCoordinate } from "../../../CoordinatesUtils";
 import { TCanvasCoordinates, TCoordinates } from "../../../interfaces";
 import { IRender } from "./Render";
 
