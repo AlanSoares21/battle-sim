@@ -82,12 +82,10 @@ export default class LifeBarRender {
             ),
             lifeSphere: new LifeSphereRender(
                 this.canvas,
-                { x: index * this.maxSphereSize, y: 0 + nameHeigth },
                 healthRadiusInScale
             ),
             lifeCoord: new LifeCoordRender(
                 this.canvas,
-                { x: index * this.maxSphereSize, y: nameHeigth },
                 sphereScale,
                 healthRadiusInScale
             )

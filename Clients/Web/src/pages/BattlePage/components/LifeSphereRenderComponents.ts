@@ -1,6 +1,7 @@
-import CanvasWrapper from "../../../CanvasWrapper";
+import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { sumCoordinate } from "../../../CoordinatesUtils";
 import { TCanvasCoordinates, TCoordinates } from "../../../interfaces";
+import { IRender } from "./Render";
 
 const colors = {
     'sphere-background': '#FF0000',
@@ -8,19 +9,21 @@ const colors = {
     'life-coord': "#FFFFFF"
 }
 
-class LifeSphereRender {
-    canvas: CanvasWrapper;
+class LifeSphereRender implements IRender {
+    canvas: ICanvasWrapper;
     lifeCenter: TCanvasCoordinates;
     healthRadiusInScale: number;
 
     constructor(
-        canvas: CanvasWrapper, 
-        startDraw: TCanvasCoordinates,
+        canvas: ICanvasWrapper,
         healthRadiusInScale: number
     ) {
         this.canvas = canvas;
         this.healthRadiusInScale = healthRadiusInScale;
-        this.lifeCenter = sumCoordinate(startDraw, healthRadiusInScale);
+        this.lifeCenter = {
+            x: healthRadiusInScale,
+            y: healthRadiusInScale
+        };
     }
 
     render() {
@@ -33,12 +36,12 @@ class LifeSphereRender {
 }
 
 class NameRender {
-    canvas: CanvasWrapper;
+    canvas: ICanvasWrapper;
     startDraw: TCanvasCoordinates;
     name: string;
 
     constructor(
-        canvas: CanvasWrapper, 
+        canvas: ICanvasWrapper, 
         startDraw: TCanvasCoordinates,
         name: string
     ) {
@@ -57,21 +60,26 @@ class NameRender {
 }
 
 class LifeCoordRender {
-    canvas: CanvasWrapper;
+    canvas: ICanvasWrapper;
     center: TCanvasCoordinates;
     currentLife: TCanvasCoordinates;
     scale: number;
 
     constructor(
-        canvas: CanvasWrapper, 
-        startDraw: TCanvasCoordinates,
+        canvas: ICanvasWrapper,
         scale: number,
         healthRadiusInScale: number,
     ) {
         this.canvas = canvas;
         this.scale = scale;
-        this.center = sumCoordinate(startDraw, healthRadiusInScale);
-        this.currentLife = sumCoordinate(startDraw, healthRadiusInScale);
+        this.center = {
+            x: healthRadiusInScale,
+            y: healthRadiusInScale
+        };
+        this.currentLife = {
+            x: healthRadiusInScale,
+            y: healthRadiusInScale
+        };
     }
 
     setLife(life: TCoordinates) {

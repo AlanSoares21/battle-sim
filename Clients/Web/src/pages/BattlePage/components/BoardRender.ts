@@ -1,6 +1,7 @@
 import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
-import { IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
+import { IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender } from "./BoardRenderComponents";
+import { LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
 import { IRender } from "./Render";
 
 function areaInnerCanvas(canvasSize: TCanvasSize, canvasAreaProportion: number): TCanvasSize {
@@ -18,17 +19,25 @@ const boardWidth = 0.5;
 const boardHeigth = 0.5;
 
 export default class BoardRender implements IRender {
-    canvas: ICanvasWrapper;
-
-    areaToDraw: TCanvasSize;
-
+    
     /**
-     * lista de elementos para rendenizar
+     * Board components
      */
+    private boardCanvas: ICanvasWrapper;
     pointer: PointerRender;
     private background: BackgroundRender;
     private playersData: IPlayerRenderData[] = [];
     private renders: PlayerRender[] = [];
+
+    /**
+     * Life
+     */
+    private enemyLifeSphereCanvas: ICanvasWrapper;
+    private enemyRenders?: {
+        lifeSphere: LifeSphereRender,
+        lifePointer: LifeCoordRender
+    };
+
     private board: TBoard;
     private cellSize: TSize;
 
@@ -39,47 +48,90 @@ export default class BoardRender implements IRender {
         this.board = board;
         
         const canvasSize = canvas.getSize();
-        // this.areaToDraw = areaInnerCanvas(canvasSize, boardArea);
-        this.areaToDraw = { height: canvasSize.height * boardWidth, width: canvasSize.width * boardHeigth };
-        const startDrawAt = { x: canvasSize.width * boardMarginLeft, y: canvasSize.height * boardMarginTop };
+
+        const boardAreaToDraw: TCanvasSize = { 
+            height: canvasSize.height * boardWidth, 
+            width: canvasSize.width * boardHeigth 
+        };
+        const boardStartDrawAt: TCanvasCoordinates = { 
+            x: canvasSize.width * boardMarginLeft, 
+            y: canvasSize.height * boardMarginTop 
+        };
         
         this.cellSize = {
-            width: this.areaToDraw.width / board.width,
-            height: this.areaToDraw.height / board.height
+            width: boardAreaToDraw.width / board.width,
+            height:boardAreaToDraw.height / board.height
         };
 
-        console.log("new board render",{
-            areaToDraw: this.areaToDraw,
-            startDrawAt,
-            canvasSize,
-            cellSize: this.cellSize
-        });
-
-        this.canvas = new SubAreaOnCanvasDecorator(canvas, startDrawAt, this.areaToDraw);
+        this.boardCanvas = new SubAreaOnCanvasDecorator(
+            canvas, 
+            boardStartDrawAt, 
+            boardAreaToDraw
+        );
         
-        this.pointer = new PointerRender(this.canvas, board, this.cellSize);
-        this.background = new BackgroundRender(this.canvas, board, this.cellSize);
+        this.pointer = new PointerRender(this.boardCanvas, board, this.cellSize);
+        this.background = new BackgroundRender(this.boardCanvas, board, this.cellSize);
+        
+        const enemyLifeSphereStartAt: TCanvasCoordinates = {
+            x: 0,
+            y: 0
+        };
+        
+        const enemyLifeSphereArea: TCanvasSize = {
+            height: boardStartDrawAt.x,
+            width: boardStartDrawAt.x
+        };
+
+        this.enemyLifeSphereCanvas = new SubAreaOnCanvasDecorator(
+            canvas, 
+            enemyLifeSphereStartAt, 
+            enemyLifeSphereArea
+        );
     }
 
-    setPlayer(data: IPlayerRenderData, position: TBoardCoordinates) {
-        const index = this.playersData.findIndex(p => p.name === data.name);
+    setPlayer(data: IEntity, position: TBoardCoordinates, isTheUser: boolean) {
+        const index = this.playersData.findIndex(p => p.name === data.id);
         if (index === -1) {
-            this.playersData.push(data);
+            this.playersData.push({ name: data.id });
             this.renders.push(new PlayerRender(
-                this.canvas,
+                this.boardCanvas,
                 this.cellSize,
                 this.board,
-                data.name,
+                data.id,
                 position
             ));
+            
+            const maxSphereSize = this.enemyLifeSphereCanvas.getSize().width;
+            const lifeSphereScale = Math.abs(maxSphereSize / (data.healthRadius * 2));
+            const healthRadiusInScale = data.healthRadius * lifeSphereScale;
+
+            if (!isTheUser) {
+                this.enemyRenders = {
+                    lifePointer: new LifeCoordRender(
+                        this.enemyLifeSphereCanvas,
+                        lifeSphereScale,
+                        healthRadiusInScale
+                    ),
+                    lifeSphere: new LifeSphereRender(
+                        this.enemyLifeSphereCanvas,
+                        healthRadiusInScale
+                    )
+                };
+            }
         }
         else {
-            this.playersData[index] = data;
+            this.playersData[index] = { name: data.id };
             this.renders[index].updatePosition(position);
         }
     }
 
     render() {
+        // Enemy life sphere
+        if (this.enemyRenders !== undefined) {
+            this.enemyRenders.lifeSphere.render();
+            this.enemyRenders.lifePointer.render();
+        }
+        // Board
         this.background.render();
         for (let index = 0; index < this.renders.length; index++) {
             this.renders[index].render();

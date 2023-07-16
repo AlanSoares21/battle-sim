@@ -52,7 +52,7 @@ import BoardRender from "./BoardRender";
 const isDev = true;
 
 export const BattleController: React.FC = () => {
-    const { battle, server} = useContext(BattleContext);
+    const { battle, server, player } = useContext(BattleContext);
 
     const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
     const [renderController, setRenderController] = useState<BoardRender>();
@@ -104,6 +104,14 @@ export const BattleController: React.FC = () => {
             canvasWrapper,
             board
         );
+        
+        const enemyEntity = battle.entities.find(e => e.id !== player.id);
+        const enemyPosition = battle.board.entitiesPosition
+            .find(e => e.entityIdentifier !== player.id);
+        
+        if (enemyEntity !== undefined && enemyPosition !== undefined)
+            value.setPlayer(enemyEntity, enemyPosition, false);
+        
         setRenderController(value);
     }, [setRenderController, setCanvasOffset]);
 
