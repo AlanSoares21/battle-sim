@@ -82,7 +82,6 @@ export const BattleController: React.FC = () => {
             console.error('canvas reference is null');
             return;
         }
-        console.log('canvas ref', canvasRef);
         
         setCanvasOffset({ 
             left: canvasRef.offsetLeft + canvasRef.clientLeft, 
@@ -105,12 +104,13 @@ export const BattleController: React.FC = () => {
             board
         );
         
-        const enemyEntity = battle.entities.find(e => e.id !== player.id);
-        const enemyPosition = battle.board.entitiesPosition
-            .find(e => e.entityIdentifier !== player.id);
-        
-        if (enemyEntity !== undefined && enemyPosition !== undefined)
-            value.setPlayer(enemyEntity, enemyPosition, false);
+        for (let index = 0; index < battle.entities.length; index++) {
+            const entity = battle.entities[index];
+            const position = battle.board.entitiesPosition
+                .find(e => e.entityIdentifier === entity.id);
+            if (position !== undefined)
+                value.setPlayer(entity, position, entity.id === player.id);
+        }
         
         setRenderController(value);
     }, [setRenderController, setCanvasOffset]);

@@ -37,6 +37,11 @@ export default class BoardRender implements IRender {
         lifeSphere: LifeSphereRender,
         lifePointer: LifeCoordRender
     };
+    private userLifeSphereCanvas: ICanvasWrapper;
+    private userRenders?: {
+        lifeSphere: LifeSphereRender,
+        lifePointer: LifeCoordRender
+    };
 
     private board: TBoard;
     private cellSize: TSize;
@@ -87,6 +92,22 @@ export default class BoardRender implements IRender {
             enemyLifeSphereStartAt, 
             enemyLifeSphereArea
         );
+
+        const userLifeSphereStartAt: TCanvasCoordinates = {
+            x: boardStartDrawAt.x + boardAreaToDraw.width,
+            y: enemyLifeSphereStartAt.y
+        };
+        
+        const userLifeSphereArea: TCanvasSize = {
+            height: boardStartDrawAt.x,
+            width: boardStartDrawAt.x
+        };
+        
+        this.userLifeSphereCanvas = new SubAreaOnCanvasDecorator(
+            canvas, 
+            userLifeSphereStartAt, 
+            userLifeSphereArea
+        );
     }
 
     setPlayer(data: IEntity, position: TBoardCoordinates, isTheUser: boolean) {
@@ -105,7 +126,19 @@ export default class BoardRender implements IRender {
             const lifeSphereScale = Math.abs(maxSphereSize / (data.healthRadius * 2));
             const healthRadiusInScale = data.healthRadius * lifeSphereScale;
 
-            if (!isTheUser) {
+            if (isTheUser) {
+                this.userRenders = {
+                    lifePointer: new LifeCoordRender(
+                        this.userLifeSphereCanvas,
+                        lifeSphereScale,
+                        healthRadiusInScale
+                    ),
+                    lifeSphere: new LifeSphereRender(
+                        this.userLifeSphereCanvas,
+                        healthRadiusInScale
+                    )
+                };
+            } else {
                 this.enemyRenders = {
                     lifePointer: new LifeCoordRender(
                         this.enemyLifeSphereCanvas,
@@ -130,6 +163,11 @@ export default class BoardRender implements IRender {
         if (this.enemyRenders !== undefined) {
             this.enemyRenders.lifeSphere.render();
             this.enemyRenders.lifePointer.render();
+        }
+        // User life sphere
+        if (this.userRenders !== undefined) {
+            this.userRenders.lifeSphere.render();
+            this.userRenders.lifePointer.render();
         }
         // Board
         this.background.render();

@@ -138,7 +138,6 @@ export class PointerRender implements IRender {
         this.board = board;
         this.cellSize = cellSize;
         this.canvasSize = canvas.getSize();
-        console.log("pointer canvas get size", this.canvasSize);
         this.radius = {
             x: cellSize.width / 2,
             y: cellSize.height / 2
@@ -150,7 +149,6 @@ export class PointerRender implements IRender {
             this.canvasSize.width,
             this.canvasSize.height
         );
-        console.log('pointer initial position', this.postition);
     }
 
     setPosition(cell: TBoardCoordinates) {

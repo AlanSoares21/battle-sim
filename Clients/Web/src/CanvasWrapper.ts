@@ -65,7 +65,6 @@ export default class CanvasWrapper implements ICanvasWrapper {
         rotation: number, 
         borderColor: string | CanvasGradient | CanvasPattern
     ) {
-        console.log('draw elipse', center);
         this.context.beginPath();
         this.context.strokeStyle = borderColor;
         this.context.ellipse(
