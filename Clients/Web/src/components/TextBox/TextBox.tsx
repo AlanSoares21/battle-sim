@@ -11,8 +11,8 @@ export const TextBox: React.FC<ITextBoxProps> = ({
     onChange
 }) => {
     return (<input 
-        className="text-box" 
-        type='text' 
+        className='text-box'
+        type='text'
         placeholder={placeholder}
         onChange={ev => {
             if (onChange)

@@ -9,6 +9,7 @@ import { BattlePage } from './pages/BattlePage';
 import { AuthContextProvider } from './contexts/AuthContextProvider';
 import { CommomDataContextProvider } from './contexts/CommomDataContextProvider';
 import { HomePage } from './pages/HomePage';
+import EditEntityPage from './pages/EditEntityPage/EditEntityPage';
 
 const Root: React.FC = () => {
   return (
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "home",
         element: <HomePage />,
+      },
+      {
+        path: "entity",
+        element: <EditEntityPage />,
       },
       {
         path: "battle",

@@ -96,7 +96,7 @@ export async function getEntity(): Promise<IEntity | IApiError> {
 }
 
 export async function getEquips(): Promise<IEquip[] | IApiError> {
-    const response = await requestApi(`/Entity`);
+    const response = await requestApi(`/Equip`);
     return JSON.parse(response.text) as IApiError | IEquip[];
 }
 
