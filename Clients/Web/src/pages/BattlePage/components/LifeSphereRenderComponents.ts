@@ -1,12 +1,6 @@
 import CanvasWrapper from "../../../CanvasWrapper";
+import { sumCoordinate } from "../../../CoordinatesUtils";
 import { TCanvasCoordinates, TCoordinates } from "../../../interfaces";
-
-function sumCoordinate(coordinate: TCanvasCoordinates, value: number): TCanvasCoordinates {
-    return { 
-        x: coordinate.x + value,
-        y: coordinate.y + value
-    }
-}
 
 const colors = {
     'sphere-background': '#FF0000',

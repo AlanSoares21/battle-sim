@@ -4,7 +4,9 @@ export type TBoardCoordinates = TCoordinates;
 
 export type TCanvasCoordinates = TCoordinates;
 
-export type TBoard = { width: number, height: number };
+export type TSize = { width: number, height: number };
+export type TBoard = TSize;
+export type TCanvasSize = TSize;
 
 export interface IPlayerRenderData {
     name: string;

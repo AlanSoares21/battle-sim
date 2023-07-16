@@ -99,7 +99,7 @@ export default class LifeBarRender {
         this.canvas.drawRect(
             config.background.color, 
             { x: 0, y: 0 }, 
-            { x: size.width, y: size.height }
+            size
         );
     }
 
