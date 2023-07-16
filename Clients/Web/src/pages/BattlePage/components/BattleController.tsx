@@ -1,10 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import LifeBar from "./LifeBar";
+import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
 import { BattleContext } from "../BattleContext";
 import SkillBar from "./SkillBar";
 import { TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
-import BoardRender from "./BoardRender";
+import BattleRender from "./BattleRender";
+import { IServerEvents } from "../../../server";
 
 /**
  * tela -> 400x300
@@ -51,11 +51,27 @@ import BoardRender from "./BoardRender";
 
 const isDev = true;
 
+const onAttack = (render: BattleRender, userId: string): IServerEvents['Attack'] => 
+(
+    (_, target, currentHealth) => {
+        render.updateEntityCurrentHealth(target === userId, currentHealth);
+        render.render();
+    }
+)
+
+const onSkill = (render: BattleRender, userId: string): IServerEvents['Skill'] => 
+(
+    (_, source, target, currentHealth) => {
+        render.updateEntityCurrentHealth(target === userId, currentHealth);
+        render.render();
+    }
+)
+
 export const BattleController: React.FC = () => {
     const { battle, server, player } = useContext(BattleContext);
 
     const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
-    const [renderController, setRenderController] = useState<BoardRender>();
+    const [renderController, setRenderController] = useState<BattleRender>();
 
     const [skillSelected, setSkillSelected] = useState<string>();
 
@@ -75,7 +91,26 @@ export const BattleController: React.FC = () => {
             else
                 server.Attack(target);
         }, 
-    [battle, server, skillSelected]);
+    [battle.board.entitiesPosition, server, skillSelected]);
+
+    const handleCanvasClick = useCallback<MouseEventHandler<HTMLCanvasElement>>(
+        ev => {
+            if (!ev || !renderController)
+                return;
+            
+            const canvasClick: TCanvasCoordinates = { 
+                x: ev.clientX - canvasOffset.left,
+                y: ev.clientY - canvasOffset.top
+            };
+
+            const boardClick = renderController.clickOnBoard(canvasClick);
+            
+            if (boardClick) {
+                handleBoardClick(boardClick);
+                renderController.pointer.setPosition(boardClick);
+            }
+        }, 
+    [renderController, canvasOffset, handleBoardClick]);
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
         if (!canvasRef) {
@@ -99,30 +134,43 @@ export const BattleController: React.FC = () => {
         const canvasWrapper = new CanvasWrapper(context)
         const board: TBoard = battle.board.size;
         
-        const value = new BoardRender(
+        const value = new BattleRender(
             canvasWrapper,
             board
         );
         
+        setRenderController(value);
+    }, [setRenderController, setCanvasOffset]);
+
+    /**
+     * update entities position on board
+     */
+    useEffect(() => {
+        if (!renderController)
+            return;
         for (let index = 0; index < battle.entities.length; index++) {
             const entity = battle.entities[index];
             const position = battle.board.entitiesPosition
                 .find(e => e.entityIdentifier === entity.id);
             if (position !== undefined)
-                value.setPlayer(entity, position, entity.id === player.id);
+                renderController.setPlayer(entity, position, entity.id === player.id);
         }
-        
-        setRenderController(value);
-    }, [setRenderController, setCanvasOffset]);
+    }, [battle.board.entitiesPosition, renderController]);
+
+    /**
+     * update entities life when server events happen
+     */
+    useEffect(() => {
+        if (renderController)
+            server
+            .onAttack(onAttack(renderController, player.id))
+            .onSkill(onSkill(renderController, player.id));
+    }, [server, renderController]);
 
     useEffect(() => {
         if (renderController) {
-            if (isDev) {
-                renderController.render();
-                return;
-            }
             console.log("render loop start");
-            const renderLoop = setInterval(() => {renderController.render()}, 3000);
+            const renderLoop = setInterval(() => {renderController.render()}, 1000);
             return () => {
                 clearInterval(renderLoop);
                 console.log("render loop finished");
@@ -133,23 +181,10 @@ export const BattleController: React.FC = () => {
 
     return(<div>
             <canvas
-                onClick={(e) => {
-                    console.log('canvas click', {
-                        offset: canvasOffset,
-                        e: e,
-                        tX: e.clientX - canvasOffset.left,
-                        tY: e.clientY - canvasOffset.top
-                    })
-                }}
+                onClick={handleCanvasClick}
                 ref={setCanvasRef}
                 style={{background: "#000000", width: '99%'}}>
             </canvas>
-        {
-            /*
-            <LifeBar />
-            <Board onBoardClick={handleBoardClick} cellSize={25} />
             <SkillBar selected={skillSelected} onSkillSelect={setSkillSelected} />
-            */
-        }
     </div>);
 }

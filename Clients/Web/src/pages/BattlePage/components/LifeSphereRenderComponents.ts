@@ -62,7 +62,7 @@ class NameRender {
 class LifeCoordRender {
     canvas: ICanvasWrapper;
     center: TCanvasCoordinates;
-    currentLife: TCanvasCoordinates;
+    private currentLife: TCanvasCoordinates;
     scale: number;
 
     constructor(
@@ -85,7 +85,7 @@ class LifeCoordRender {
     setLife(life: TCoordinates) {
         this.currentLife = {
             x: this.center.x + (life.x * this.scale),
-            y: this.center.y + (life.y * this.scale)
+            y: this.center.y - (life.y * this.scale)
         }
     }
 

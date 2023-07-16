@@ -1,6 +1,7 @@
 import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
-import { IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
-import { BackgroundRender, PlayerRender, PointerRender } from "./BoardRenderComponents";
+import { subCoordinates } from "../../../CoordinatesUtils";
+import { IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
 import { LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
 import { IRender } from "./Render";
 
@@ -18,16 +19,18 @@ const boardMarginTop = 0.1;
 const boardWidth = 0.5;
 const boardHeigth = 0.5;
 
-export default class BoardRender implements IRender {
+export default class BattleRender implements IRender {
     
     /**
      * Board components
      */
     private boardCanvas: ICanvasWrapper;
+    private boardStartAt: TCanvasCoordinates;
+    private boardCanvasSize: TCanvasSize;
     pointer: PointerRender;
     private background: BackgroundRender;
     private playersData: IPlayerRenderData[] = [];
-    private renders: PlayerRender[] = [];
+    private playersRenders: PlayerRender[] = [];
 
     /**
      * Life
@@ -62,12 +65,13 @@ export default class BoardRender implements IRender {
             x: canvasSize.width * boardMarginLeft, 
             y: canvasSize.height * boardMarginTop 
         };
-        
         this.cellSize = {
             width: boardAreaToDraw.width / board.width,
             height:boardAreaToDraw.height / board.height
         };
-
+        
+        this.boardCanvasSize = boardAreaToDraw;
+        this.boardStartAt = boardStartDrawAt;
         this.boardCanvas = new SubAreaOnCanvasDecorator(
             canvas, 
             boardStartDrawAt, 
@@ -114,7 +118,7 @@ export default class BoardRender implements IRender {
         const index = this.playersData.findIndex(p => p.name === data.id);
         if (index === -1) {
             this.playersData.push({ name: data.id });
-            this.renders.push(new PlayerRender(
+            this.playersRenders.push(new PlayerRender(
                 this.boardCanvas,
                 this.cellSize,
                 this.board,
@@ -153,9 +157,35 @@ export default class BoardRender implements IRender {
             }
         }
         else {
-            this.playersData[index] = { name: data.id };
-            this.renders[index].updatePosition(position);
+            this.playersRenders[index].updatePosition(position);
         }
+    }
+
+    clickOnBoard(canvasClick: TCanvasCoordinates): TCoordinates | undefined {
+        canvasClick = subCoordinates(canvasClick, this.boardStartAt);
+        console.log('canvas click', {
+            cellSize: this.cellSize,
+            boardCanvasSize: this.boardCanvasSize,
+            board: this.board,
+            baordH: this.board.height * this.cellSize.height
+        });
+        if (
+            this.boardCanvasSize.width >= canvasClick.x &&
+            this.boardCanvasSize.height >= canvasClick.y &&
+            0 <= canvasClick.x &&
+            0 <= canvasClick.y
+        ) {
+            const b = canvasToBoardCoordinates(canvasClick, this.cellSize);
+            console.log('board click', b);
+            return b;
+        }
+    }
+
+    updateEntityCurrentHealth(isTheUser: boolean, health: TCoordinates) {
+        if (isTheUser && this.userRenders)
+            this.userRenders.lifePointer.setLife(health);
+        else if (this.enemyRenders)
+            this.enemyRenders.lifePointer.setLife(health);
     }
 
     render() {
@@ -171,8 +201,8 @@ export default class BoardRender implements IRender {
         }
         // Board
         this.background.render();
-        for (let index = 0; index < this.renders.length; index++) {
-            this.renders[index].render();
+        for (let index = 0; index < this.playersRenders.length; index++) {
+            this.playersRenders[index].render();
         }
         this.pointer.render();
     }
