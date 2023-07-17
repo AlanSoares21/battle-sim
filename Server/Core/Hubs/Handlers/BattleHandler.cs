@@ -88,7 +88,12 @@ public class BattleHandler : IBattleHandler
     void AddUsersOnBattle(IBattle battle, params Entity[] users)
     {
         foreach(var user in users) 
-            battle.AddEntity(_converter.Entity(user));
+        {
+            var entity = _converter.Entity(user);
+            foreach (var equip in user.Equips)
+                entity.AddEquip(_converter.Equip(equip));
+            battle.AddEntity(entity);
+        }
     }
 
     Task AddUserInGroup(string groupName, string connectionId)

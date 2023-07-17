@@ -1,5 +1,7 @@
 using BattleSimulator.Engine;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Server.Database;
+using BattleSimulator.Server.Database.Models;
 using BattleSimulator.Server.Hubs;
 using BattleSimulator.Server.Models;
 using BattleSimulator.Server.Tests.Builders;
@@ -51,6 +53,44 @@ public class BattleCreationTests
         await handler.CreateDuel(otherUser.Id, callerContext);
 
         BattleAddedHadEntities(battleCollection, caller, otherUser);       
+    }
+
+    [TestMethod]
+    public async Task Entities_In_Battle_Have_Equips() 
+    {
+        IEntity otherUser = Utils.FakeEntity("otherUserId");
+        IEntity caller = Utils.FakeEntity("callerId"); 
+        Entity callerDbEntity = new() {
+            Id = caller.Id,
+            Equips = new() { new EntityEquip() {
+                Coordinates = new() { 
+                    new(0, 0), new(1, 0), new(1, 1), new(0, 1) 
+                },
+                EntityId = caller.Id,
+                EquipId = Utils.DefaultEquips[0].Id
+            }} 
+        };
+
+        IGameDb db = Utils.FakeDbWithEntities(otherUser.Id);
+        A.CallTo(() => db.SearchEntity(caller.Id)).Returns(callerDbEntity);
+        
+        IGameDbConverter converter = Utils.FakeConverterWithEntities(otherUser);
+        A.CallTo(() => converter.Entity(Utils.EntityWithId(caller.Id)))
+            .Returns(caller);
+        
+        CurrentCallerContext callerContext = new() {
+            UserId = caller.Id,
+            HubClients = Utils.FakeHubCallerContext()
+        };
+        var battleCollection = A.Fake<IBattleCollection>();
+        IBattleHandler handler = new BattleHandlerBuilder()
+            .WithDb(db)
+            .WithConverter(converter)
+            .WithBattleCollection(battleCollection)
+            .Build();
+        await handler.CreateDuel(otherUser.Id, callerContext);
+        A.CallTo(() => converter.Equip(callerDbEntity.Equips[0]))
+            .MustHaveHappenedOnceExactly();
     }
 
     void BattleAddedHadEntities(IBattleCollection collection, params IEntity[] entities) 

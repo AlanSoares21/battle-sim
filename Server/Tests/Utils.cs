@@ -178,7 +178,7 @@ public static class Utils
         return converter;
     }
 
-    static Entity EntityWithId(string id)
+    public static Entity EntityWithId(string id)
     {
         return An<Entity>.That.Matches(e => e.Id == id);
     }
