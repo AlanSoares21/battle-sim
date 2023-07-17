@@ -1,11 +1,39 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
-import { TCanvasCoordinates, TCoordinates } from "../../../interfaces";
+import { TCanvasCoordinates, TCoordinates, TSize } from "../../../interfaces";
 import { IRender } from "./Render";
 
 const colors = {
     'sphere-background': '#FF0000',
     'name-text': "#FFFFFF",
-    'life-coord': "#FFFFFF"
+    'life-coord': "#FFFFFF",
+    'life-equip': "#004F55"
+}
+
+class EquipRender implements IRender {
+    canvas: ICanvasWrapper;
+    coordinates: TCanvasCoordinates[]
+
+    constructor(
+        canvas: ICanvasWrapper,
+        scale: number,
+        healthRadiusInScale: number,
+        coordinates: TCoordinates[]
+    ) {
+        this.canvas = canvas;
+        this.coordinates = coordinates.map(c => 
+            ({ 
+                x: healthRadiusInScale + c.x * scale, 
+                y: healthRadiusInScale - c.y * scale
+            })
+        );
+    }
+
+    render() {
+        this.canvas.drawLinesAndFill(
+            this.coordinates,
+            colors['life-equip']
+        );
+    }
 }
 
 class LifeSphereRender implements IRender {
@@ -91,7 +119,7 @@ class LifeCoordRender {
     render() {
         this.canvas.drawCircle(
             this.currentLife, 
-            5, 
+            2, 
             colors['name-text']
         );
     }
@@ -100,5 +128,6 @@ class LifeCoordRender {
 export {
     LifeSphereRender,
     NameRender,
-    LifeCoordRender
+    LifeCoordRender,
+    EquipRender
 };

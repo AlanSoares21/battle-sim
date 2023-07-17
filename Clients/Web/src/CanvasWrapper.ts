@@ -26,6 +26,11 @@ export interface ICanvasWrapper {
         lineColor: CanvasFillStrokeStyles['strokeStyle']
     ) => void;
 
+    drawLinesAndFill: (
+        points: TCanvasCoordinates[],
+        fillColor: CanvasFillStrokeStyles['fillStyle']
+    ) => void;
+
     drawEmptyCircle: (
         center: TCanvasCoordinates, 
         radius: number, 
@@ -58,6 +63,21 @@ export default class CanvasWrapper implements ICanvasWrapper {
     constructor(context: CanvasRenderingContext2D) {
         this.context = context;
     }
+    
+    drawLinesAndFill(
+        points: TCoordinates[], 
+        fillColor: string | CanvasGradient | CanvasPattern
+    ) {
+        this.context.beginPath();
+        this.context.fillStyle = fillColor;
+        this.context.moveTo(points[0].x, points[0].y);
+        for (let index = 0; index < points.length; index++) {
+            const current = points[index];
+            this.context.lineTo(current.x, current.y);
+        }
+        this.context.lineTo(points[0].x, points[0].y);
+        this.context.fill();
+    };
 
     drawEmptyElipse(
         center: TCoordinates, 
@@ -146,6 +166,12 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
 
     constructor(canvasWarapper: CanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
+    }
+    drawLinesAndFill(
+        points: TCoordinates[], 
+        fillColor: string | CanvasGradient | CanvasPattern
+    ) {
+        this.canvasWarapper.drawLinesAndFill(points, fillColor);
     }
 
     drawEmptyElipse(center: TCoordinates, radius: TCoordinates, rotation: number, borderColor: string | CanvasGradient | CanvasPattern) {
@@ -256,6 +282,16 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
             rotation,
             borderColor
         );
+    }
+
+    drawLinesAndFill(
+        points: TCoordinates[], 
+        fillColor: string | CanvasGradient | CanvasPattern
+    ): void {
+        super.drawLinesAndFill(
+            points.map(p => sumCoordinates(p, this.newOrigin)),
+            fillColor
+        );    
     }
 
     canvasWidth(): number {

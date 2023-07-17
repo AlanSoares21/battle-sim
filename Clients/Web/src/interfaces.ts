@@ -60,6 +60,12 @@ export interface IWeapon {
     damageOnY: DamageDirection;
 }
 
+export interface IEntityEquip {
+    entityId: string;
+    equipId: string;
+    coordinates: TCoordinates[];
+}
+
 export interface IEntity {
     id: string;
     skills: string[];
@@ -67,6 +73,7 @@ export interface IEntity {
     healthRadius: number;
     damage: number;
     defenseAbsorption: number;
+    equips: IEntityEquip[];
 }
 
 export interface IBattleData {

@@ -2,7 +2,7 @@ import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../.
 import { subCoordinates } from "../../../CoordinatesUtils";
 import { IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
-import { LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
+import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
 import { IRender } from "./Render";
 
 function areaInnerCanvas(canvasSize: TCanvasSize, canvasAreaProportion: number): TCanvasSize {
@@ -38,12 +38,14 @@ export default class BattleRender implements IRender {
     private enemyLifeSphereCanvas: ICanvasWrapper;
     private enemyRenders?: {
         lifeSphere: LifeSphereRender,
-        lifePointer: LifeCoordRender
+        lifePointer: LifeCoordRender,
+        equips: EquipRender[]
     };
     private userLifeSphereCanvas: ICanvasWrapper;
     private userRenders?: {
         lifeSphere: LifeSphereRender,
-        lifePointer: LifeCoordRender
+        lifePointer: LifeCoordRender,
+        equips: EquipRender[]
     };
 
     private board: TBoard;
@@ -129,7 +131,7 @@ export default class BattleRender implements IRender {
             const maxSphereSize = this.enemyLifeSphereCanvas.getSize().width;
             const lifeSphereScale = Math.abs(maxSphereSize / (data.healthRadius * 2));
             const healthRadiusInScale = data.healthRadius * lifeSphereScale;
-
+            
             if (isTheUser) {
                 this.userRenders = {
                     lifePointer: new LifeCoordRender(
@@ -140,7 +142,13 @@ export default class BattleRender implements IRender {
                     lifeSphere: new LifeSphereRender(
                         this.userLifeSphereCanvas,
                         healthRadiusInScale
-                    )
+                    ),
+                    equips: data.equips.map(e => new EquipRender(
+                        this.userLifeSphereCanvas,
+                        lifeSphereScale,
+                        healthRadiusInScale,
+                        e.coordinates
+                    ))
                 };
             } else {
                 this.enemyRenders = {
@@ -152,7 +160,13 @@ export default class BattleRender implements IRender {
                     lifeSphere: new LifeSphereRender(
                         this.enemyLifeSphereCanvas,
                         healthRadiusInScale
-                    )
+                    ),
+                    equips: data.equips.map(e => new EquipRender(
+                        this.enemyLifeSphereCanvas,
+                        lifeSphereScale,
+                        healthRadiusInScale,
+                        e.coordinates
+                    ))
                 };
             }
         }
@@ -193,11 +207,16 @@ export default class BattleRender implements IRender {
         if (this.enemyRenders !== undefined) {
             this.enemyRenders.lifeSphere.render();
             this.enemyRenders.lifePointer.render();
+            for (let index = 0; index < this.enemyRenders.equips.length; index++) {
+                this.enemyRenders.equips[index].render();
+            }
+            // this.enemyRenders.equips.forEach(e => e.render());
         }
         // User life sphere
         if (this.userRenders !== undefined) {
             this.userRenders.lifeSphere.render();
             this.userRenders.lifePointer.render();
+            this.userRenders.equips.forEach(e => e.render());
         }
         // Board
         this.background.render();

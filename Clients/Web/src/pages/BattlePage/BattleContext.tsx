@@ -31,7 +31,8 @@ export const BattleContext = createContext<IBattleContext>({
             damageOnX: DamageDirection.Neutral,
             damageOnY: DamageDirection.Neutral,
             name: ''
-        }
+        },
+        equips: []
     },
     server: new ServerConnection(
         new HubConnectionBuilder().withUrl('http://localhost').build()
