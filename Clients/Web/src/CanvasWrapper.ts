@@ -55,6 +55,20 @@ export interface ICanvasWrapper {
         value: string, 
         color: CanvasFillStrokeStyles['fillStyle']
     ) => void;
+
+    drawImage: (
+        image: {
+            source: CanvasImageSource,
+            startAt: TCoordinates,
+            height: number,
+            width: number
+        }, 
+        destination: {
+            startAt: TCoordinates,
+            height: number,
+            width: number
+        }
+    ) => void;
 }
 
 export default class CanvasWrapper implements ICanvasWrapper {
@@ -193,6 +207,13 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
     constructor(canvasWarapper: CanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
     }
+    drawImage(
+        image: { source: CanvasImageSource; startAt: TCoordinates; height: number; width: number; }, 
+        destination: { startAt: TCoordinates; height: number; width: number; }
+    ) {
+        this.canvasWarapper.drawImage(image, destination);
+    }
+    
     drawLinesAndFill(
         points: TCoordinates[], 
         fillColor: string | CanvasGradient | CanvasPattern
@@ -294,6 +315,14 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
         super(canvasWarapper);
         this.newOrigin = newOrigin;
         this.newArea = newArea;
+    }
+
+    drawImage(
+        image: { source: CanvasImageSource; startAt: TCoordinates; height: number; width: number; }, 
+        destination: { startAt: TCoordinates; height: number; width: number; }
+    ): void {
+        destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
+        super.drawImage(image, destination);
     }
 
     drawEmptyElipse(

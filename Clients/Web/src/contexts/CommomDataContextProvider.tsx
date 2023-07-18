@@ -8,6 +8,8 @@ import { IServerEvents } from "../server";
 export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({ 
     children 
 }) => {
+    const [assetsData, setAssetsData] = useState<ICommomDataContext['assets']>();
+
     const authContext = useContext(AuthContext);
     const [usersConnected, setUsersConnected] = useState<ICommomDataContext['usersConnected']>([]);
     const [battleRequests, setBattleRequests] = useState<ICommomDataContext['battleRequests']>([]);
@@ -114,6 +116,19 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         }
     , []);
 
+    useEffect(() => {
+        const assetsImage = new Image();
+        assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
+        fetch(`${process.env.PUBLIC_URL}/assets/assets.map.json`)
+        .then(r => r.text())
+        .then(assetsMap => {
+            setAssetsData({
+                file: assetsImage,
+                map: JSON.parse(assetsMap)
+            });
+        })
+    }, []);
+
     useEffect(
         () => {
             if (authContext.data) {
@@ -147,7 +162,12 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         ]
     )
 
-    return <CommomDataContext.Provider value={{ usersConnected, battleRequests, battle }}>
+    return <CommomDataContext.Provider value={{ 
+        usersConnected, 
+        battleRequests, 
+        battle,
+        assets: assetsData
+    }}>
         {children}
     </CommomDataContext.Provider>
 }

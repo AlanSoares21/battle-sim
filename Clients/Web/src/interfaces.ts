@@ -95,3 +95,15 @@ export interface IEquip {
     effect: EquipEffect;
     shape: EquipShape
 }
+
+export interface IAssetItem {
+    start: TCoordinates;
+    size: TSize;
+}
+
+export interface IAssetsFile {
+    "board-background": IAssetItem;
+    "enemy": IAssetItem;
+    "player": IAssetItem;
+    "unknowed-skill": IAssetItem;
+}

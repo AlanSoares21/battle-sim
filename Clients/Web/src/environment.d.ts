@@ -3,6 +3,7 @@ declare global {
         interface ProcessEnv {
             REACT_APP_ServerApiUrl?: string;
             REACT_APP_ServerWsUrl?: string;
+            PUBLIC_URL: string;
         }
     }
 }
