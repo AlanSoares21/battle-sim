@@ -94,6 +94,8 @@ public class Rectangle : IEquipFormat
 
     public Coordinate? Intersect(Coordinate start, Coordinate end)
     {
+        Coordinate? intersection = null;
+        double intersectionDistanceToStart = 0;
         double startEndDiffX = start.X - end.X;
         double startEndDiffY = start.Y - end.Y;
         for (int i = 0; i < 4; i++)
@@ -121,13 +123,22 @@ public class Rectangle : IEquipFormat
                 &&
                 1 >= beta && beta >= 0)
             {
-                return new Coordinate(
+                var aux = new Coordinate(
                     Coordinates[i].X + alfa * nextCurrentDiffX,
                     Coordinates[i].Y + alfa * nextCurrentDiffY
                 );
+                double auxDistanceToStart = aux.Distance(start);
+                if (
+                    intersection.HasValue && 
+                    auxDistanceToStart > intersectionDistanceToStart) 
+                {
+                    continue;
+                }
+                intersection = aux;
+                intersectionDistanceToStart = auxDistanceToStart;
             }
         }
-        return null;
+        return intersection;
     }
 
 

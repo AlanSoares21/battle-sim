@@ -94,10 +94,16 @@ public class RectangleTests
 
     [TestMethod]
     [DataRow(0,0, 5,5, 1,1)]
+    // ends inside the rectangle
     [DataRow(0,2, 3,2, 1,2)]
     [DataRow(2,4, 2,2, 2,3)]
     [DataRow(5,2, 3,2, 4,2)]
     [DataRow(3,0, 3,2, 3,1)]
+    // cross the rectangle
+    [DataRow(0,2, 5,2, 1,2)]
+    [DataRow(2,4, 2,0, 2,3)]
+    [DataRow(5,2, 0,2, 4,2)]
+    [DataRow(3,0, 3,5, 3,1)]
     public void Return_Coordinate_If_The_Segment_Intersect_The_Rectangle(
         int startX, int startY, int endX, int endY,
         double expetedX, double expetedY
