@@ -1,5 +1,5 @@
 import { sumCoordinates } from "./CoordinatesUtils";
-import { TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "./interfaces";
+import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "./interfaces";
 
 export interface ICanvasWrapper {
     canvasWidth: () => number;
@@ -57,12 +57,16 @@ export interface ICanvasWrapper {
     ) => void;
 
     drawImage: (
-        image: {
-            source: CanvasImageSource,
+        image: IAsset, 
+        destination: {
             startAt: TCoordinates,
             height: number,
             width: number
-        }, 
+        }
+    ) => void;
+
+    drawPattern: (
+        image: ImageBitmap, 
         destination: {
             startAt: TCoordinates,
             height: number,
@@ -170,12 +174,7 @@ export default class CanvasWrapper implements ICanvasWrapper {
     }
 
     drawImage(
-        image: {
-            source: CanvasImageSource,
-            startAt: TCoordinates,
-            height: number,
-            width: number
-        }, 
+        image: IAsset, 
         destination: {
             startAt: TCoordinates,
             height: number,
@@ -183,14 +182,33 @@ export default class CanvasWrapper implements ICanvasWrapper {
         }
     ) {
         this.context.drawImage(
-            image.source,
-            image.startAt.x,
-            image.startAt.y,
-            image.width,
-            image.height,
+            image.image,
+            image.start.x,
+            image.start.y,
+            image.size.width,
+            image.size.height,
             destination.startAt.x,
             destination.startAt.y,
             destination.width,
+            destination.height
+        );
+    }
+
+    drawPattern(
+        image: ImageBitmap, 
+        destination: {
+            startAt: TCoordinates,
+            height: number,
+            width: number
+        }
+    ) {
+        const pattern = this.context.createPattern(image, "repeat");
+        if (pattern !== null)
+            this.context.fillStyle = pattern;
+        this.context.fillRect(
+            destination.startAt.x, 
+            destination.startAt.y, 
+            destination.width, 
             destination.height
         );
     }
@@ -208,10 +226,17 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
         this.canvasWarapper = canvasWarapper;
     }
     drawImage(
-        image: { source: CanvasImageSource; startAt: TCoordinates; height: number; width: number; }, 
+        image: IAsset, 
         destination: { startAt: TCoordinates; height: number; width: number; }
     ) {
         this.canvasWarapper.drawImage(image, destination);
+    }
+
+    drawPattern (
+        image: ImageBitmap, 
+        destination: { startAt: TCoordinates; height: number; width: number; }
+    ) {
+        this.canvasWarapper.drawPattern(image, destination);
     }
     
     drawLinesAndFill(
@@ -318,11 +343,19 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
     }
 
     drawImage(
-        image: { source: CanvasImageSource; startAt: TCoordinates; height: number; width: number; }, 
+        image: IAsset, 
         destination: { startAt: TCoordinates; height: number; width: number; }
     ): void {
         destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
         super.drawImage(image, destination);
+    }
+
+    drawPattern (
+        image: ImageBitmap, 
+        destination: { startAt: TCoordinates; height: number; width: number; }
+    ) {
+        destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
+        super.drawPattern(image, destination);
     }
 
     drawEmptyElipse(

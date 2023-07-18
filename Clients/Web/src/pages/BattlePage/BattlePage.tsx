@@ -29,11 +29,12 @@ export const BattlePage: React.FC = () => {
 
     return(<>
         {
-            player && commomData.battle && authContext.data &&
+            player && commomData.battle && authContext.data && commomData.assets &&
             <BattleContext.Provider value={{
                 battle: commomData.battle,
                 server: authContext.data.server,
-                player
+                player,
+                assets: commomData.assets
             }}>
                 <BattleController />
             </BattleContext.Provider>

@@ -1,6 +1,6 @@
 import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
 import { subCoordinates } from "../../../CoordinatesUtils";
-import { IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { IAssetsFile, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
 import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
 import { IRender } from "./Render";
@@ -53,7 +53,11 @@ export default class BattleRender implements IRender {
 
     constructor(
         canvas: CanvasWrapper,
-        board: TBoard
+        board: TBoard,
+        assetsData: {
+            map: IAssetsFile,
+            file: ImageBitmap
+        }
     ) {
         this.board = board;
         
@@ -81,7 +85,15 @@ export default class BattleRender implements IRender {
         );
         
         this.pointer = new PointerRender(this.boardCanvas, board, this.cellSize);
-        this.background = new BackgroundRender(this.boardCanvas, board, this.cellSize);
+        this.background = new BackgroundRender(
+            this.boardCanvas, 
+            board, 
+            this.cellSize,
+            {
+                image: assetsData.file,
+                ...assetsData.map['board-background']
+            }
+        );
         
         const enemyLifeSphereStartAt: TCanvasCoordinates = {
             x: 0,

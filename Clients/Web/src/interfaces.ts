@@ -101,9 +101,26 @@ export interface IAssetItem {
     size: TSize;
 }
 
+export interface IAssetItemWithImage extends IAssetItem {
+    image: ImageBitmap;
+}
+
 export interface IAssetsFile {
     "board-background": IAssetItem;
     "enemy": IAssetItem;
     "player": IAssetItem;
     "unknowed-skill": IAssetItem;
+}
+
+export interface IAssetsData {
+    "board-background": IAssetItemWithImage;
+    "enemy": IAssetItemWithImage;
+    "player": IAssetItemWithImage;
+    "unknowed-skill": IAssetItemWithImage;
+}
+
+export interface IAsset {
+    image: ImageBitmap;
+    size: TSize;
+    start: TCoordinates;
 }

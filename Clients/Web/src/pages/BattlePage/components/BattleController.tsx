@@ -68,7 +68,7 @@ const onSkill = (render: BattleRender, userId: string): IServerEvents['Skill'] =
 )
 
 export const BattleController: React.FC = () => {
-    const { battle, server, player } = useContext(BattleContext);
+    const { battle, server, player, assets } = useContext(BattleContext);
 
     const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
     const [renderController, setRenderController] = useState<BattleRender>();
@@ -113,6 +113,11 @@ export const BattleController: React.FC = () => {
     [renderController, canvasOffset, handleBoardClick]);
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
+        if (!assets.file) {
+            console.error('assets bit map not loaded');
+            return;
+        }
+
         if (!canvasRef) {
             console.error('canvas reference is null');
             return;
@@ -136,11 +141,15 @@ export const BattleController: React.FC = () => {
         
         const value = new BattleRender(
             canvasWrapper,
-            board
+            board,
+            {
+                file: assets.file,
+                map: assets.map
+            }
         );
         
         setRenderController(value);
-    }, [setRenderController, setCanvasOffset]);
+    }, [setRenderController, setCanvasOffset, assets]);
 
     /**
      * update entities position on board

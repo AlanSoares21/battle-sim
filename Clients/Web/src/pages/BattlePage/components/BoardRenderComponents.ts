@@ -1,8 +1,10 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import {
+    IAsset,
     TBoard, 
     TBoardCoordinates, 
     TCanvasCoordinates, 
+    TCanvasSize, 
     TCoordinates, 
     TSize
 } from "../../../interfaces";
@@ -172,17 +174,21 @@ export class PointerRender implements IRender {
 }
 
 export class BackgroundRender implements IRender {
-    canvas: ICanvasWrapper;
-    board: TBoard;
-    cellSize: TSize;
+    private canvas: ICanvasWrapper;
+    private board: TBoard;
+    private cellSize: TSize;
 
-    canvasSize: TBoard;
+    private canvasSize: TCanvasSize;
+
+    private asset: IAsset;
     
     constructor (
         canvas: ICanvasWrapper,
         board: TBoard,
-        cellSize: TSize
+        cellSize: TSize,
+        asset: IAsset
     ) {
+        this.asset = asset;
         this.canvas = canvas;
         this.board = board;
         this.cellSize = cellSize;
@@ -190,9 +196,12 @@ export class BackgroundRender implements IRender {
     }
 
     private fillBackground() {
-        const start: TCanvasCoordinates = { x: 0, y: 0 };
-        const canvasSize = this.canvas.getSize();
-        this.canvas.drawRect(colors['background'], start, canvasSize);
+        const startAt: TCanvasCoordinates = { x: 0, y: 0 };
+        this.canvas.drawPattern(this.asset.image, {
+            startAt,
+            height: this.canvasSize.height,
+            width: this.canvasSize.width
+        });
     }
 
     private drawGrid() {

@@ -1,9 +1,17 @@
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { CommomDataContext, ICommomDataContext } from "./CommomDataContext";
 import { AuthContext } from "./AuthContext";
-import { IUserConnected } from "../interfaces";
+import { IAssetItem, IAssetsFile, IUserConnected } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 import { IServerEvents } from "../server";
+
+function getAssetBitMap(assetImage: HTMLImageElement, item: IAssetItem) {
+    return createImageBitmap(
+        assetImage, 
+        item.start.x, item.start.y, 
+        item.size.width, item.size.height
+    );
+}
 
 export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({ 
     children 
@@ -117,16 +125,32 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
     , []);
 
     useEffect(() => {
-        const assetsImage = new Image();
-        assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
         fetch(`${process.env.PUBLIC_URL}/assets/assets.map.json`)
-        .then(r => r.text())
-        .then(assetsMap => {
-            setAssetsData({
-                file: assetsImage,
-                map: JSON.parse(assetsMap)
-            });
-        })
+        .then(async r => JSON.parse(await r.text()) as IAssetsFile)
+        .then(map => {
+            const assetsImage = new Image();
+            assetsImage.onload = async () => {
+                const result = await Promise.all([
+                    createImageBitmap(assetsImage),
+                    getAssetBitMap(assetsImage, map['board-background']),
+                    getAssetBitMap(assetsImage, map['enemy']),
+                    getAssetBitMap(assetsImage, map['player']),
+                    getAssetBitMap(assetsImage, map['unknowed-skill'])
+                ]);
+                const data: ICommomDataContext['assets'] = {
+                    file: result[0],
+                    map: {
+                        'board-background': { image: result[1], ...map['board-background'] },
+                        'enemy': { image: result[2], ...map['enemy'] },
+                        'player': { image: result[3], ...map['player'] },
+                        'unknowed-skill': { image: result[4], ...map['unknowed-skill'] }
+                    }
+                }
+                setAssetsData(data);
+            }
+            assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
+        });
+        
     }, []);
 
     useEffect(
