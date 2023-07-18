@@ -1,6 +1,6 @@
 import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
 import { subCoordinates } from "../../../CoordinatesUtils";
-import { IAssetsFile, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { IAssetsData, IAssetsFile, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
 import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
 import { IRender } from "./Render";
@@ -51,14 +51,14 @@ export default class BattleRender implements IRender {
     private board: TBoard;
     private cellSize: TSize;
 
+    private assets: IAssetsData;
+
     constructor(
         canvas: CanvasWrapper,
         board: TBoard,
-        assetsData: {
-            map: IAssetsFile,
-            file: ImageBitmap
-        }
+        assetsData: IAssetsData
     ) {
+        this.assets = assetsData;
         this.board = board;
         
         const canvasSize = canvas.getSize();
@@ -89,10 +89,7 @@ export default class BattleRender implements IRender {
             this.boardCanvas, 
             board, 
             this.cellSize,
-            {
-                image: assetsData.file,
-                ...assetsData.map['board-background']
-            }
+            assetsData['board-background']
         );
         
         const enemyLifeSphereStartAt: TCanvasCoordinates = {
@@ -137,7 +134,8 @@ export default class BattleRender implements IRender {
                 this.cellSize,
                 this.board,
                 data.id,
-                position
+                position,
+                isTheUser ? this.assets['player'] : this.assets['enemy']
             ));
             
             const maxSphereSize = this.enemyLifeSphereCanvas.getSize().width;

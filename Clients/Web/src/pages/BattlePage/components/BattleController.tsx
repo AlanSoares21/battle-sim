@@ -6,51 +6,6 @@ import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRender from "./BattleRender";
 import { IServerEvents } from "../../../server";
 
-/**
- * tela -> 400x300
- * tabuleiro -> 8x8
- * tabuleiro ocupa 30% da tela
- * tabuleiro no canvas -> 400*0.3 x 300*0.3 = 30% da area de 400x300?
- * 
- * retangulo 4x2
- * area 8
- * 0.5 do retangulo -> 2x1
- * area 2
- * 
- * 4*2 = 8
- * 
- * area = 4 
- * wh = 4
- * 
- * proporção
- * 4/2 = w/h -> w = Wh/H
- * 
- * 4/2 = w/h
- * 4h = 2w
- * 2h = w
- * 
- * equações
- * wh = 4
- * 2h = w
- * 
- * wh = 4
- * 2h * h = 4
- * 2h² = 4
- * h² = 2
- * 
- * (Wh/H) * h = targetArea
- * (Wh²/H) = targetArea
- * h² = targetArea * H / W
- * 
- * w = Wh/H
- * 
- * 2h = w
- * w = 2 * sqtr(2)
- * 
- */
-
-const isDev = true;
-
 const onAttack = (render: BattleRender, userId: string): IServerEvents['Attack'] => 
 (
     (_, target, currentHealth) => {
@@ -113,11 +68,6 @@ export const BattleController: React.FC = () => {
     [renderController, canvasOffset, handleBoardClick]);
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
-        if (!assets.file) {
-            console.error('assets bit map not loaded');
-            return;
-        }
-
         if (!canvasRef) {
             console.error('canvas reference is null');
             return;
@@ -142,10 +92,7 @@ export const BattleController: React.FC = () => {
         const value = new BattleRender(
             canvasWrapper,
             board,
-            {
-                file: assets.file,
-                map: assets.map
-            }
+            assets
         );
         
         setRenderController(value);

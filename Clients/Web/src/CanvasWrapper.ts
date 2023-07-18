@@ -56,7 +56,7 @@ export interface ICanvasWrapper {
         color: CanvasFillStrokeStyles['fillStyle']
     ) => void;
 
-    drawImage: (
+    drawAsset: (
         image: IAsset, 
         destination: {
             startAt: TCoordinates,
@@ -173,7 +173,7 @@ export default class CanvasWrapper implements ICanvasWrapper {
         this.context.fill();
     }
 
-    drawImage(
+    drawAsset(
         image: IAsset, 
         destination: {
             startAt: TCoordinates,
@@ -181,17 +181,18 @@ export default class CanvasWrapper implements ICanvasWrapper {
             width: number
         }
     ) {
-        this.context.drawImage(
-            image.image,
-            image.start.x,
-            image.start.y,
-            image.size.width,
-            image.size.height,
-            destination.startAt.x,
-            destination.startAt.y,
-            destination.width,
-            destination.height
-        );
+        if (image.image)
+            this.context.drawImage(
+                image.image,
+                0,
+                0,
+                image.size.width,
+                image.size.height,
+                destination.startAt.x,
+                destination.startAt.y,
+                destination.width,
+                destination.height
+            );
     }
 
     drawPattern(
@@ -225,11 +226,11 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
     constructor(canvasWarapper: CanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
     }
-    drawImage(
+    drawAsset(
         image: IAsset, 
         destination: { startAt: TCoordinates; height: number; width: number; }
     ) {
-        this.canvasWarapper.drawImage(image, destination);
+        this.canvasWarapper.drawAsset(image, destination);
     }
 
     drawPattern (
@@ -342,12 +343,12 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
         this.newArea = newArea;
     }
 
-    drawImage(
+    drawAsset(
         image: IAsset, 
         destination: { startAt: TCoordinates; height: number; width: number; }
     ): void {
         destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
-        super.drawImage(image, destination);
+        super.drawAsset(image, destination);
     }
 
     drawPattern (

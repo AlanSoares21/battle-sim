@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { DamageDirection, IAssetsFile, IBattleData, IEntity } from "../../interfaces";
+import { DamageDirection, IAssetsData, IAssetsFile, IBattleData, IEntity } from "../../interfaces";
 import { ServerConnection } from "../../server";
 import { HubConnectionBuilder } from '@microsoft/signalr';
 
@@ -7,10 +7,7 @@ export interface IBattleContext {
     battle: IBattleData;
     player: IEntity;
     server: ServerConnection;
-    assets: {
-        map: IAssetsFile,
-        file?: ImageBitmap
-    }
+    assets: IAssetsData
 }
 
 export const BattleContext = createContext<IBattleContext>({
@@ -42,23 +39,21 @@ export const BattleContext = createContext<IBattleContext>({
         new HubConnectionBuilder().withUrl('http://localhost').build()
     ),
     assets: {
-        map: {
-            "board-background": {
-                size: { width: 0, height: 0 },
-                start: { x: 0, y: 0 }
-            },
-            "enemy": {
-                size: { width: 0, height: 0 },
-                start: { x: 0, y: 0 }
-            },
-            "player": {
-                size: { width: 0, height: 0 },
-                start: { x: 0, y: 0 }
-            },
-            "unknowed-skill": {
-                size: { width: 0, height: 0 },
-                start: { x: 0, y: 0 }
-            }
+        "board-background": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "enemy": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "player": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "unknowed-skill": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
         }
     }
 });

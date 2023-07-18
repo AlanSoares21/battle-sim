@@ -5,10 +5,7 @@ export interface ICommomDataContext {
     usersConnected: IUserConnected[];
     battleRequests: IBattleRequest[];
     battle?: IBattleData;
-    assets?: {
-        map: IAssetsData,
-        file: ImageBitmap
-    }
+    assets?: IAssetsData
 }
 
 export const CommomDataContext = createContext<ICommomDataContext>({

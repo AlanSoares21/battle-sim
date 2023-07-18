@@ -96,31 +96,28 @@ export interface IEquip {
     shape: EquipShape
 }
 
-export interface IAssetItem {
+export interface IAssetFileItem {
     start: TCoordinates;
     size: TSize;
-}
-
-export interface IAssetItemWithImage extends IAssetItem {
-    image: ImageBitmap;
 }
 
 export interface IAssetsFile {
-    "board-background": IAssetItem;
-    "enemy": IAssetItem;
-    "player": IAssetItem;
-    "unknowed-skill": IAssetItem;
-}
-
-export interface IAssetsData {
-    "board-background": IAssetItemWithImage;
-    "enemy": IAssetItemWithImage;
-    "player": IAssetItemWithImage;
-    "unknowed-skill": IAssetItemWithImage;
+    "board-background": IAssetFileItem;
+    "enemy": IAssetFileItem;
+    "player": IAssetFileItem;
+    "unknowed-skill": IAssetFileItem;
 }
 
 export interface IAsset {
-    image: ImageBitmap;
+    image?: ImageBitmap;
     size: TSize;
     start: TCoordinates;
 }
+
+export interface IAssetsData {
+    "board-background": IAsset;
+    "enemy": IAsset;
+    "player": IAsset;
+    "unknowed-skill": IAsset;
+}
+

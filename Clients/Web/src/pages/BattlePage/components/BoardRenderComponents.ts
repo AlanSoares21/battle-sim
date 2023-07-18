@@ -1,4 +1,5 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
+import { sumCoordinate } from "../../../CoordinatesUtils";
 import {
     IAsset,
     TBoard, 
@@ -56,23 +57,27 @@ const colors = {
 }
 
 export class PlayerRender implements IRender {
-    canvas: ICanvasWrapper;
-    name: string;
-    cellSize: TSize;
-    board: TBoard;
+    private canvas: ICanvasWrapper;
+    private name: string;
+    private cellSize: TSize;
+    private board: TBoard;
     
-    canvasSize: TBoard;
-    circleRadius: number;
-    circleCenter: TCanvasCoordinates;
-    textStart: TCanvasCoordinates;
+    private canvasSize: TBoard;
+    private circleRadius: number;
+    private circleCenter: TCanvasCoordinates;
+    private assetPostion: TCanvasCoordinates;
+    private textStart: TCanvasCoordinates;
+    private asset: IAsset;
 
     constructor(
         canvas: ICanvasWrapper,
         cellSize: TSize,
         board: TBoard,
         name: string,
-        current: TBoardCoordinates
+        current: TBoardCoordinates,
+        asset: IAsset
     ) {
+        this.asset = asset;
         this.canvas = canvas;
         this.name = name;
         this.cellSize = cellSize;
@@ -87,6 +92,7 @@ export class PlayerRender implements IRender {
             this.canvasSize.width,
             this.canvasSize.height
         );
+        this.assetPostion = sumCoordinate(this.circleCenter, -this.circleRadius);
         this.textStart = {
             x: this.circleCenter.x - this.cellSize.width / 4,
             y: this.circleCenter.y
@@ -101,6 +107,7 @@ export class PlayerRender implements IRender {
             this.canvasSize.width,
             this.canvasSize.height
         );
+        this.assetPostion = sumCoordinate(this.circleCenter, -this.circleRadius);
         this.textStart = {
             x: this.circleCenter.x - this.cellSize.width / 4,
             y: this.circleCenter.y
@@ -108,7 +115,14 @@ export class PlayerRender implements IRender {
     }
 
     private drawPlayerCircle() {
-        this.canvas.drawCircle(this.circleCenter, this.circleRadius, colors['player-circle']);
+        if (this.asset.image)
+            this.canvas.drawAsset(this.asset, {
+                height: this.asset.size.height,
+                width: this.asset.size.width,
+                startAt: this.assetPostion
+            });
+        else
+            this.canvas.drawCircle(this.circleCenter, this.circleRadius, colors['player-circle']);
     }
 
     private writePlayerName() {
@@ -197,11 +211,14 @@ export class BackgroundRender implements IRender {
 
     private fillBackground() {
         const startAt: TCanvasCoordinates = { x: 0, y: 0 };
-        this.canvas.drawPattern(this.asset.image, {
-            startAt,
-            height: this.canvasSize.height,
-            width: this.canvasSize.width
-        });
+        if (this.asset.image)
+            this.canvas.drawPattern(this.asset.image, {
+                startAt,
+                height: this.canvasSize.height,
+                width: this.canvasSize.width
+            });
+        else
+            this.canvas.drawRect(colors['background'], startAt, this.canvasSize);
     }
 
     private drawGrid() {

@@ -1,11 +1,11 @@
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { CommomDataContext, ICommomDataContext } from "./CommomDataContext";
 import { AuthContext } from "./AuthContext";
-import { IAssetItem, IAssetsFile, IUserConnected } from "../interfaces";
+import { IAssetFileItem, IAssetsFile, IUserConnected } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 import { IServerEvents } from "../server";
 
-function getAssetBitMap(assetImage: HTMLImageElement, item: IAssetItem) {
+function getAssetBitMap(assetImage: HTMLImageElement, item: IAssetFileItem) {
     return createImageBitmap(
         assetImage, 
         item.start.x, item.start.y, 
@@ -138,13 +138,10 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     getAssetBitMap(assetsImage, map['unknowed-skill'])
                 ]);
                 const data: ICommomDataContext['assets'] = {
-                    file: result[0],
-                    map: {
-                        'board-background': { image: result[1], ...map['board-background'] },
-                        'enemy': { image: result[2], ...map['enemy'] },
-                        'player': { image: result[3], ...map['player'] },
-                        'unknowed-skill': { image: result[4], ...map['unknowed-skill'] }
-                    }
+                    'board-background': { image: result[1], ...map['board-background'] },
+                    'enemy': { image: result[2], ...map['enemy'] },
+                    'player': { image: result[3], ...map['player'] },
+                    'unknowed-skill': { image: result[4], ...map['unknowed-skill'] }
                 }
                 setAssetsData(data);
             }
