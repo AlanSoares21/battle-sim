@@ -155,6 +155,32 @@ export default class CanvasWrapper implements ICanvasWrapper {
         this.context.fill();
     }
 
+    drawImage(
+        image: {
+            source: CanvasImageSource,
+            startAt: TCoordinates,
+            height: number,
+            width: number
+        }, 
+        destination: {
+            startAt: TCoordinates,
+            height: number,
+            width: number
+        }
+    ) {
+        this.context.drawImage(
+            image.source,
+            image.startAt.x,
+            image.startAt.y,
+            image.width,
+            image.height,
+            destination.startAt.x,
+            destination.startAt.y,
+            destination.width,
+            destination.height
+        );
+    }
+
     writeText(coordinates: TCanvasCoordinates, value: string, color: CanvasFillStrokeStyles['fillStyle']) {
         this.context.fillStyle = color;
         this.context.fillText(value, coordinates.x, coordinates.y);
