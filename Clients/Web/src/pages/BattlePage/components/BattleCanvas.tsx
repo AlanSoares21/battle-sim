@@ -63,7 +63,11 @@ export const BattleCanvas: React.FC = () => {
             if (boardClick) {
                 handleBoardClick(boardClick);
                 renderController.pointer.setPosition(boardClick);
+                return;
             }
+            
+            const skill = renderController.clickOnSkill(canvasClick);
+            console.log('canvas click on skill', skill, canvasClick);
         }, 
     [renderController, canvasOffset, handleBoardClick]);
 

@@ -57,7 +57,7 @@ const colors = {
 }
 
 export class PlayerRender implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private name: string;
     private cellSize: TSize;
     private board: TBoard;
@@ -136,7 +136,7 @@ export class PlayerRender implements IRender {
 }
 
 export class PointerRender implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private board: TBoard;
     private cellSize: TSize;
     
@@ -188,7 +188,7 @@ export class PointerRender implements IRender {
 }
 
 export class BackgroundRender implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private board: TBoard;
     private cellSize: TSize;
 

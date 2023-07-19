@@ -32,7 +32,7 @@ function getSkillBar(
     return new SkillBarController(skillBarCanvas, playerSkills, assetsData);
 }
 
-export default class BattleRenderController implements IRender {
+export default class BattleRenderController {
     
     /**
      * Board components
@@ -214,23 +214,22 @@ export default class BattleRenderController implements IRender {
     }
 
     clickOnBoard(canvasClick: TCanvasCoordinates): TCoordinates | undefined {
-        canvasClick = subCoordinates(canvasClick, this.boardStartAt);
-        console.log('canvas click', {
-            cellSize: this.cellSize,
-            boardCanvasSize: this.boardCanvasSize,
-            board: this.board,
-            baordH: this.board.height * this.cellSize.height
-        });
-        if (
-            this.boardCanvasSize.width >= canvasClick.x &&
-            this.boardCanvasSize.height >= canvasClick.y &&
-            0 <= canvasClick.x &&
-            0 <= canvasClick.y
-        ) {
-            const b = canvasToBoardCoordinates(canvasClick, this.cellSize);
+        if (this.background.canvas.isOnCanvas(canvasClick)) {
+            const b = canvasToBoardCoordinates(
+                subCoordinates(canvasClick, this.boardStartAt), 
+                this.cellSize
+            );
             console.log('board click', b);
             return b;
         }
+    }
+
+    clickOnSkill(canvasClick: TCanvasCoordinates): string | undefined {
+        if (this.skillBarController.canvas.isOnCanvas(canvasClick)) {
+            console.log('click on skill bar', canvasClick);
+            return this.skillBarController.clickOnSkill(canvasClick);
+        }
+        return;
     }
 
     updateEntityCurrentHealth(isTheUser: boolean, health: TCoordinates) {

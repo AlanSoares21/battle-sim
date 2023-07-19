@@ -11,7 +11,7 @@ const colors = {
 }
 
 class EquipRender implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private coordinates: TCanvasCoordinates[];
     private asset: IAsset;
     private equipPattern?: CanvasPattern;
@@ -52,7 +52,7 @@ class EquipRender implements IRender {
 }
 
 class LifeSphereRender implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private canvasSize: TCanvasSize;
     private lifeCenter: TCanvasCoordinates;
     private healthRadiusInScale: number;

@@ -1,10 +1,13 @@
-import { sumCoordinates } from "./CoordinatesUtils";
+import { subCoordinates, sumCoordinates } from "./CoordinatesUtils";
 import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "./interfaces";
 
 export interface ICanvasWrapper {
     canvasWidth: () => number;
 
     canvasHeight: () => number;
+
+    isOnCanvas: (coordinate: TCanvasCoordinates) => boolean;
+    distanceFromOrigin: (coordinate: TCanvasCoordinates) => TCanvasCoordinates;
 
     getSize: () => TCanvasSize;
 
@@ -74,6 +77,16 @@ export default class CanvasWrapper implements ICanvasWrapper {
     constructor(context: CanvasRenderingContext2D) {
         this.context = context;
     }
+
+    isOnCanvas(coordinate: TCanvasCoordinates): boolean {
+        return coordinate.x >= 0 && coordinate.y >= 0
+            && coordinate.x < this.context.canvas.width
+            && coordinate.y < this.context.canvas.height;
+    }
+
+    distanceFromOrigin(coordinate: TCoordinates): TCanvasCoordinates {
+        return subCoordinates(coordinate, { x: 0, y: 0 });
+    };
     
     drawLinesAndFill(
         points: TCoordinates[], 
@@ -207,6 +220,14 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
     constructor(canvasWarapper: ICanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
     }
+    
+    isOnCanvas(coordinate: TCanvasCoordinates): boolean {
+        return this.canvasWarapper.isOnCanvas(coordinate);
+    }
+
+    distanceFromOrigin(coordinate: TCoordinates): TCanvasCoordinates {
+        return this.canvasWarapper.distanceFromOrigin(coordinate);
+    };
 
     drawAsset(
         image: IAsset, 
@@ -321,6 +342,17 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
         this.newOrigin = newOrigin;
         this.newArea = newArea;
     }
+
+    isOnCanvas(coordinate: TCanvasCoordinates): boolean {
+        coordinate = subCoordinates(coordinate, this.newOrigin);
+        return coordinate.x >= 0 && coordinate.y >= 0
+            && coordinate.x < this.newArea.width
+            && coordinate.y < this.newArea.height;
+    }
+
+    distanceFromOrigin(coordinate: TCoordinates): TCanvasCoordinates {
+        return subCoordinates(coordinate, this.newOrigin);
+    };
 
     drawAsset(
         image: IAsset, 

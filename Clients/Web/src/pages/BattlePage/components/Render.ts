@@ -1,7 +1,9 @@
 import { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
+import { subCoordinates } from "../../../CoordinatesUtils";
 import { IAsset, IAssetsData, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
 
 export interface IRender {
+    canvas: ICanvasWrapper;
     render: () => void;
 }
 
@@ -13,7 +15,7 @@ const colors = {
 const skillNameHeigth = 0.15;
 
 export class SkillRender implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private size: TCanvasSize;
     private name: string;
     private asset: IAsset;
@@ -110,7 +112,7 @@ function getSkillRenders(
 }
 
 export class SkillBarController implements IRender {
-    private canvas: ICanvasWrapper;
+    canvas: ICanvasWrapper;
     private skills: string[];
     private skillsRenders: SkillRender[] = [];
     
@@ -123,6 +125,16 @@ export class SkillBarController implements IRender {
         this.skills = skills;
         this.skillsRenders = getSkillRenders(skills, assetsData, canvas);
     } 
+
+    clickOnSkill(click: TCanvasCoordinates): string | undefined {
+        click = this.canvas.distanceFromOrigin(click);
+        for (let index = 0; index < this.skillsRenders.length; index++) {
+            const render = this.skillsRenders[index];
+            if (render.canvas.isOnCanvas(click))
+                return this.skills[index];
+        }
+        return;
+    }
     
     render() {
         this.canvas.drawEmptyRect('#d9d9d9', { x: 0, y: 0}, this.canvas.getSize());
