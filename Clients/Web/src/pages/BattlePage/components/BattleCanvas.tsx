@@ -101,7 +101,7 @@ export const BattleCanvas: React.FC = () => {
         );
         
         setRenderController(value);
-    }, [setRenderController, setCanvasOffset, assets, player]);
+    }, [setRenderController, setCanvasOffset, assets, player, battle.board.size]);
 
     /**
      * update entities position on board
@@ -116,7 +116,7 @@ export const BattleCanvas: React.FC = () => {
             if (position !== undefined)
                 renderController.setPlayer(entity, position, entity.id === player.id);
         }
-    }, [battle.board.entitiesPosition, renderController]);
+    }, [battle.board.entitiesPosition, renderController, player.id, battle.entities]);
 
     /**
      * update entities life when server events happen
@@ -126,7 +126,7 @@ export const BattleCanvas: React.FC = () => {
             server
             .onAttack(onAttack(renderController, player.id))
             .onSkill(onSkill(renderController, player.id));
-    }, [server, renderController]);
+    }, [server, player.id, renderController]);
 
     useEffect(() => {
         if (renderController) {
