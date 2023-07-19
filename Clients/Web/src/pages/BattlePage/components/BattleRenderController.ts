@@ -3,7 +3,7 @@ import { subCoordinates } from "../../../CoordinatesUtils";
 import { IAssetsData, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
 import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
-import { IRender, SkillBarController } from "./Render";
+import { SkillBarController } from "./SkillBarRenderComponents";
 
 const boardMarginLeft = 0.2;
 const boardMarginTop = 0.1;
@@ -225,11 +225,8 @@ export default class BattleRenderController {
     }
 
     clickOnSkill(canvasClick: TCanvasCoordinates): string | undefined {
-        if (this.skillBarController.canvas.isOnCanvas(canvasClick)) {
-            console.log('click on skill bar', canvasClick);
+        if (this.skillBarController.canvas.isOnCanvas(canvasClick)) 
             return this.skillBarController.clickOnSkill(canvasClick);
-        }
-        return;
     }
 
     updateEntityCurrentHealth(isTheUser: boolean, health: TCoordinates) {

@@ -1,6 +1,5 @@
 import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
 import { BattleContext } from "../BattleContext";
-import SkillBar from "./SkillBar";
 import { TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRenderController from "./BattleRenderController";
@@ -67,9 +66,10 @@ export const BattleCanvas: React.FC = () => {
             }
             
             const skill = renderController.clickOnSkill(canvasClick);
-            console.log('canvas click on skill', skill, canvasClick);
+            if (skill)
+                setSkillSelected(skill);
         }, 
-    [renderController, canvasOffset, handleBoardClick]);
+    [renderController, canvasOffset, handleBoardClick, setSkillSelected]);
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
         if (!canvasRef) {
@@ -146,6 +146,5 @@ export const BattleCanvas: React.FC = () => {
                 ref={setCanvasRef}
                 style={{background: "#000000", width: '99%'}}>
             </canvas>
-            <SkillBar selected={skillSelected} onSkillSelect={setSkillSelected} />
     </div>);
 }
