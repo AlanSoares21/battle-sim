@@ -1,18 +1,9 @@
 import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
 import { subCoordinates } from "../../../CoordinatesUtils";
-import { IAssetsData, IAssetsFile, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { IAssetsData, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
 import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
 import { IRender, SkillBarController } from "./Render";
-
-function areaInnerCanvas(canvasSize: TCanvasSize, canvasAreaProportion: number): TCanvasSize {
-    const target: TCanvasSize = { height: 0, width:  0 };
-    const canvasArea = canvasSize.width * canvasSize.height;
-    const targetArea = canvasArea * canvasAreaProportion;
-    target.height = Math.sqrt(targetArea * canvasSize.height / canvasSize.width);
-    target.width = target.height * canvasSize.width / canvasSize.height;
-    return target;
-}
 
 const boardMarginLeft = 0.2;
 const boardMarginTop = 0.1;
