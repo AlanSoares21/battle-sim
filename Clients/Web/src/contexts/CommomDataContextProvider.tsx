@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { CommomDataContext, ICommomDataContext } from "./CommomDataContext";
 import { AuthContext } from "./AuthContext";
-import { IAsset, IAssetFileItem, IAssetsData, IAssetsFile, IUserConnected } from "../interfaces";
+import { IAssetFileItem, IAssetsData, IAssetsFile, IUserConnected } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 import { IServerEvents } from "../server";
 
@@ -67,8 +67,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                         !entities.some(e => e === req.requester)));
             setUsersConnected(users => users.map(setChangeChallendByYouToFalse(entities)))
             setBattle(battle);
-            navigate('/battle');
-        }, [navigate]);
+        }, []);
 
     const onBattleRequestCancelled = useCallback<IServerEvents['BattleRequestCancelled']>(
         async (cancelledBy, request) => {
@@ -84,8 +83,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         async (cancelledBy, battleId) => {
             console.log({'battle_cancelled': { cancelledBy, battleId }});
             setBattle(undefined);
-            navigate('/home');
-        }, [navigate]);
+        }, []);
 
     const onAttack = useCallback<IServerEvents['Attack']>(
         async (source, target, currentHealth) => {
@@ -149,11 +147,21 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             }
             assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
         });
-        
     }, []);
+
+    useEffect(() => {
+        if (battle !== undefined)
+            navigate('/battle');
+    }, [battle, navigate]);
+
+    useEffect(() => {
+        if (authContext.data !== undefined && battle === undefined)
+            navigate('/home');
+    }, [authContext.data, battle, navigate]);
 
     useEffect(
         () => {
+            console.log("effect do context provider", authContext.data);
             if (authContext.data) {
                 authContext.data.server
                     .onListConnectedUsers(onListConnectedUsers)
@@ -170,7 +178,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             }
         }, 
         [
-            authContext, 
+            authContext.data, 
             onListConnectedUsers, 
             onUserConnect, 
             onUserDisconnect, 
