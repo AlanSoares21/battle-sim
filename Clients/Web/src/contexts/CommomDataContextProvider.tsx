@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { CommomDataContext, ICommomDataContext } from "./CommomDataContext";
 import { AuthContext } from "./AuthContext";
-import { IAssetFileItem, IAssetsFile, IUserConnected } from "../interfaces";
+import { IAsset, IAssetFileItem, IAssetsData, IAssetsFile, IUserConnected } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 import { IServerEvents } from "../server";
 
@@ -130,20 +130,22 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         .then(map => {
             const assetsImage = new Image();
             assetsImage.onload = async () => {
-                const result = await Promise.all([
-                    createImageBitmap(assetsImage),
-                    getAssetBitMap(assetsImage, map['board-background']),
-                    getAssetBitMap(assetsImage, map['enemy']),
-                    getAssetBitMap(assetsImage, map['player']),
-                    getAssetBitMap(assetsImage, map['unknowed-skill'])
-                ]);
-                const data: ICommomDataContext['assets'] = {
-                    'board-background': { image: result[1], ...map['board-background'] },
-                    'enemy': { image: result[2], ...map['enemy'] },
-                    'player': { image: result[3], ...map['player'] },
-                    'unknowed-skill': { image: result[4], ...map['unknowed-skill'] }
+                const convertingAssetsImageToBitMap: Promise<ImageBitmap>[] = [];
+                const keysOfMap: Array<keyof IAssetsFile> = [];
+                for (const key in map) {
+                    const asset = map[key as keyof IAssetsFile];
+                    keysOfMap.push(key as keyof IAssetsFile);
+                    convertingAssetsImageToBitMap.push(getAssetBitMap(assetsImage, asset));
                 }
-                setAssetsData(data);
+                const result = await Promise.all(convertingAssetsImageToBitMap);
+                const assetsWithImage = keysOfMap.reduce<Partial<IAssetsData>>(
+                    (data, key, i) => {
+                        data[key] = { image: result[i], ...map[key] }
+                        return data;
+                    }, 
+                    {}
+                );
+                setAssetsData(assetsWithImage as IAssetsData);
             }
             assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
         });
