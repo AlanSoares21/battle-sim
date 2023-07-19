@@ -65,14 +65,7 @@ export interface ICanvasWrapper {
         }
     ) => void;
 
-    drawPattern: (
-        image: ImageBitmap, 
-        destination: {
-            startAt: TCoordinates,
-            height: number,
-            width: number
-        }
-    ) => void;
+    createPattern: (image: ImageBitmap) => CanvasPattern | null;
 }
 
 export default class CanvasWrapper implements ICanvasWrapper {
@@ -195,23 +188,11 @@ export default class CanvasWrapper implements ICanvasWrapper {
             );
     }
 
-    drawPattern(
-        image: ImageBitmap, 
-        destination: {
-            startAt: TCoordinates,
-            height: number,
-            width: number
-        }
-    ) {
+    createPattern (image: ImageBitmap) {
         const pattern = this.context.createPattern(image, "repeat");
         if (pattern !== null)
             this.context.fillStyle = pattern;
-        this.context.fillRect(
-            destination.startAt.x, 
-            destination.startAt.y, 
-            destination.width, 
-            destination.height
-        );
+        return pattern;
     }
 
     writeText(coordinates: TCanvasCoordinates, value: string, color: CanvasFillStrokeStyles['fillStyle']) {
@@ -226,6 +207,7 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
     constructor(canvasWarapper: CanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
     }
+
     drawAsset(
         image: IAsset, 
         destination: { startAt: TCoordinates; height: number; width: number; }
@@ -233,11 +215,8 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
         this.canvasWarapper.drawAsset(image, destination);
     }
 
-    drawPattern (
-        image: ImageBitmap, 
-        destination: { startAt: TCoordinates; height: number; width: number; }
-    ) {
-        this.canvasWarapper.drawPattern(image, destination);
+    createPattern(image: ImageBitmap) {
+        return this.canvasWarapper.createPattern(image);
     }
     
     drawLinesAndFill(
@@ -349,14 +328,6 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
     ): void {
         destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
         super.drawAsset(image, destination);
-    }
-
-    drawPattern (
-        image: ImageBitmap, 
-        destination: { startAt: TCoordinates; height: number; width: number; }
-    ) {
-        destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
-        super.drawPattern(image, destination);
     }
 
     drawEmptyElipse(

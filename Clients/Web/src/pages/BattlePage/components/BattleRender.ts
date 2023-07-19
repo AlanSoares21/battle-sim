@@ -147,17 +147,20 @@ export default class BattleRender implements IRender {
                     lifePointer: new LifeCoordRender(
                         this.userLifeSphereCanvas,
                         lifeSphereScale,
-                        healthRadiusInScale
+                        healthRadiusInScale,
+                        this.assets['life-pointer']
                     ),
                     lifeSphere: new LifeSphereRender(
                         this.userLifeSphereCanvas,
-                        healthRadiusInScale
+                        healthRadiusInScale,
+                        this.assets['life-sphere']
                     ),
                     equips: data.equips.map(e => new EquipRender(
                         this.userLifeSphereCanvas,
                         lifeSphereScale,
                         healthRadiusInScale,
-                        e.coordinates
+                        e.coordinates,
+                        this.assets['barrier-equip-pattern']
                     ))
                 };
             } else {
@@ -165,17 +168,20 @@ export default class BattleRender implements IRender {
                     lifePointer: new LifeCoordRender(
                         this.enemyLifeSphereCanvas,
                         lifeSphereScale,
-                        healthRadiusInScale
+                        healthRadiusInScale,
+                        this.assets['life-pointer']
                     ),
                     lifeSphere: new LifeSphereRender(
                         this.enemyLifeSphereCanvas,
-                        healthRadiusInScale
+                        healthRadiusInScale,
+                        this.assets['life-sphere']
                     ),
                     equips: data.equips.map(e => new EquipRender(
                         this.enemyLifeSphereCanvas,
                         lifeSphereScale,
                         healthRadiusInScale,
-                        e.coordinates
+                        e.coordinates,
+                        this.assets['barrier-equip-pattern']
                     ))
                 };
             }
@@ -216,17 +222,14 @@ export default class BattleRender implements IRender {
         // Enemy life sphere
         if (this.enemyRenders !== undefined) {
             this.enemyRenders.lifeSphere.render();
+            this.enemyRenders.equips.forEach(e => e.render());
             this.enemyRenders.lifePointer.render();
-            for (let index = 0; index < this.enemyRenders.equips.length; index++) {
-                this.enemyRenders.equips[index].render();
-            }
-            // this.enemyRenders.equips.forEach(e => e.render());
         }
         // User life sphere
         if (this.userRenders !== undefined) {
             this.userRenders.lifeSphere.render();
-            this.userRenders.lifePointer.render();
             this.userRenders.equips.forEach(e => e.render());
+            this.userRenders.lifePointer.render();
         }
         // Board
         this.background.render();

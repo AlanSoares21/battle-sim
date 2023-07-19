@@ -1,5 +1,6 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
-import { TCanvasCoordinates, TCoordinates, TSize } from "../../../interfaces";
+import { sumCoordinate } from "../../../CoordinatesUtils";
+import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { IRender } from "./Render";
 
 const colors = {
@@ -10,15 +11,19 @@ const colors = {
 }
 
 class EquipRender implements IRender {
-    canvas: ICanvasWrapper;
-    coordinates: TCanvasCoordinates[]
+    private canvas: ICanvasWrapper;
+    private coordinates: TCanvasCoordinates[];
+    private asset: IAsset;
+    private equipPattern?: CanvasPattern;
 
     constructor(
         canvas: ICanvasWrapper,
         scale: number,
         healthRadiusInScale: number,
-        coordinates: TCoordinates[]
+        coordinates: TCoordinates[],
+        asset: IAsset
     ) {
+        this.asset = asset;
         this.canvas = canvas;
         this.coordinates = coordinates.map(c => 
             ({ 
@@ -26,6 +31,11 @@ class EquipRender implements IRender {
                 y: healthRadiusInScale - c.y * scale
             })
         );
+        if (asset.image) {
+            const pattern = canvas.createPattern(asset.image);
+            if (pattern)
+                this.equipPattern = pattern;
+        }
     }
 
     render() {
@@ -33,19 +43,29 @@ class EquipRender implements IRender {
             this.coordinates,
             colors['life-equip']
         );
+        if (this.equipPattern)
+            this.canvas.drawLinesAndFill(
+                this.coordinates,
+                this.equipPattern
+            );
     }
 }
 
 class LifeSphereRender implements IRender {
-    canvas: ICanvasWrapper;
-    lifeCenter: TCanvasCoordinates;
-    healthRadiusInScale: number;
+    private canvas: ICanvasWrapper;
+    private canvasSize: TCanvasSize;
+    private lifeCenter: TCanvasCoordinates;
+    private healthRadiusInScale: number;
+    private asset: IAsset;
 
     constructor(
         canvas: ICanvasWrapper,
-        healthRadiusInScale: number
+        healthRadiusInScale: number,
+        asset: IAsset
     ) {
+        this.asset = asset;
         this.canvas = canvas;
+        this.canvasSize = canvas.getSize();
         this.healthRadiusInScale = healthRadiusInScale;
         this.lifeCenter = {
             x: healthRadiusInScale,
@@ -54,49 +74,38 @@ class LifeSphereRender implements IRender {
     }
 
     render() {
-        this.canvas.drawCircle(
-            this.lifeCenter, 
-            this.healthRadiusInScale,
-            colors['sphere-background']
-        );
-    }
-}
-
-class NameRender {
-    canvas: ICanvasWrapper;
-    startDraw: TCanvasCoordinates;
-    name: string;
-
-    constructor(
-        canvas: ICanvasWrapper, 
-        startDraw: TCanvasCoordinates,
-        name: string
-    ) {
-        this.canvas = canvas;
-        this.startDraw = startDraw;
-        this.name = name;
-    }
-
-    render() {
-        this.canvas.writeText(
-            this.startDraw, 
-            this.name, 
-            colors['name-text']
-        );
+        if (this.asset.image)
+            this.canvas.drawAsset(
+                this.asset, 
+                {
+                    startAt: { x: 0, y: 0},
+                    ...this.canvasSize
+                }
+            );
+        else
+            this.canvas.drawCircle(
+                this.lifeCenter, 
+                this.healthRadiusInScale,
+                colors['sphere-background']
+            );
     }
 }
 
 class LifeCoordRender {
-    canvas: ICanvasWrapper;
-    center: TCanvasCoordinates;
+    private canvas: ICanvasWrapper;
+    private center: TCanvasCoordinates;
     private currentLife: TCanvasCoordinates;
-    scale: number;
+    private assetPoint: TCanvasCoordinates;
+    private scale: number;
+    private asset: IAsset
 
     constructor(
         canvas: ICanvasWrapper,
         scale: number,
         healthRadiusInScale: number,
+        asset: IAsset
     ) {
+        this.asset = asset;
         this.canvas = canvas;
         this.scale = scale;
         this.center = {
@@ -107,27 +116,37 @@ class LifeCoordRender {
             x: healthRadiusInScale,
             y: healthRadiusInScale
         };
+        this.assetPoint = sumCoordinate(this.currentLife, - this.asset.size.height / 2);
     }
 
     setLife(life: TCoordinates) {
         this.currentLife = {
             x: this.center.x + (life.x * this.scale),
             y: this.center.y - (life.y * this.scale)
-        }
+        };
+        this.assetPoint = sumCoordinate(this.currentLife, - this.asset.size.height / 2);
     }
 
     render() {
-        this.canvas.drawCircle(
-            this.currentLife, 
-            2, 
-            colors['name-text']
-        );
+        if (this.asset.image)
+            this.canvas.drawAsset(
+                this.asset, 
+                {
+                    startAt: this.assetPoint,
+                    ...this.asset.size
+                }
+            );
+        else
+            this.canvas.drawCircle(
+                this.currentLife, 
+                2, 
+                colors['name-text']
+            );
     }
 }
 
 export {
     LifeSphereRender,
-    NameRender,
     LifeCoordRender,
     EquipRender
 };

@@ -195,6 +195,7 @@ export class BackgroundRender implements IRender {
     private canvasSize: TCanvasSize;
 
     private asset: IAsset;
+    private backgroundPattern?: CanvasPattern;
     
     constructor (
         canvas: ICanvasWrapper,
@@ -207,16 +208,17 @@ export class BackgroundRender implements IRender {
         this.board = board;
         this.cellSize = cellSize;
         this.canvasSize = canvas.getSize();
+        if (this.asset.image) {
+            const pattern = canvas.createPattern(this.asset.image);
+            if (pattern)
+                this.backgroundPattern = pattern;
+        }
     }
 
     private fillBackground() {
         const startAt: TCanvasCoordinates = { x: 0, y: 0 };
-        if (this.asset.image)
-            this.canvas.drawPattern(this.asset.image, {
-                startAt,
-                height: this.canvasSize.height,
-                width: this.canvasSize.width
-            });
+        if (this.backgroundPattern)
+            this.canvas.drawRect(this.backgroundPattern, startAt, this.canvasSize);
         else
             this.canvas.drawRect(colors['background'], startAt, this.canvasSize);
     }

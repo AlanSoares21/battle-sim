@@ -54,6 +54,34 @@ export const BattleContext = createContext<IBattleContext>({
         "unknowed-skill": {
             size: { width: 0, height: 0 },
             start: { x: 0, y: 0 }
+        },
+        "barrier-equip-pattern": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "base-damage-x-negative": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "base-damage-x-positive": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "life-sphere": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "life-pointer": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "base-damage-y-negative": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
+        },
+        "base-damage-y-positive": {
+            size: { width: 0, height: 0 },
+            start: { x: 0, y: 0 }
         }
     }
 });

@@ -101,11 +101,19 @@ export interface IAssetFileItem {
     size: TSize;
 }
 
-export interface IAssetsFile {
+export type IAssetsFile = {
     "board-background": IAssetFileItem;
     "enemy": IAssetFileItem;
     "player": IAssetFileItem;
     "unknowed-skill": IAssetFileItem;
+
+    "barrier-equip-pattern": IAssetFileItem;
+    "base-damage-x-negative": IAssetFileItem;
+    "base-damage-x-positive": IAssetFileItem;
+    "life-sphere": IAssetFileItem;
+    "life-pointer": IAssetFileItem;
+    "base-damage-y-negative": IAssetFileItem;
+    "base-damage-y-positive": IAssetFileItem
 }
 
 export interface IAsset {
@@ -119,5 +127,13 @@ export interface IAssetsData {
     "enemy": IAsset;
     "player": IAsset;
     "unknowed-skill": IAsset;
+
+    "barrier-equip-pattern": IAsset;
+    "base-damage-x-negative": IAsset;
+    "base-damage-x-positive": IAsset;
+    "life-sphere": IAsset;
+    "life-pointer": IAsset;
+    "base-damage-y-negative": IAsset;
+    "base-damage-y-positive": IAsset
 }
 
