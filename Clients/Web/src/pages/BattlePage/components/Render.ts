@@ -1,12 +1,12 @@
 import { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
-import { IAsset, IAssetsData, TCanvasCoordinates, TCanvasSize } from "../../../interfaces";
+import { IAsset, IAssetsData, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
 
 export interface IRender {
     render: () => void;
 }
 
 const colors = {
-    'skill': '#9d9d9d',
+    'skill-background': '#9d9d9d',
     'skill-name': '#FFFFFF'
 }
 
@@ -16,29 +16,56 @@ export class SkillRender implements IRender {
     private canvas: ICanvasWrapper;
     private size: TCanvasSize;
     private name: string;
+    private asset: IAsset;
+    private textRectHeight: number;
+    private assetPosition: TCanvasCoordinates;
+    private assetSize: TSize;
 
     constructor(canvas: ICanvasWrapper, name: string, asset: IAsset) {
         this.canvas = canvas;
         this.name = name;
+        this.asset = asset;
         this.size = canvas.getSize();
+        this.textRectHeight = this.size.height * skillNameHeigth;
+        
+        const assetSide = this.size.height - this.textRectHeight;
+        this.assetSize = { height: assetSide, width: assetSide };
+        this.assetPosition = { 
+            x: (this.size.height - assetSide) / 2, 
+            y: this.textRectHeight
+        };
     }
 
-    render() {
-        this.canvas.drawEmptyRect(colors['skill'], { x: 0, y: 0}, this.size);
-        const skillNameRectHeight = this.size.height * skillNameHeigth;
+    private drawBackground() {
         this.canvas.drawRect(
-            colors['skill'], 
+            colors['skill-background'], 
             { x: 0, y: 0}, 
-            {
-                width: this.size.width,
-                height: skillNameRectHeight
-            }
+            this.size
         );
+    }
+
+    private writeText() {
         this.canvas.writeText(
-            { x: 0, y: skillNameRectHeight - 3 }, 
+            { x: 0, y: this.textRectHeight - 3 }, 
             this.name, 
             colors['skill-name']
         );
+    }
+
+    private drawAsset() {
+        this.canvas.drawAsset(
+            this.asset, 
+            {
+                ...this.assetSize,
+                startAt: this.assetPosition
+            }
+        );
+    }
+
+    render() {
+        this.drawBackground()
+        this.drawAsset();
+        this.writeText();
     }
 }
 
