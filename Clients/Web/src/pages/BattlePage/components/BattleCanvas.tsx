@@ -66,10 +66,16 @@ export const BattleCanvas: React.FC = () => {
             }
             
             const skill = renderController.clickOnSkill(canvasClick);
-            if (skill)
-                setSkillSelected(skill);
+            if (skill) {
+                if (skillSelected === skill) 
+                    setSkillSelected(undefined);
+                else {
+                    setSkillSelected(skill);
+                    renderController.skillBarController.selectSkill(skill);
+                }
+            }
         }, 
-    [renderController, canvasOffset, handleBoardClick, setSkillSelected]);
+    [renderController, canvasOffset, handleBoardClick, skillSelected, setSkillSelected]);
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
         if (!canvasRef) {
@@ -131,7 +137,7 @@ export const BattleCanvas: React.FC = () => {
     useEffect(() => {
         if (renderController) {
             console.log("render loop start");
-            const renderLoop = setInterval(() => {renderController.render()}, 1000);
+            const renderLoop = setInterval(() => {renderController.render()}, 500);
             return () => {
                 clearInterval(renderLoop);
                 console.log("render loop finished");
@@ -140,6 +146,12 @@ export const BattleCanvas: React.FC = () => {
         console.log("render controller unset")
     }, [renderController]);
 
+    
+    useEffect(() => {
+        if (renderController !== undefined && skillSelected === undefined)
+            renderController.skillBarController.unSelectSkill();
+    }, [ renderController, skillSelected ]);
+    
     return(<div>
             <canvas
                 onClick={handleCanvasClick}

@@ -14,7 +14,8 @@ export interface ICanvasWrapper {
     drawRect: (
         color: CanvasFillStrokeStyles['fillStyle'], 
         start: TCanvasCoordinates, 
-        size: TSize    
+        size: TSize,
+        opacity?: number
     ) => void;
 
     drawEmptyRect: (
@@ -141,10 +142,15 @@ export default class CanvasWrapper implements ICanvasWrapper {
     drawRect(
         color: CanvasFillStrokeStyles['fillStyle'], 
         start: TCanvasCoordinates, 
-        size: TSize
+        size: TSize,
+        opacity?: number
     ) {
+        this.context.save();
         this.context.fillStyle = color;
+        if (opacity)
+            this.context.globalAlpha = opacity;
         this.context.fillRect(start.x, start.y, size.width, size.height);
+        this.context.restore();
     }
 
     drawEmptyRect(
@@ -266,9 +272,10 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
     drawRect(
         color: string | CanvasGradient | CanvasPattern, 
         start: TCoordinates, 
-        size: TSize
+        size: TSize,
+        opacity?: number
     ) {
-        this.canvasWarapper.drawRect( color, start, size);
+        this.canvasWarapper.drawRect( color, start, size, opacity);
     }
 
     drawEmptyRect(
@@ -401,12 +408,14 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
     drawRect(
         color: string | CanvasGradient | CanvasPattern, 
         start: TCoordinates, 
-        size: TSize
+        size: TSize,
+        opacity?: number
     ) {
         super.drawRect(
             color,
             sumCoordinates(start, this.newOrigin),
-            size
+            size,
+            opacity
         );
     }
 

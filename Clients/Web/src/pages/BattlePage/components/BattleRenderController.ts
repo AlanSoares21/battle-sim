@@ -39,7 +39,7 @@ export default class BattleRenderController {
      */
     private boardCanvas: ICanvasWrapper;
     private boardStartAt: TCanvasCoordinates;
-    private boardCanvasSize: TCanvasSize;
+    
     pointer: PointerRender;
     private background: BackgroundRender;
     private playersData: IPlayerRenderData[] = [];
@@ -48,7 +48,7 @@ export default class BattleRenderController {
     /**
      * Skill Bar components
      */
-    private skillBarController: SkillBarController;
+    skillBarController: SkillBarController;
 
     /**
      * Life
@@ -95,7 +95,6 @@ export default class BattleRenderController {
             height:boardAreaToDraw.height / board.height
         };
         
-        this.boardCanvasSize = boardAreaToDraw;
         this.boardStartAt = boardStartDrawAt;
         this.boardCanvas = new SubAreaOnCanvasDecorator(
             canvas, 
@@ -219,7 +218,6 @@ export default class BattleRenderController {
                 subCoordinates(canvasClick, this.boardStartAt), 
                 this.cellSize
             );
-            console.log('board click', b);
             return b;
         }
     }

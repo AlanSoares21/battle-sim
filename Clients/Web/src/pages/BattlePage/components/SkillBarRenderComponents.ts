@@ -4,7 +4,8 @@ import { IRender } from "./Render";
 
 const colors = {
     'skill-background': '#9d9d9d',
-    'skill-name': '#FFFFFF'
+    'skill-name': '#FFFFFF',
+    'skillbar-border': '#d9d9d9'
 }
 
 const skillNameHeigth = 0.15;
@@ -17,6 +18,7 @@ export class SkillRender implements IRender {
     private textRectHeight: number;
     private assetPosition: TCanvasCoordinates;
     private assetSize: TSize;
+    private isSelected: boolean = false;
 
     constructor(canvas: ICanvasWrapper, name: string, asset: IAsset) {
         this.canvas = canvas;
@@ -31,6 +33,11 @@ export class SkillRender implements IRender {
             x: (this.size.height - assetSide) / 2, 
             y: this.textRectHeight
         };
+    }
+
+    setSelected(value: boolean) {
+        this.isSelected = value;
+        this.render();
     }
 
     private drawBackground() {
@@ -59,10 +66,21 @@ export class SkillRender implements IRender {
         );
     }
 
+    private drawBlur() {
+        this.canvas.drawRect(
+            colors['skill-background'], 
+            { x: 0, y: 0}, 
+            this.size,
+            0.5
+        );
+    }
+
     render() {
         this.drawBackground()
         this.drawAsset();
         this.writeText();
+        if (this.isSelected)
+            this.drawBlur();
     }
 }
 
@@ -88,7 +106,6 @@ function getSkillRenders(
         width: side,
         height: side
     }
-    console.log('creating renders canvas size', canvasSize, side);
 
     return skills.map((name, i) => {
         let asset: IAsset;
@@ -110,6 +127,7 @@ export class SkillBarController implements IRender {
     canvas: ICanvasWrapper;
     private skills: string[];
     private skillsRenders: SkillRender[] = [];
+    private selected?: number;
     
     constructor(
         canvas: ICanvasWrapper, 
@@ -130,9 +148,30 @@ export class SkillBarController implements IRender {
         }
         return;
     }
+
+    selectSkill(name: string) {
+        for (let index = 0; index < this.skills.length; index++) {
+            if (name === this.skills[index]) {
+                this.skillsRenders[index].setSelected(true);
+                this.selected = index;
+                break;
+            }
+        }
+    }
+
+    unSelectSkill() {
+        if (this.selected !== undefined) {
+            this.skillsRenders[this.selected].setSelected(false);
+            this.selected = undefined;
+        }
+    }
     
     render() {
-        this.canvas.drawEmptyRect('#d9d9d9', { x: 0, y: 0}, this.canvas.getSize());
+        this.canvas.drawEmptyRect(
+            colors['skillbar-border'], 
+            { x: 0, y: 0}, 
+            this.canvas.getSize()
+        );
         this.skillsRenders.forEach(r => r.render());
     }
 }
