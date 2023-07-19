@@ -1,12 +1,12 @@
 import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
 import { BattleContext } from "../BattleContext";
 import SkillBar from "./SkillBar";
-import { TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
+import { TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
-import BattleRender from "./BattleRender";
+import BattleRenderController from "./BattleRenderController";
 import { IServerEvents } from "../../../server";
 
-const onAttack = (render: BattleRender, userId: string): IServerEvents['Attack'] => 
+const onAttack = (render: BattleRenderController, userId: string): IServerEvents['Attack'] => 
 (
     (_, target, currentHealth) => {
         render.updateEntityCurrentHealth(target === userId, currentHealth);
@@ -14,7 +14,7 @@ const onAttack = (render: BattleRender, userId: string): IServerEvents['Attack']
     }
 )
 
-const onSkill = (render: BattleRender, userId: string): IServerEvents['Skill'] => 
+const onSkill = (render: BattleRenderController, userId: string): IServerEvents['Skill'] => 
 (
     (_, source, target, currentHealth) => {
         render.updateEntityCurrentHealth(target === userId, currentHealth);
@@ -22,11 +22,11 @@ const onSkill = (render: BattleRender, userId: string): IServerEvents['Skill'] =
     }
 )
 
-export const BattleController: React.FC = () => {
+export const BattleCanvas: React.FC = () => {
     const { battle, server, player, assets } = useContext(BattleContext);
 
     const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
-    const [renderController, setRenderController] = useState<BattleRender>();
+    const [renderController, setRenderController] = useState<BattleRenderController>();
 
     const [skillSelected, setSkillSelected] = useState<string>();
 
@@ -89,14 +89,15 @@ export const BattleController: React.FC = () => {
         const canvasWrapper = new CanvasWrapper(context)
         const board: TBoard = battle.board.size;
         
-        const value = new BattleRender(
+        const value = new BattleRenderController(
             canvasWrapper,
             board,
-            assets
+            assets,
+            player
         );
         
         setRenderController(value);
-    }, [setRenderController, setCanvasOffset, assets]);
+    }, [setRenderController, setCanvasOffset, assets, player]);
 
     /**
      * update entities position on board

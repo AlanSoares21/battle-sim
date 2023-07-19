@@ -202,9 +202,9 @@ export default class CanvasWrapper implements ICanvasWrapper {
 }
 
 class CanvasWarapperDecorator implements ICanvasWrapper {
-    private canvasWarapper: CanvasWrapper;
+    private canvasWarapper: ICanvasWrapper;
 
-    constructor(canvasWarapper: CanvasWrapper) {
+    constructor(canvasWarapper: ICanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
     }
 
@@ -313,7 +313,7 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
     private newArea: TCanvasSize;
     
     constructor(
-        canvasWarapper: CanvasWrapper, 
+        canvasWarapper: ICanvasWrapper, 
         newOrigin: TCanvasCoordinates,
         newArea: TCanvasSize
     ) {

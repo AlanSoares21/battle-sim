@@ -3,7 +3,7 @@ import { subCoordinates } from "../../../CoordinatesUtils";
 import { IAssetsData, IAssetsFile, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
 import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
-import { IRender } from "./Render";
+import { IRender, SkillBarController } from "./Render";
 
 function areaInnerCanvas(canvasSize: TCanvasSize, canvasAreaProportion: number): TCanvasSize {
     const target: TCanvasSize = { height: 0, width:  0 };
@@ -19,7 +19,29 @@ const boardMarginTop = 0.1;
 const boardWidth = 0.5;
 const boardHeigth = 0.5;
 
-export default class BattleRender implements IRender {
+const skillBarMarginTop = 10;
+
+function getSkillBar(
+    canvas: ICanvasWrapper, 
+    playerSkills: string[], 
+    assetsData: IAssetsData
+): SkillBarController {
+    const canvasSize = canvas.getSize();
+    const startAt: TCanvasCoordinates = {
+        x: 0,
+        y: canvasSize.height * boardMarginTop 
+            + canvasSize.height * boardHeigth 
+            + skillBarMarginTop
+    };
+    const canvasArea: TCanvasSize = {
+        width: canvasSize.width,
+        height: canvasSize.height - startAt.y
+    };
+    const skillBarCanvas = new SubAreaOnCanvasDecorator(canvas, startAt, canvasArea);
+    return new SkillBarController(skillBarCanvas, playerSkills, assetsData);
+}
+
+export default class BattleRenderController implements IRender {
     
     /**
      * Board components
@@ -31,6 +53,11 @@ export default class BattleRender implements IRender {
     private background: BackgroundRender;
     private playersData: IPlayerRenderData[] = [];
     private playersRenders: PlayerRender[] = [];
+
+    /**
+     * Skill Bar components
+     */
+    private skillBarController: SkillBarController;
 
     /**
      * Life
@@ -56,7 +83,8 @@ export default class BattleRender implements IRender {
     constructor(
         canvas: CanvasWrapper,
         board: TBoard,
-        assetsData: IAssetsData
+        assetsData: IAssetsData,
+        player: IEntity
     ) {
         this.assets = assetsData;
         this.board = board;
@@ -123,6 +151,9 @@ export default class BattleRender implements IRender {
             userLifeSphereStartAt, 
             userLifeSphereArea
         );
+
+        this.skillBarController = getSkillBar(canvas, player.skills, assetsData);
+        this.skillBarController.render();
     }
 
     setPlayer(data: IEntity, position: TBoardCoordinates, isTheUser: boolean) {

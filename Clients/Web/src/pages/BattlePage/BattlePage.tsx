@@ -6,7 +6,7 @@ import { CancelButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
 import { BattleContext } from "./BattleContext";
 import { IEntity } from "../../interfaces";
-import { BattleController } from "./components/BattleController";
+import { BattleCanvas } from "./components/BattleCanvas";
 
 export const BattlePage: React.FC = () => {
     const navigate = useNavigate();
@@ -36,7 +36,7 @@ export const BattlePage: React.FC = () => {
                 player,
                 assets: commomData.assets
             }}>
-                <BattleController />
+                <BattleCanvas />
             </BattleContext.Provider>
         }
         <CancelButton 
