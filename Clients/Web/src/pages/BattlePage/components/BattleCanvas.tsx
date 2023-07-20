@@ -21,6 +21,24 @@ const onSkill = (render: BattleRenderController, userId: string): IServerEvents[
     }
 )
 
+const keysToMap = [ "q", "w", "e", "r", "a", "s", "d", "f" ];
+
+function getSkillsBindingsToKeyboard(skills: string[]): { [skill: string]: string } {
+    return skills.reduce<{ [skill: string]: string }>((keyBindings, skill, i) => {
+        if (i < keysToMap.length)
+            keyBindings[skill] = keysToMap[i];
+        return keyBindings;
+    }, {});
+}
+
+function getKeybordBindingsToSkills(skills: string[]): { [key: string]: string } {
+    return keysToMap.reduce<{ [key: string]: string }>((keyBindings, key, i) => {
+        if (i < skills.length)
+            keyBindings[key] = skills[i];
+        return keyBindings;
+    }, {});
+}
+
 export const BattleCanvas: React.FC = () => {
     const { battle, server, player, assets } = useContext(BattleContext);
 
@@ -98,12 +116,12 @@ export const BattleCanvas: React.FC = () => {
         }
         const canvasWrapper = new CanvasWrapper(context)
         const board: TBoard = battle.board.size;
-        
         const value = new BattleRenderController(
             canvasWrapper,
             board,
             assets,
-            player
+            player,
+            getSkillsBindingsToKeyboard(player.skills)
         );
         
         setRenderController(value);
@@ -151,12 +169,25 @@ export const BattleCanvas: React.FC = () => {
         if (renderController !== undefined && skillSelected === undefined)
             renderController.skillBarController.unSelectSkill();
     }, [ renderController, skillSelected ]);
+
+    useEffect(() => {
+        if (renderController) {
+            const mappedKeyBoard: { [key: string]: string } = 
+                getKeybordBindingsToSkills(player.skills);
+            document.onkeydown = (ev) => {
+                const key = ev.key;
+                if (key in mappedKeyBoard) {
+                    const skill = mappedKeyBoard[key];
+                    renderController.skillBarController.selectSkill(skill);
+                    setSkillSelected(skill);
+                }
+            };
+        }
+    }, [renderController, player]);
     
-    return(<div>
-            <canvas
-                onClick={handleCanvasClick}
-                ref={setCanvasRef}
-                style={{background: "#000000", width: '99%'}}>
-            </canvas>
-    </div>);
+    return(<canvas
+        onClick={handleCanvasClick}
+        ref={setCanvasRef}
+        style={{background: "#000000", width: '99%'}}>
+    </canvas>);
 }

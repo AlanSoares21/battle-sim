@@ -4,7 +4,7 @@ import { IRender } from "./Render";
 
 const colors = {
     'skill-background': '#9d9d9d',
-    'skill-name': '#FFFFFF',
+    'skill-text': '#FFFFFF',
     'skillbar-border': '#d9d9d9'
 }
 
@@ -13,16 +13,16 @@ const skillNameHeigth = 0.15;
 export class SkillRender implements IRender {
     canvas: ICanvasWrapper;
     private size: TCanvasSize;
-    private name: string;
+    private text: string;
     private asset: IAsset;
     private textRectHeight: number;
     private assetPosition: TCanvasCoordinates;
     private assetSize: TSize;
     private isSelected: boolean = false;
 
-    constructor(canvas: ICanvasWrapper, name: string, asset: IAsset) {
+    constructor(canvas: ICanvasWrapper, text: string, asset: IAsset) {
         this.canvas = canvas;
-        this.name = name;
+        this.text = text;
         this.asset = asset;
         this.size = canvas.getSize();
         this.textRectHeight = this.size.height * skillNameHeigth;
@@ -51,8 +51,8 @@ export class SkillRender implements IRender {
     private writeText() {
         this.canvas.writeText(
             { x: 0, y: this.textRectHeight - 3 }, 
-            this.name, 
-            colors['skill-name']
+            this.text, 
+            colors['skill-text']
         );
     }
 
@@ -98,7 +98,8 @@ const skillSpaceFromTop = 10;
 function getSkillRenders(
     skills: string[], 
     assets: IAssetsData, 
-    canvas: ICanvasWrapper
+    canvas: ICanvasWrapper,
+    skillKeyBinginds: { [skillName: string]: string }
 ): SkillRender[] {
     const canvasSize = canvas.getSize();
     const side = canvasSize.height - skillSpaceFromBottom - skillSpaceFromTop;
@@ -119,7 +120,10 @@ function getSkillRenders(
         };
         startAt.x += skillMarginLeft * (i + 1);
         const skillCanvas = new SubAreaOnCanvasDecorator(canvas, startAt, skillSize);
-        return new SkillRender(skillCanvas, name, asset);
+        let text = name;
+        if (text in skillKeyBinginds)
+            text = skillKeyBinginds[text];
+        return new SkillRender(skillCanvas, text, asset);
     });
 }
 
@@ -132,11 +136,17 @@ export class SkillBarController implements IRender {
     constructor(
         canvas: ICanvasWrapper, 
         skills: string[], 
-        assetsData: IAssetsData
+        assetsData: IAssetsData,
+        skillKeyBinginds: { [skillName: string]: string }
     ) {
         this.canvas = canvas;
         this.skills = skills;
-        this.skillsRenders = getSkillRenders(skills, assetsData, canvas);
+        this.skillsRenders = getSkillRenders(
+            skills, 
+            assetsData, 
+            canvas, 
+            skillKeyBinginds
+        );
     } 
 
     clickOnSkill(click: TCanvasCoordinates): string | undefined {

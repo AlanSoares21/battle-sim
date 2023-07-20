@@ -15,7 +15,8 @@ const skillBarMarginTop = 10;
 function getSkillBar(
     canvas: ICanvasWrapper, 
     playerSkills: string[], 
-    assetsData: IAssetsData
+    assetsData: IAssetsData,
+    skillKeyBindings: { [skillName: string]: string }
 ): SkillBarController {
     const canvasSize = canvas.getSize();
     const startAt: TCanvasCoordinates = {
@@ -29,7 +30,12 @@ function getSkillBar(
         height: canvasSize.height - startAt.y
     };
     const skillBarCanvas = new SubAreaOnCanvasDecorator(canvas, startAt, canvasArea);
-    return new SkillBarController(skillBarCanvas, playerSkills, assetsData);
+    return new SkillBarController(
+        skillBarCanvas, 
+        playerSkills, 
+        assetsData, 
+        skillKeyBindings
+    );
 }
 
 export default class BattleRenderController {
@@ -75,7 +81,8 @@ export default class BattleRenderController {
         canvas: CanvasWrapper,
         board: TBoard,
         assetsData: IAssetsData,
-        player: IEntity
+        player: IEntity,
+        skillKeyBindings: { [skillName: string]: string }
     ) {
         this.assets = assetsData;
         this.board = board;
@@ -142,7 +149,12 @@ export default class BattleRenderController {
             userLifeSphereArea
         );
 
-        this.skillBarController = getSkillBar(canvas, player.skills, assetsData);
+        this.skillBarController = getSkillBar(
+            canvas, 
+            player.skills, 
+            assetsData,
+            skillKeyBindings
+        );
         this.skillBarController.render();
     }
 
