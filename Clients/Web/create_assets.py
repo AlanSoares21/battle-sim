@@ -4,12 +4,18 @@ import json
 from PIL import Image
 
 def create_assets_folder(folder_path):
+    print("creating assets with images in " + folder_path)
     # Lista todos os arquivos .png no diretório fornecido
     png_files = [file for file in os.listdir(folder_path) if file.endswith('.png') and not file.startswith('assets')]
 
     # Cria um dicionário para armazenar as informações de cada imagem
     asset_info = {}
-
+    
+    print("handling " + str(len(png_files)) + " files")
+    if len(png_files) == 0:
+        print("no files found in " + folder_path + " to be handled")
+        return
+    
     # Inicializa o arquivo assets.png
     current_position = 0
     assetFileHeight = 0
@@ -48,6 +54,7 @@ def create_assets_folder(folder_path):
     # Salva as informações no arquivo assets.map.json
     with open(os.path.join(folder_path, 'assets.map.json'), 'w') as json_file:
         json.dump(asset_info, json_file, indent=4)
+    print("assets files created")
 
 # Exemplo de uso
 folder_path = 'public/assets/'
