@@ -155,7 +155,9 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
     }, [battle, navigate]);
 
     useEffect(() => {
-        if (authContext.data !== undefined && battle === undefined)
+        if (authContext.data !== undefined 
+            && battle === undefined
+            && window.location.pathname.indexOf("entity") === -1)
             navigate('/home');
     }, [authContext.data, battle, navigate]);
 
