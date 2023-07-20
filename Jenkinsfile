@@ -7,6 +7,12 @@ pipeline {
 			}
 		}
 		stage('Build') {
+			environment {
+				ApiUrl = credentials("ApiUrl")
+                                WsUrl = credentials("WsUrl")
+                                SiteUrl = credentials("SiteUrl")
+				AssetsUrl = credentials("AssetsUrl")
+			}
 			steps {
 				sh './build-server.sh'
 				sh './build-webclient.sh'
