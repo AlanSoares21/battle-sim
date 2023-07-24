@@ -1,13 +1,11 @@
 .user-card {
     display: inline-block;
-    width: 25vw;
+    width: 20vw;
 }
 
 .user-card-container {
-    margin-top: 10vh;
-    margin-bottom: 10vh;
-    margin-left: 2vw;
-    margin-right: 2vw;
+    margin-top: 0.5em;
+    margin-left: 0.25em;
     max-width: 90vw;
     max-height: 50vh;
     overflow: auto;

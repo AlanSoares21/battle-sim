@@ -13,7 +13,7 @@ interface IUserCardProps {
 }
 
 function selectUserCardButtonColor(user: IUserConnected): string {
-    return user.challengedByYou ? "#DBFF00" : "#88FFBB";
+    return user.challengedByYou ? "#747a1f" : "#236e1d";
 }
 
 const UserCard: React.FC<IUserCardProps> = ({
@@ -23,6 +23,7 @@ const UserCard: React.FC<IUserCardProps> = ({
     return (<div className="user-card">
         <DefaultButton 
             text={user.name} 
+            textColor="aliceblue"
             color={selectUserCardButtonColor(user)}
             onClick={onClick}
         />
@@ -48,7 +49,7 @@ export const UsersListPage: React.FC = () => {
     }, [authContext.data, navigate]);
 
     return(<>
-        <div>{commomData.usersConnected.length} Online users</div>
+        <div>{commomData.usersConnected.length} online users</div>
         <div className="user-card-container">
             {
                 commomData.usersConnected.map((user, i) => (

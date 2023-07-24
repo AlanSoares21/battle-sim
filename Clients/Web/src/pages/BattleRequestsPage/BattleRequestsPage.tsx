@@ -41,7 +41,7 @@ export const BattleRequestPage: React.FC = (
 
     return(
         <div>
-            Battle requests
+            You have {battleRequests.length} battle requests
             <div className='battle-request-list'>
                 {
                     battleRequests.map(request => 

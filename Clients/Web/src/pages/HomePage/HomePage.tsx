@@ -11,15 +11,14 @@ export const HomePage : React.FC = () => {
 
     return(
         <div>
-            <div>Your name: {authContext.data?.username}</div>
+            <PrimaryButton text="Edit Entity" onClick={() => {
+                navigate('/entity');
+            }} />
+            <label>{authContext.data?.username}</label>
             <hr />
             <BattleRequestPage />
             <hr />
             <UsersListPage />
-            <hr />
-            <PrimaryButton text="Edit Entity" onClick={() => {
-                navigate('/entity');
-            }} />
         </div>
     );
 }
