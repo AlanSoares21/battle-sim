@@ -55,12 +55,13 @@ public class GameDbConverter : IGameDbConverter
         }
     }
 
-    public IEquip Equip(EntityEquip entityEquip)
+    public IEquip Equip(Equip equip)
     {
-        Equip? equipDefinition = _db.SearchEquip(entityEquip.EquipId);
-        if (equipDefinition is null)
-            throw new Exception($"Equip {entityEquip.EquipId} not found.");
-        return new CommomBarrierEquip(GetEquipFormat(entityEquip.Coordinates));
+        if (equip.Effect != EquipEffect.Barrier)
+            throw new Exception($"The equip effect {equip.Effect} is invalid.");
+        if (equip.Shape != EquipShape.Rectangle)
+            throw new Exception($"The equip shape {equip.Shape} is invalid.");
+        return new CommomBarrierEquip(GetEquipFormat(equip.Coordinates));
     }
 
     IEquipFormat GetEquipFormat(List<Coordinate> coordinates)

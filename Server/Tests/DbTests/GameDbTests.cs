@@ -16,8 +16,13 @@ public class GameDbTests
     public void Return_Entities_Correct() 
     {
         var entity = new Entity() { Id = "entityOne" };
-        string equipId = Utils.DefaultEquips[0].Id;
-        AddEquipToEntity(entity, equipId);
+        Coordinate[] equipCoordinates = new Coordinate[4] {
+            new(1,1),
+            new(2,1),
+            new(2,2),
+            new(1,2)
+        };
+        AddBarrierEquipToEntity(entity, equipCoordinates);
         DbStructure dbStructure = new();
         AddEntitiesInDbStructure(dbStructure, entity);
         var serializer = SerializerWithDbStructre(dbStructure);
@@ -28,28 +33,8 @@ public class GameDbTests
             .MustHaveHappenedOnceExactly();
         Assert.IsNotNull(result);
         Assert.AreEqual(entity.Id, result.Id);
-        Assert.IsTrue(result.Equips.Exists(e => e.EquipId == equipId));
-    }
-    
-    [TestMethod]
-    public void Return_Equips_Correct() 
-    {
-        DbStructure dbStructure = new();
-        AddEquipsInDbStructure(dbStructure, Utils.DefaultEquips);
-        var serializer = SerializerWithDbStructre(dbStructure);
-        IGameDb gameDb = CreateDb(serializer);
-        var result = gameDb.GetEquips();
-        A.CallTo(() => 
-            serializer.DeserializeFile<DbStructure>(An<string>.Ignored))
-            .MustHaveHappenedOnceExactly();
-        Assert.IsNotNull(result);
-        Assert.IsTrue(Utils.DefaultEquips.All(e1 => 
-            result.Exists(e2 => e2.Id == e1.Id)));
-    }
-
-    void AddEquipsInDbStructure(DbStructure db, params Equip[] equips)
-    {
-        db.Equips = equips.ToList();
+        Assert.AreEqual(entity.Equips.Count, result.Equips.Count);
+        AssertEquips(entity.Equips, result.Equips);
     }
 
     IGameDb CreateDb(IJsonSerializerWrapper serializer) => 
@@ -61,7 +46,13 @@ public class GameDbTests
     {
         var firstEntity = Utils.NewDbEntity("entity");
         firstEntity.Damage = 10;
-        AddEquipToEntity(firstEntity, Utils.DefaultEquips[0].Id);
+        Coordinate[] equipCoordinates = new Coordinate[4] {
+            new(1,1),
+            new(2,1),
+            new(2,2),
+            new(1,2)
+        };
+        AddBarrierEquipToEntity(firstEntity, equipCoordinates);
         DbStructure dbStructure = new();
         AddEntitiesInDbStructure(dbStructure, firstEntity);
         IGameDb db = CreateDb(
@@ -72,7 +63,13 @@ public class GameDbTests
         newEntity.Damage = 11;
         newEntity.HealthRadius = 3;
         newEntity.DefenseAbsorption = 30;
-        AddEquipToEntity(firstEntity, Utils.DefaultEquips[1].Id);
+        Coordinate[] newEquipCoordinates = new Coordinate[4] {
+            new(-1,-1),
+            new(-2,-1),
+            new(-2,-2),
+            new(-1,-2)
+        };
+        AddBarrierEquipToEntity(firstEntity, newEquipCoordinates);
         db.UpdateEntity(newEntity);
         var dbEntity = db.SearchEntity(firstEntity.Id);
         if (dbEntity is null)
@@ -85,13 +82,7 @@ public class GameDbTests
         params Entity[] entities)
     {
         foreach (var entity in entities)
-        {
-            db.Entities.Add(entity);
-            foreach (var equip in entity.Equips)
-            {
-                db.EntitiesEquips.Add(equip);
-            }
-        }   
+            db.Entities.Add(entity);   
     }
 
     [TestMethod]
@@ -99,7 +90,13 @@ public class GameDbTests
     {
         var entity = Utils.NewDbEntity("entity");
         entity.Damage = 10;
-        AddEquipToEntity(entity, Utils.DefaultEquips[0].Id);
+        Coordinate[] equipCoordinates = new Coordinate[4] {
+            new(1,1),
+            new(2,1),
+            new(2,2),
+            new(1,2)
+        };
+        AddBarrierEquipToEntity(entity, equipCoordinates);
         IGameDb db = CreateDb(
             SerializerWithDbStructre(new()), 
             new SkillProvider()
@@ -111,11 +108,12 @@ public class GameDbTests
         EntitiesAreEqual(entity, dbEntity);
     }
 
-    void AddEquipToEntity(Entity entity, string equipId)
+    void AddBarrierEquipToEntity(Entity entity, params Coordinate[] coordinates)
     {
-        entity.Equips.Add(new EntityEquip() {
-            EntityId = entity.Id,
-            EquipId = equipId
+        entity.Equips.Add(new Equip() {
+            Effect = Engine.Equipment.EquipEffect.Barrier,
+            Shape = EquipShape.Rectangle,
+            Coordinates = coordinates.ToList()
         });
     }
 
@@ -126,35 +124,28 @@ public class GameDbTests
         Assert.AreEqual(first.Damage, second.Damage);
         Assert.AreEqual(first.DefenseAbsorption, second.DefenseAbsorption);
         Assert.IsTrue(first.Skills.All(s => second.Skills.Contains(s)));
-        Assert.IsTrue(first.Equips.All(e1 => 
-            second.Equips.Any(e2 => e1.EquipId == e2.EquipId)));
+        AssertEquips(first.Equips, second.Equips);
     }
 
-    [TestMethod]
-    public void Return_Equip_On_Searching_By_Id()
-    {
-        DbStructure dbStructure = new() {
-            Equips = Utils.DefaultEquips.ToList()
-        };
-        IGameDb db = CreateDb(
-            SerializerWithDbStructre(dbStructure), 
-            new SkillProvider()
-        );
-        var dbEquip = db.SearchEquip(Utils.DefaultEquips[0].Id);
-        if (dbEquip is null)
-            Assert.Fail($"{Utils.DefaultEquips[0].Id} not registered on db");
-        Assert.AreEqual(Utils.DefaultEquips[0], dbEquip);
-    }
-
-    [TestMethod]
-    public void Return_Null_When_Searching_An_Equip_That_Dont_Exists()
-    {
-        IGameDb db = CreateDb(
-            SerializerWithDbStructre(new()), 
-            new SkillProvider()
-        );
-        var dbEquip = db.SearchEquip("thisEquipDontExists");
-        Assert.IsNull(dbEquip);
+    /*
+        Obs: four loops are used to check if all coordinates, off all equips from source
+        match with at least one equip in target
+    */
+    void AssertEquips(List<Equip> source, List<Equip> target) {
+        for (int i = 0; i < source.Count; i++)
+        {
+            var equip = source[i];
+            for (int j = 0; j < target.Count; j++)
+            {
+                Assert.IsTrue(
+                    equip.Coordinates.All(c  => 
+                        target[j].Coordinates.Any(tc => tc.Equals(c))
+                    ),
+                    $"Source equip {i} dont have any equip with the same coordinates in the target list"
+                );
+                target.RemoveAt(j);
+            }
+        }
     }
     
     IJsonSerializerWrapper SerializerWithDbStructre(

@@ -62,12 +62,12 @@ public class BattleCreationTests
         IEntity caller = Utils.FakeEntity("callerId"); 
         Entity callerDbEntity = new() {
             Id = caller.Id,
-            Equips = new() { new EntityEquip() {
+            Equips = new() { new Equip() {
                 Coordinates = new() { 
                     new(0, 0), new(1, 0), new(1, 1), new(0, 1) 
                 },
-                EntityId = caller.Id,
-                EquipId = Utils.DefaultEquips[0].Id
+                Effect = BattleSimulator.Engine.Equipment.EquipEffect.Barrier,
+                Shape = EquipShape.Rectangle
             }} 
         };
 

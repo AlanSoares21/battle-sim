@@ -13,12 +13,6 @@ namespace BattleSimulator.Server.Tests.DbTests;
 [TestClass]
 public class ConverterTests
 {
-    /*
-        _ - Converte corretamente entidades do db para entidades do jogo
-        _ - Cria equipamentos corretamente
-        _ - Cria entidade com os equipamentos corretos
-    */
-
     [TestMethod]
     public void Convert_Entity()
     {
@@ -63,31 +57,11 @@ public class ConverterTests
     }
 
     [TestMethod]
-    public void Throw_Exception_When_Try_Convert_Equip_That_Dont_Exists() 
-    {
-        string equipId = Utils.DefaultEquips[1].Id;
-        var equip = new EntityEquip() {
-            EquipId = equipId,
-            Coordinates = new() {
-                new(0, 1),
-                new(0,2),
-                new(4,2),
-                new(4,1)
-            }
-        };
-        IGameDb db = A.Fake<IGameDb>();
-        A.CallTo(() => db.SearchEquip(equipId))
-            .Returns(null);
-        IGameDbConverter converter = CreateConverter(db);
-        Assert.ThrowsException<Exception>(() => converter.Equip(equip));
-    }
-
-    [TestMethod]
     public void Convert_Equip() 
     {
-        Equip equip = Utils.DefaultEquips[1];
-        var entityEquip = new EntityEquip() {
-            EquipId = equip.Id,
+        var equip = new Equip() {
+            Effect = EquipEffect.Barrier,
+            Shape = EquipShape.Rectangle,
             Coordinates = new() {
                 new(0,1),
                 new(0,2),
@@ -96,21 +70,19 @@ public class ConverterTests
             }
         };
         IGameDb db = A.Fake<IGameDb>();
-        A.CallTo(() => db.SearchEquip(equip.Id))
-            .Returns(Utils.DefaultEquips[1]);
+        
         IGameDbConverter converter = CreateConverter(db);
-        var gameEquip = converter.Equip(entityEquip);
-        A.CallTo(() => db.SearchEquip(equip.Id))
-            .MustHaveHappenedOnceExactly();
+        var gameEquip = converter.Equip(equip);
+
         Assert.AreEqual(equip.Effect, gameEquip.Effect);
-        Assert.AreEqual(entityEquip.Coordinates.Count, 
+        Assert.AreEqual(equip.Coordinates.Count, 
             gameEquip.Position.Coordinates.Length);
-        for (int i = 0; i < entityEquip.Coordinates.Count; i++)
+        for (int i = 0; i < equip.Coordinates.Count; i++)
         {
             Assert.AreEqual(
-                entityEquip.Coordinates[i], 
+                equip.Coordinates[i], 
                 gameEquip.Position.Coordinates[i], 
-                $"cordinate {entityEquip.Coordinates[i]} is not equal to {gameEquip.Position.Coordinates[i]} in position {i}");
+                $"cordinate {equip.Coordinates[i]} is not equal to {gameEquip.Position.Coordinates[i]} in position {i}");
         }
     }
 

@@ -12,5 +12,5 @@ public class Entity
 
     public List<string> Skills { get; set; } = new();
 
-    public List<EntityEquip> Equips { get; set; } = new();
+    public List<Equip> Equips { get; set; } = new();
 }

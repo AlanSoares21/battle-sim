@@ -10,7 +10,6 @@ public class GameDb : IGameDb
     ISkillProvider _skillProvider;
     List<Entity> _entities;
     ILogger<GameDb> _logger;
-    List<Equip> _equips;
     public GameDb(
         IJsonSerializerWrapper serializer, 
         IServerConfig serverConfig,
@@ -26,15 +25,9 @@ public class GameDb : IGameDb
             filePath = serverConfig.DbFilePath;
         var content = serializer.DeserializeFile<DbStructure>(filePath);
         if (content is null)
-        {
             _entities = new();
-            _equips = new();
-        }
         else
-        {
             _entities = content.Entities;
-            _equips = content.Equips;
-        }
     }
 
     public void AddEntity(Entity entity)
@@ -42,13 +35,9 @@ public class GameDb : IGameDb
         _entities.Add(entity);
     }
 
-    public List<Equip> GetEquips() => _equips;
-
     public Entity? SearchEntity(string entityId) =>_entities
             .Where(e => e.Id == entityId)
             .SingleOrDefault();
-
-    public Equip? SearchEquip(string id) => _equips.Find(e => e.Id == id);
 
     public void UpdateEntity(Entity entity)
     {

@@ -1,8 +1,10 @@
+using BattleSimulator.Engine;
+
 namespace BattleSimulator.Server.Database.Models;
 
 public class Equip 
 {
-    public string Id { get; set; } = "";
+    public List<Coordinate> Coordinates { get; set; } = new();
     public Engine.Equipment.EquipEffect Effect { get; set; }
     public EquipShape Shape { get; set; }
 }

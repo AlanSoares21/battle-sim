@@ -182,14 +182,4 @@ public static class Utils
     {
         return An<Entity>.That.Matches(e => e.Id == id);
     }
-
-    public static Equip[] DefaultEquips = new Equip[] 
-    {
-        new Equip() {
-            Id = "equip01"
-        },
-        new Equip() {
-            Id = "equip02"
-        }
-    };
 }
