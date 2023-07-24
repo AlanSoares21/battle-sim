@@ -11,11 +11,11 @@
 
 .primary {
     color: white;
-    background-color: green;
+    background-color: #206136;
 }
 
 .primary:hover {
-    background-color: lightgreen;
+    background-color: #184728;
 }
 
 .primary:disabled {
@@ -24,9 +24,9 @@
 
 .cancel {
     color: white;
-    background-color: crimson;
+    background-color: #a8282b;
 }
 
 .cancel:hover {
-    background-color: red;
+    background-color: #8a1e21;
 }

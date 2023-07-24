@@ -5,20 +5,19 @@
 
 .battle-request-card {
     /* border: red 1px solid; */
-    background-color: #F0EB7E;
-    border-radius: 8px;
+    background-color: #818285;
+    border-radius: 2px;
     flex-basis: auto;
     flex-shrink: 1;
-    margin: 5vw;
+    margin: 1vw;
     text-align: center;
 }
 
 .battle-request-card > i {
-    color: #625353;
-    padding: 5px;
+    color: aliceblue;
     word-break: break-all;
 }
 
 .battle-request-card > button ~ button {
-    margin-bottom: 0.5vh;
+    margin-bottom: 1em;
 }
