@@ -60,28 +60,6 @@ export interface IWeapon {
     damageOnY: DamageDirection;
 }
 
-export interface IEntityEquip {
-    entityId: string;
-    equipId: string;
-    coordinates: TCoordinates[];
-}
-
-export interface IEntity {
-    id: string;
-    skills: string[];
-    weapon: IWeapon;
-    healthRadius: number;
-    damage: number;
-    defenseAbsorption: number;
-    equips: IEntityEquip[];
-}
-
-export interface IBattleData {
-    id: string;
-    board: IBoardData;
-    entities: IEntity[];
-}
-
 export enum EquipEffect {
     Barrier
 }
@@ -91,9 +69,25 @@ export enum EquipShape {
 }
 
 export interface IEquip {
-    id: string;
+    coordinates: TCoordinates[];
     effect: EquipEffect;
     shape: EquipShape
+}
+
+export interface IEntity {
+    id: string;
+    skills: string[];
+    weapon: IWeapon;
+    healthRadius: number;
+    damage: number;
+    defenseAbsorption: number;
+    equips: IEquip[];
+}
+
+export interface IBattleData {
+    id: string;
+    board: IBoardData;
+    entities: IEntity[];
 }
 
 export interface IAssetFileItem {

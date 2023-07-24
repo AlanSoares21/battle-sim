@@ -1,6 +1,6 @@
 import { HubConnection } from "@microsoft/signalr";
 import configs from "./configs";
-import { IApiError, IBattleData, IBattleRequest, IEntity, IEquip, ILoginResponse, IUserConnected, TCoordinates } from "./interfaces";
+import { IApiError, IBattleData, IBattleRequest, IEntity, ILoginResponse, IUserConnected, TCoordinates } from "./interfaces";
 import { isLoginResponse } from "./typeCheck";
 
 export async function login(name: string): 
@@ -100,11 +100,6 @@ async function requestApi(route: string, method?: 'GET' | 'PUT', body?: any, don
 export async function getEntity(): Promise<IEntity | IApiError> {
     const response = await requestApi(`/Entity`);
     return JSON.parse(response.text) as IApiError | IEntity;
-}
-
-export async function getEquips(): Promise<IEquip[] | IApiError> {
-    const response = await requestApi(`/Equip`);
-    return JSON.parse(response.text) as IApiError | IEquip[];
 }
 
 export async function updateEntity(data: IEntity): Promise<IEntity | IApiError> {

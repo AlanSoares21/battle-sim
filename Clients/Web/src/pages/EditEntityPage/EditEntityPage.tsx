@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { getEntity, getEquips, updateEntity } from "../../server";
+import { getEntity, updateEntity } from "../../server";
 import { isApiError } from "../../typeCheck";
-import { IEntity, IEquip } from "../../interfaces";
+import { IEntity } from "../../interfaces";
 import MultilineTextBox from "../../components/MultilineTextBox/MultilineTextBox";
 import { DefaultButton, PrimaryButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 const EditEntityPage: React.FC = () => {
     const navigate = useNavigate();
     const [entityData, setEntityData] = useState<IEntity>();
-    const [equips, setEquips] = useState<IEquip[]>([]);
 
     const handleBtnUpdateEntityClick = useCallback(async () => {
         if (entityData === undefined)
@@ -38,16 +37,7 @@ const EditEntityPage: React.FC = () => {
                 return alert(response.message);
             }
             setEntityData(response);
-        })
-        .finally(() => 
-            getEquips().then(response => {
-                if (isApiError(response)) {
-                    setEquips([]);
-                    return alert(response.message);
-                }
-                setEquips(response);
-            })
-        );
+        });
     }, []);
 
     return <div style={{paddingLeft: '1vw'}}>
@@ -65,12 +55,6 @@ const EditEntityPage: React.FC = () => {
             :
             <div>Error on getting entity data</div>
         }
-        <div>
-            <legend>Equip list (id)</legend>
-            {
-                equips.map(e => (<div key={e.id}>{e.id}</div>))
-            }
-        </div>
         <DefaultButton text="<- back to home" onClick={() => navigate('/home')} />
     </div>
 };
