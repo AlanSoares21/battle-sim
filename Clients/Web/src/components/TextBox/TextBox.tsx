@@ -1,6 +1,6 @@
 
 import React from "react";
-import './index.css';
+
 export interface ITextBoxProps {
     placeholder: string;
     onChange?: (text: string) => any;
@@ -10,8 +10,7 @@ export const TextBox: React.FC<ITextBoxProps> = ({
     placeholder,
     onChange
 }) => {
-    return (<input 
-        className='text-box'
+    return (<input
         type='text'
         placeholder={placeholder}
         onChange={ev => {
