@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from "react";
 import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { DefaultButton, IDefaultButtonProps } from "../../components/Buttons";
 import { AuthContext } from "../../contexts/AuthContext";
 import { CommomDataContext } from "../../contexts/CommomDataContext";
@@ -31,7 +30,6 @@ const UserCard: React.FC<IUserCardProps> = ({
 }
 
 export const UsersListPage: React.FC = () => {
-    const navigate = useNavigate();
     const authContext = useContext(AuthContext);
     const commomData = useContext(CommomDataContext);
 
@@ -43,10 +41,10 @@ export const UsersListPage: React.FC = () => {
     }, [authContext.data]);
     
     useEffect(() => {
-        if (authContext.data && commomData.usersConnected.length === 0) {
+        if (authContext.data) {
             authContext.data.server.ListUsers();
         }
-    }, [authContext.data, commomData.usersConnected, navigate]);
+    }, [authContext.data]);
 
     return(<>
         <div>{commomData.usersConnected.length} online users</div>
