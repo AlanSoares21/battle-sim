@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { DamageDirection, IAssetsData, IAssetsFile, IBattleData, IEntity } from "../../interfaces";
+import { DamageDirection, IAssetsData, IBattleData, IEntity } from "../../interfaces";
 import { ServerConnection } from "../../server";
 import { HubConnectionBuilder } from '@microsoft/signalr';
 

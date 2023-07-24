@@ -19,13 +19,13 @@ export const BattlePage: React.FC = () => {
     useEffect(() => {
         if (player !== undefined)
             return;
-        if (commomData.battle == undefined)
+        if (commomData.battle === undefined)
             return;
-        if (authContext.data == undefined)
+        if (authContext.data === undefined)
             return;
         const username = authContext.data.username;
         setPlayer(commomData.battle.entities.find(p => p.id === username));
-    }, [commomData, authContext]);
+    }, [commomData, authContext, player]);
 
     return(<>
         {

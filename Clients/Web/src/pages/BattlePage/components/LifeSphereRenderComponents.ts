@@ -1,6 +1,6 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { sumCoordinate } from "../../../CoordinatesUtils";
-import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates } from "../../../interfaces";
 import { IRender } from "./Render";
 
 const colors = {

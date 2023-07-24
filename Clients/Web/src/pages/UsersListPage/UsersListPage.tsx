@@ -46,7 +46,7 @@ export const UsersListPage: React.FC = () => {
         if (authContext.data && commomData.usersConnected.length === 0) {
             authContext.data.server.ListUsers();
         }
-    }, [authContext.data, navigate]);
+    }, [authContext.data, commomData.usersConnected, navigate]);
 
     return(<>
         <div>{commomData.usersConnected.length} online users</div>
