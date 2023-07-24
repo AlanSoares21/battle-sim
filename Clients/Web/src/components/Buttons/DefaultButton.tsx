@@ -15,7 +15,7 @@ export const DefaultButton: React.FC<IDefaultButtonProps> = ({
 }) => {
     return (
         <button 
-            className={`${className} btn-default`} 
+            className={className === undefined ? `btn-default` : `${className} btn-default`} 
             type='button' 
             style={{backgroundColor: color, color: textColor}}
             onClick={onClick}

@@ -1,4 +1,6 @@
 .btn-default {
+    color: aliceblue;
+    background-color: #818285;
     border: 0;
     max-height: 15vh;
     width: 100%;
@@ -10,7 +12,7 @@
 }
 
 .primary {
-    color: white;
+    color: aliceblue;
     background-color: #206136;
 }
 
@@ -23,7 +25,7 @@
 }
 
 .cancel {
-    color: white;
+    color: aliceblue;
     background-color: #a8282b;
 }
 

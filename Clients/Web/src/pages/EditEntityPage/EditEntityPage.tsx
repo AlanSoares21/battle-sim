@@ -53,20 +53,24 @@ const EditEntityPage: React.FC = () => {
     return <div style={{paddingLeft: '1vw'}}>
         {
             entityData !== undefined ? 
-            <div>
-                <p>Name: {entityData.id}</p>
-                <MultilineTextBox 
-                    defaultValue={JSON.stringify(entityData, undefined, '\n\t')} 
-                    onChange={handleTextBoxChange}
-                />
-                <PrimaryButton text="updateEntity" onClick={handleBtnUpdateEntityClick} />
-            </div>
+            <form onSubmit={ev => { ev.preventDefault(); handleBtnUpdateEntityClick(); }}>
+                <fieldset>
+                    <MultilineTextBox 
+                        defaultValue={JSON.stringify(entityData, undefined, '\n')} 
+                        onChange={handleTextBoxChange}
+                    />
+                    <PrimaryButton text="updateEntity" onClick={handleBtnUpdateEntityClick} />
+                </fieldset>
+            </form>
             :
-            <div>Entity data undefined</div>
+            <div>Error on getting entity data</div>
         }
-        {
-            equips.map(e => (<div key={e.id}>{e.id} - {e.shape} - {e.effect}</div>))
-        }
+        <div>
+            <legend>Equip list (id)</legend>
+            {
+                equips.map(e => (<div key={e.id}>{e.id}</div>))
+            }
+        </div>
         <DefaultButton text="<- back to home" onClick={() => navigate('/home')} />
     </div>
 };
