@@ -1,0 +1,41 @@
+.equips-list {
+    max-height: 75vh;
+    overflow: auto;
+}
+
+.edit-equip-container {
+    display: inline-block;
+    margin-left: 1em;
+}
+
+.edit-equip-container button {
+    width: 2em;
+    height: 2em;
+}
+
+.edit-equip-container input[type=number] {
+    width: 3em;
+    height: 2em;
+}
+
+.equip-coordinates-container {
+    max-width: 25vw;
+    display: flex;
+    padding: 0.5em;
+}
+
+.equip-coordinates-container table tr * {
+    text-align: center;
+}
+
+.equip-coordinates-container table tr th {
+    min-width: 2vw;
+}
+
+.equip-coordinates-container > * {
+    margin-left: 0.2em;
+}
+
+.equip-properties-container {
+    display: flex;
+}

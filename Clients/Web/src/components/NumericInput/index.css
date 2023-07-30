@@ -1,0 +1,12 @@
+.numeric-input {
+    padding-left: 0px;
+    /* hide arrows in firefox */
+    -moz-appearance: textfield;
+}
+
+/* hide arrows in others browsers */
+.numeric-input::-webkit-outer-spin-button,
+.numeric-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

@@ -31,6 +31,15 @@ input, textarea {
   outline: none;
 }
 
+select {
+  width: 99%;
+  border-radius: 2px;
+  border: none;
+  padding: 0.25em;
+  background-color: #818285;
+  color: aliceblue;
+}
+
 h1 {
   margin: 0px;
   background-color: #818285;
