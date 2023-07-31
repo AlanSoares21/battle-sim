@@ -8,6 +8,25 @@ namespace BattleSimulator.Engine.Tests.SkillsTests;
 public class CommomTestsToDamageSkills
 {
     [TestMethod]
+    [DataRow("basicNegativeDamageOnX")]
+    [DataRow("basicNegativeDamageOnY")]
+    [DataRow("basicPositiveDamageOnY")]
+    [DataRow("basicPositiveDamageOnX")]
+    public void Dont_Execute_Skill_When_The_Target_Is_Away_From_The_Skill_Range(
+        string skillName
+    ) {
+        var source = NewEntity("sourceId");
+        var target = NewEntity("targetId");
+        Coordinate expectedLifeAfterSkill = new(0, 0);
+        var battle = BattleToTest();
+        battle.AddEntity(target);
+        battle.AddEntity(source);
+        var skill = GetSkill(skillName);
+        skill.Exec(target, source, battle);
+        Assert.AreEqual(expectedLifeAfterSkill, target.State.CurrentHealth);
+    }
+
+    [TestMethod]
     [DataRow(-9, 0, "basicNegativeDamageOnX")]
     [DataRow(0, -9, "basicNegativeDamageOnY")]
     [DataRow(0, 9, "basicPositiveDamageOnY")]
@@ -100,8 +119,10 @@ public class CommomTestsToDamageSkills
             GameBoard.WithDefaultSize(),
             new Calculator(),
             notifier);
-        foreach(var entity in entities)
-            battle.AddEntity(entity);
+        for (int i = 0; i < entities.Length; i++)
+        {
+            battle.AddEntity(entities[i], new Coordinate(0, i));
+        }
         return battle;
     }
     IEntity NewEntity(string id) => new Player(id);
