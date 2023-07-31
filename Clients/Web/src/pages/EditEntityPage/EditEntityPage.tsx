@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { getEntity, updateEntity } from "../../server";
 import { isApiError } from "../../typeCheck";
-import { EquipEffect, EquipShape, IEntity, IEquip } from "../../interfaces";
+import { EquipEffect, EquipShape, IEntity, IEquip, TCoordinates } from "../../interfaces";
 import { CancelButton, DefaultButton, PrimaryButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
 import Dropdown, { IDropdownOption } from "../../components/Dropdown/Dropdown";
@@ -11,6 +11,7 @@ import "./index.css"
 interface IEditEquipProps {
     data: IEquip;
     index: number;
+    entityHealthRadius: number;
     onUpdate: (equip: IEquip, index: number) => void;
     onRemove: (index: number) => void;
 }
@@ -23,12 +24,53 @@ const effectOptions: IDropdownOption[] = [
     { text: "Barrier", value: `${EquipEffect.Barrier}` }
 ];
 
+function distanceBetween(coordA: TCoordinates, coordB: TCoordinates): number {
+    return Math.sqrt(Math.pow(coordA.x - coordB.x, 2) + Math.pow(coordA.y - coordB.y, 2))
+}
+
+function getRectangleCoordinatesSorted(
+    coordA: TCoordinates, coordB: TCoordinates, coordC: TCoordinates
+): TCoordinates[] {
+    let first: TCoordinates, second: TCoordinates, third: TCoordinates;
+    const abDistance = distanceBetween(coordA, coordB);
+    const bcDistance = distanceBetween(coordB, coordC);
+    const acDistance = distanceBetween(coordA, coordC);
+    console.log("distances", { abDistance, bcDistance, acDistance });
+    if (abDistance > bcDistance && abDistance > acDistance) {
+        first = coordA;
+        third = coordB
+        second = coordC;
+    } else if (bcDistance > abDistance && bcDistance > acDistance) {
+        first = coordB;
+        third = coordC;
+        second = coordA;
+    } else {
+        first = coordA;
+        third = coordC;
+        second = coordB;
+    }
+
+    return [
+        first,
+        second,
+        third,
+        {
+            x: first.x + third.x - second.x,
+            y: first.y + third.y - second.y
+        }
+    ]
+}
+
 const EditEquip: React.FC<IEditEquipProps> = ({
-    data, index, onRemove, onUpdate
+    data, index, onRemove, onUpdate, entityHealthRadius
 }) => {
 
     const handleAddCoordinate = useCallback(() => {
-        onUpdate({ ...data, coordinates: [ ...data.coordinates, { x: 0, y: 0 } ] }, index)
+        let coordinates = [...data.coordinates, { x: 0, y: 0 }];
+        if (data.shape === EquipShape.Rectangle && data.coordinates.length === 3) {
+            coordinates = getRectangleCoordinatesSorted(data.coordinates[0], data.coordinates[1], data.coordinates[2]);
+        }
+        onUpdate({ ...data, coordinates }, index)
     }, [data, index, onUpdate]);
 
     const handleRemoveCoordinate = useCallback((coordIndex: number) => {
@@ -59,6 +101,8 @@ const EditEquip: React.FC<IEditEquipProps> = ({
                     <tbody>
                         {data.coordinates.map((c, i) => (<tr key={`coord-${i}`}>
                             <td><NumericInput 
+                                max={entityHealthRadius}
+                                min={-entityHealthRadius}
                                 value={c.x} 
                                 onChange={value => {
                                     const coordinates = [...data.coordinates];
@@ -67,6 +111,8 @@ const EditEquip: React.FC<IEditEquipProps> = ({
                                 }} 
                             /></td>
                             <td><NumericInput 
+                                max={entityHealthRadius}
+                                min={-entityHealthRadius}
                                 value={c.y} 
                                 onChange={value => {
                                     const coordinates = [...data.coordinates];
@@ -151,6 +197,7 @@ const EditEntityPage: React.FC = () => {
                     <div className="equips-list">
                         {
                             equipList.map((e, i) => (<EditEquip 
+                                entityHealthRadius={entityData.healthRadius}
                                 index={i} 
                                 onRemove={handleRemoveEquip}
                                 onUpdate={handleEquipUpdate} 
