@@ -27,6 +27,26 @@ public class CommomTestsToDamageSkills
     }
 
     [TestMethod]
+    [DataRow("basicNegativeDamageOnX")]
+    [DataRow("basicNegativeDamageOnY")]
+    [DataRow("basicPositiveDamageOnY")]
+    [DataRow("basicPositiveDamageOnX")]
+    public void Dont_Execute_Skill_When_The_Source_Dont_Have_Mana_Enough(
+        string skillName
+    ) {
+        var source = NewEntity("sourceId");
+        source.State.Mana = 0;
+        var target = NewEntity("targetId");
+        Coordinate expectedLifeAfterSkill = new(0, 0);
+        var battle = BattleToTest(target, source);
+        var skill = GetSkill(skillName);
+        skill.Exec(target, source, battle);
+        Assert.AreEqual(expectedLifeAfterSkill, target.State.CurrentHealth);
+    }
+
+    //TODO:: after exec the skill, reduce the current mana ammount of the source
+
+    [TestMethod]
     [DataRow(-9, 0, "basicNegativeDamageOnX")]
     [DataRow(0, -9, "basicNegativeDamageOnY")]
     [DataRow(0, 9, "basicPositiveDamageOnY")]
@@ -125,5 +145,9 @@ public class CommomTestsToDamageSkills
         }
         return battle;
     }
-    IEntity NewEntity(string id) => new Player(id);
+    IEntity NewEntity(string id) {
+        var player = new Player(id);
+        player.State.Mana = player.State.MaxMana / 2;
+        return player;
+    }
 }

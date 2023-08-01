@@ -103,8 +103,12 @@ class State : IStateAttributes
     {
         HealthRadius = 25;
         CurrentHealth = new(0, 0);
+        Mana = 0;
+        MaxMana = 100;
     }
 
     public int HealthRadius { get; set; }
     public Coordinate CurrentHealth { get; set; }
+    public int Mana { get; set; }
+    public int MaxMana { get; set; }
 }
