@@ -22,6 +22,7 @@ public abstract class CommomDamageSkill : ISkillBase
         var targetPosition = battle.Board.GetEntityPosition(target.Id);
         if (soucePosition.Distance(targetPosition) > _range)
             return;
+        source.State.Mana -= _manaCost;
         battle.DealDamage(
             _skillDamage,
             source.OffensiveStats,

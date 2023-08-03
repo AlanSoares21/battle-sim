@@ -65,6 +65,22 @@ public class CommomTestsToDamageSkills
         skill.Exec(target, source, battle);
         Assert.AreEqual(expectedLifeAfterSkill, target.State.CurrentHealth);
     }
+
+    [TestMethod]
+    [DataRow("basicNegativeDamageOnX")]
+    [DataRow("basicNegativeDamageOnY")]
+    [DataRow("basicPositiveDamageOnY")]
+    [DataRow("basicPositiveDamageOnX")]
+    public void After_Execute_Skill_Reduce_Source_Mana(string skillName) 
+    {
+        var source = NewEntity("sourceId");
+        var target = NewEntity("targetId");
+        var battle = BattleToTest(source, target);
+        var skill = GetSkill(skillName);
+        int expectedManaAfterUseSkill = source.State.Mana - 5;
+        skill.Exec(target, source, battle);
+        Assert.AreEqual(expectedManaAfterUseSkill, source.State.Mana);
+    }
     
     [TestMethod]
     [DataRow("basicNegativeDamageOnX")]
