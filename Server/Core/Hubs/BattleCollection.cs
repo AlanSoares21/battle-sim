@@ -22,6 +22,8 @@ public class BattleCollection : IBattleCollection
         throw new KeyNotFoundException($"Not found a battle with entity {entityIdentifier}");
     }
 
+    public List<IBattle> ListAll() => _data.Values.ToList();
+
     public bool TryAdd(IBattle battle) => 
         _data.TryAdd(battle.Id, battle);
 

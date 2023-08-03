@@ -32,6 +32,13 @@ public class ServerConfig : IServerConfig
 
     public string? DbFilePath => _configuration["DbFilePath"];
 
+    public int ManaRecoveryWorkerIntervalInMiliseconds => 
+        ManaRecoveryIntervalIsEmpty() ?
+        _DefaultManaRecoveryInterval :
+        int.Parse("" + _configuration["ManaRecoveryIntervalInMiliseconds"]);
+
+    bool ManaRecoveryIntervalIsEmpty() => string.IsNullOrEmpty(_configuration["ManaRecoveryIntervalInMiliseconds"]);
+    int _DefaultManaRecoveryInterval = 100;
     public Entity DefaultEntity(string id) => new Entity() {
         Id = id,
         Damage = 10,

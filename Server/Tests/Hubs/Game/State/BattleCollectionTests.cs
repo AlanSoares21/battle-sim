@@ -25,6 +25,18 @@ public class BattleCollectionTests
     }
 
     [TestMethod]
+    public void List_All_Battles() {
+        IBattle firstBattle = FakeBattle(Guid.NewGuid());
+        IBattle secondBattle = FakeBattle(Guid.NewGuid());
+        IBattleCollection battleCollection = new BattleCollection();
+        battleCollection.TryAdd(firstBattle);
+        battleCollection.TryAdd(secondBattle);
+        var battles = battleCollection.ListAll();
+        Assert.IsTrue(battles.Exists(b => b.Id == firstBattle.Id));
+        Assert.IsTrue(battles.Exists(b => b.Id == secondBattle.Id));
+    }
+
+    [TestMethod]
     public void When_Try_Add_A_Battle_With_Duplicated_Id_Return_False() {
         Guid battleId = Guid.Empty;
         IBattle firstBattle = FakeBattle(battleId);

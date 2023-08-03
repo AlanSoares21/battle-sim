@@ -1,5 +1,7 @@
 using System;
+using System.Threading.Tasks;
 using BattleSimulator.Engine.Interfaces;
+using BattleSimulator.Engine.Tests.Builders;
 
 namespace BattleSimulator.Engine.Tests.DuelTests;
 
@@ -142,5 +144,42 @@ public class FunctionalTests
         Assert.IsFalse(
             battle.EntityIsIntheBattle(entityNotInBattle.Id)
         );
+    }
+
+    [TestMethod]
+    public async Task Recover_Entities_Mana() 
+    {
+        int manaBeforeRecover = 5;
+        var firstEntity = Utils.FakeEntity("firstEntity");
+        firstEntity.State.Mana = manaBeforeRecover;
+        var secondEntity = Utils.FakeEntity("secondEntity");
+        secondEntity.State.Mana = manaBeforeRecover;
+        IBattle battle = Utils.CreateDuelWithEntities(firstEntity, secondEntity);
+        await battle.RecoverMana();
+        int expectedManaAfterRecover = manaBeforeRecover + 5;
+        Assert.AreEqual(expectedManaAfterRecover, firstEntity.State.Mana);
+        Assert.AreEqual(expectedManaAfterRecover, secondEntity.State.Mana);
+    }
+
+    [TestMethod]
+    public async Task After_Recover_Entities_Mana_Notify_Event() 
+    {
+        var notifier = A.Fake<IEventsObserver>();
+        IBattle battle = new DuelBuilder()
+            .WithEventObserver(notifier)
+            .Build();
+        await battle.RecoverMana();
+        A.CallTo(() => notifier.ManaRecovered())
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [TestMethod]
+    public async Task After_Recover_Entities_Mana_Fill_Field_Mana_Recovered_At() 
+    {
+        IBattle battle = new DuelBuilder()
+            .Build();
+        DateTime initialValue = battle.ManaRecoveredAt;
+        await battle.RecoverMana();
+        Assert.AreNotEqual(initialValue, battle.ManaRecoveredAt);
     }
 }

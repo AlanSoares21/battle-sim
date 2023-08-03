@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
 
@@ -16,6 +17,8 @@ public interface IBattle
     void AddEntity(IEntity entity, Coordinate position);
     void Move(IEntity entity, MoveDirection direction);
     void Attack(string targetId, string attackerId);
+    Task RecoverMana();
+    DateTime ManaRecoveredAt { get; }
     void DealDamage(
         int damage, 
         IOffensiveAttributes attackerAttributes,

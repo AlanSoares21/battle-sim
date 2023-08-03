@@ -27,4 +27,9 @@ public class EventsObserver : IEventsObserver
         foreach (var subscriber in _skillDamageSubscribers)
             subscriber(skillName, sourceId, targetId, targetCurrentHealth);
     }
+
+    public Task ManaRecovered()
+    {
+        throw new NotImplementedException();
+    }
 }

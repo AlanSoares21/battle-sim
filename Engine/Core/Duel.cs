@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BattleSimulator.Engine.Equipment;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine.Interfaces.CharactersAttributes;
@@ -20,12 +21,15 @@ public class Duel : IBattle
         Id = battleId;
         Calc = calculator;
         Notify = notifier;
+        ManaRecoveredAt = DateTime.MinValue;
     }
     public Guid Id { get; private set; }
     public List<IEntity> Entities { get; private set; }
     public IBoard Board { get; private set; }
 
     public IEventsObserver Notify { get; private set; }
+
+    public DateTime ManaRecoveredAt { get; private set; }
 
     public void AddEntity(IEntity entity)
     {
@@ -147,5 +151,18 @@ public class Duel : IBattle
             attacker = Entities[0];
         }
         return new(target, attacker);
+    }
+
+    public Task RecoverMana()
+    {
+        foreach (var entity in Entities)
+            RecoverManaForEntity(entity);
+        ManaRecoveredAt = DateTime.UtcNow;
+        return Notify.ManaRecovered();;
+    }
+
+    void RecoverManaForEntity(IEntity entity)
+    {
+        entity.State.Mana += 5;
     }
 }

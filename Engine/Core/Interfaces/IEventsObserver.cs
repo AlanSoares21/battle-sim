@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace BattleSimulator.Engine.Interfaces;
 
 public interface IEventsObserver 
@@ -7,4 +9,5 @@ public interface IEventsObserver
         string sourceId, 
         string targetId,
         Coordinate targetCurrentHealth);
+    Task ManaRecovered();
 }

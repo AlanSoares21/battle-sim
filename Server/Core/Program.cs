@@ -95,6 +95,7 @@ builder.Services
 
 builder.Services.AddHostedService<MovementIntentionsWorker>();
 builder.Services.AddHostedService<AttacksHandlerWorker>();
+builder.Services.AddHostedService<ManaRecoveryWorker>();
 
 var app = builder.Build();
 

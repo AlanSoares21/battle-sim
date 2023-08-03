@@ -22,4 +22,5 @@ public interface IGameHubClient
         string source, 
         string target, 
         Coordinate currentHealth);
+    Task ManaRecovered();
 }
