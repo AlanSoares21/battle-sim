@@ -163,6 +163,10 @@ public class Duel : IBattle
 
     void RecoverManaForEntity(IEntity entity)
     {
-        entity.State.Mana += 5;
+        var diference = entity.State.MaxMana - entity.State.Mana;
+        if (diference > 5)
+            entity.State.Mana += 5;
+        else if (diference > 0)
+            entity.State.Mana += diference;
     }
 }

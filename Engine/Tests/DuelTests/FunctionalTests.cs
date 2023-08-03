@@ -151,14 +151,31 @@ public class FunctionalTests
     {
         int manaBeforeRecover = 5;
         var firstEntity = Utils.FakeEntity("firstEntity");
+        firstEntity.State.MaxMana = int.MaxValue;
         firstEntity.State.Mana = manaBeforeRecover;
         var secondEntity = Utils.FakeEntity("secondEntity");
+        secondEntity.State.MaxMana = int.MaxValue;
         secondEntity.State.Mana = manaBeforeRecover;
         IBattle battle = Utils.CreateDuelWithEntities(firstEntity, secondEntity);
         await battle.RecoverMana();
         int expectedManaAfterRecover = manaBeforeRecover + 5;
         Assert.AreEqual(expectedManaAfterRecover, firstEntity.State.Mana);
         Assert.AreEqual(expectedManaAfterRecover, secondEntity.State.Mana);
+    }
+
+    [TestMethod]
+    public async Task Dont_Let_Mana_Be_Greater_Than_The_Maximum() 
+    {
+        var firstEntity = Utils.FakeEntity("firstEntity");
+        firstEntity.State.MaxMana = 100;
+        firstEntity.State.Mana = firstEntity.State.MaxMana;
+        var secondEntity = Utils.FakeEntity("secondEntity");
+        secondEntity.State.MaxMana = 100;
+        secondEntity.State.Mana = 99;
+        IBattle battle = Utils.CreateDuelWithEntities(firstEntity, secondEntity);
+        await battle.RecoverMana();
+        Assert.AreEqual(firstEntity.State.MaxMana, firstEntity.State.Mana);
+        Assert.AreEqual(secondEntity.State.MaxMana, secondEntity.State.Mana);
     }
 
     [TestMethod]
