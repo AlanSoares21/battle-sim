@@ -82,6 +82,9 @@ public class BattleHandler : IBattleHandler
                 client.Skill(skillName, sourceId, targetId, targetCurrentHealth);
             }
         );
+        observer.SubscribeToManaRecovered(
+            () => client.ManaRecovered()
+        );
         return observer;
     }
 
