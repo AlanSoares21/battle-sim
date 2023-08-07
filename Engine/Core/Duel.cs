@@ -152,13 +152,16 @@ public class Duel : IBattle
         this._moveIntentions.Add(id, moveTo);
     }
 
-    public Task MoveEntities()
+    public async Task MoveEntities()
     {
-        Dictionary<string, Coordinate> moved = new();
-        foreach (var entityToMove in _moveIntentions.Keys)
-            Move(entityToMove, ref moved);
+        if (_moveIntentions.Keys.Count > 0) 
+        {
+            Dictionary<string, Coordinate> moved = new();
+            foreach (var entityToMove in _moveIntentions.Keys)
+                Move(entityToMove, ref moved);
+            await Notify.Moved(moved);
+        }
         EntitiesMovedAt = DateTime.UtcNow;
-        return Notify.Moved(moved);
     }
 
     void Move(string id, ref Dictionary<string, Coordinate> moved) {

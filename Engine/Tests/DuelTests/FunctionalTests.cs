@@ -97,12 +97,40 @@ public class FunctionalTests
     }
 
     [TestMethod]
-    public async Task After_Move_Entities_Notify_Event() 
+    public async Task Update_Entities_Moved_At_Propertie_When_Call_Move_Method()
     {
         var notifier = A.Fake<IEventsObserver>();
         IBattle battle = new DuelBuilder()
             .WithEventObserver(notifier)
             .Build();
+        DateTime initialValue = battle.EntitiesMovedAt;
+        await battle.MoveEntities();
+        Assert.AreNotEqual(initialValue, battle.EntitiesMovedAt);
+    }
+
+    [TestMethod]
+    public async Task Dont_Notify_The_Move_Event_If_Has_No_Movement_To_Exec() 
+    {
+        var notifier = A.Fake<IEventsObserver>();
+        IBattle battle = new DuelBuilder()
+            .WithEventObserver(notifier)
+            .Build();
+        await battle.MoveEntities();
+        A.CallTo(() => notifier.Moved(An<Dictionary<string, Coordinate>>.Ignored))
+            .MustNotHaveHappened();
+    }
+
+    [TestMethod]
+    public async Task After_Move_Entities_Notify_Event() 
+    {
+        var notifier = A.Fake<IEventsObserver>();
+        string entitiId = "someId";
+        IBattle battle = new DuelBuilder()
+            .WithEventObserver(notifier)
+            .WithBoard(GameBoard.WithDefaultSize())
+            .Build();
+        battle.AddEntity(Utils.FakeEntity(entitiId));
+        battle.RegisterMove(entitiId, new(3,3));
         await battle.MoveEntities();
         A.CallTo(() => notifier.Moved(An<Dictionary<string, Coordinate>>.Ignored))
             .MustHaveHappenedOnceExactly();
