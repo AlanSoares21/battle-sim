@@ -29,6 +29,22 @@ public class MovementWorkerTests
     }
 
     [TestMethod]
+    public async Task Call_Move_Method() {
+        var battle = A.Fake<IBattle>();
+        var battleCollection = A.Fake<IBattleCollection>();
+        A.CallTo(() => battleCollection.ListAll())
+            .Returns(new List<IBattle>() { battle });
+        MovementIntentionsWorker worker = CreateWorker(
+            battleCollection,
+            FakeConfig()
+        );
+        await ExecuteOnce(worker);
+
+        A.CallTo(() => battle.MoveEntities())
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [TestMethod]
     public async Task Only_Exec_Move_Each_Two_Seconds() {
         IServerConfig config = FakeConfig();
         A.CallTo(() => config.IntervalToMoveEntitiesInSeconds)
