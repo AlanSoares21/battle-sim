@@ -37,7 +37,6 @@ public class ManaRecoveryTests
             .MustHaveHappenedOnceExactly();
     }
 
-    // todo:: não recupera mana, quando faz menos de 5 segundos que a entidade recebeu mana
     [TestMethod]
     public async Task Only_Recover_Mana_Each_Five_Seconds() {
         var battle = A.Fake<IBattle>();

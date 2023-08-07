@@ -8,6 +8,7 @@ public interface IServerConfig
     int  SecondsAuthTokenExpire { get; }
     int  ManaRecoveryWorkerIntervalInMiliseconds { get; }
     int  MovementWorkerIntervalInMiliseconds { get; }
+    int  IntervalToMoveEntitiesInSeconds { get; }
     string  Issuer { get; }
     string  Audience { get; }
     byte[] SecretKey  { get; }

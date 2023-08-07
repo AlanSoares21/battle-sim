@@ -13,10 +13,9 @@ namespace BattleSimulator.Server.Tests;
 public class MovementWorkerTests
 {
     [TestMethod]
-    public async Task Use_Interval_From_Config() 
+    public async Task Use_Intervals_From_Config() 
     {
-        var config = A.Fake<IServerConfig>();
-        A.CallTo(() => config.MovementWorkerIntervalInMiliseconds).Returns(1);
+        IServerConfig config = FakeConfig();
         MovementIntentionsWorker worker = new (
             CreateBattleCollection(),
             FakeLogger(),
@@ -25,9 +24,30 @@ public class MovementWorkerTests
         await ExecuteOnce(worker);
         A.CallTo(() => config.MovementWorkerIntervalInMiliseconds)
             .MustHaveHappened();
+        A.CallTo(() => config.IntervalToMoveEntitiesInSeconds)
+            .MustHaveHappened();
     }
 
-    //TODO:: test if only executes move on interval
+    [TestMethod]
+    public async Task Only_Exec_Move_Each_Two_Seconds() {
+        IServerConfig config = FakeConfig();
+        A.CallTo(() => config.IntervalToMoveEntitiesInSeconds)
+            .Returns(2);
+        var battle = A.Fake<IBattle>();
+        A.CallTo(() => battle.EntitiesMovedAt)
+            .Returns(DateTime.MaxValue);
+        var battleCollection = A.Fake<IBattleCollection>();
+        A.CallTo(() => battleCollection.ListAll())
+            .Returns(new List<IBattle>() { battle });
+        MovementIntentionsWorker worker = CreateWorker(
+            battleCollection,
+            config
+        );
+        await ExecuteOnce(worker);
+
+        A.CallTo(() => battle.MoveEntities())
+            .MustNotHaveHappened();
+    }
     
     IBattleCollection CreateBattleCollection() =>
         new BattleCollection();
@@ -42,8 +62,15 @@ public class MovementWorkerTests
         return battle;
     }
 
+    IServerConfig FakeConfig() {
+        var config = A.Fake<IServerConfig>();
+        A.CallTo(() => config.MovementWorkerIntervalInMiliseconds)
+            .Returns(1);
+        return config;
+    }
+
     MovementIntentionsWorker CreateWorker(
-        BattleCollection battleCollection, 
+        IBattleCollection battleCollection, 
         IServerConfig config) => 
         new MovementIntentionsWorker(
             battleCollection,

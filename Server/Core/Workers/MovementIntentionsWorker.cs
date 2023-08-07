@@ -20,7 +20,8 @@ public class MovementIntentionsWorker : BackgroundService
 {
     IBattleCollection _battles;
     ILogger<MovementIntentionsWorker> _logger;
-    IServerConfig _config;
+    int _delay;
+    int _intervalToMove;
     public MovementIntentionsWorker(
         IBattleCollection battles, 
         ILogger<MovementIntentionsWorker> logger,
@@ -28,23 +29,28 @@ public class MovementIntentionsWorker : BackgroundService
     {
         _battles = battles;
         _logger = logger;
-        _config = config;
+        _delay = config.MovementWorkerIntervalInMiliseconds;
+        _intervalToMove = config.IntervalToMoveEntitiesInSeconds;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Movement worker start");
-        int delay = _config.MovementWorkerIntervalInMiliseconds;
         while (!stoppingToken.IsCancellationRequested)
         {
             await MoveEntities();
-            await Task.Delay(delay);
+            await Task.Delay(_delay);
         }
         _logger.LogInformation("Movement worker stop");
     }
 
     async Task MoveEntities() {
         foreach (var battle in _battles.ListAll())
-            await battle.MoveEntities();
+            if (CanMove(battle))
+                await battle.MoveEntities();
     }
+
+    bool CanMove(IBattle battle) => 
+        (DateTime.UtcNow - battle.EntitiesMovedAt).TotalSeconds 
+        >= _intervalToMove;
 }

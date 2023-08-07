@@ -50,6 +50,17 @@ public class ServerConfig : IServerConfig
     
     int _DefaultMovementWorkerInterval = 100;
 
+    public int IntervalToMoveEntitiesInSeconds => 
+        IntervalToMoveEntitiesIsEmpty() ?
+        _DefaultIntervalToMoveEntities
+        :
+        int.Parse("" + _configuration["IntervalToMoveEntitiesInSeconds"]);
+
+    bool IntervalToMoveEntitiesIsEmpty() => 
+        string.IsNullOrEmpty(_configuration["IntervalToMoveEntitiesInSeconds"]);
+    
+    int _DefaultIntervalToMoveEntities = 2;
+
     public Entity DefaultEntity(string id) => new Entity() {
         Id = id,
         Damage = 10,
