@@ -90,14 +90,6 @@ public class BattleTests
         return battle;
     }
 
-    IBattle FakeBattle(Guid id) 
-    {
-        IBattle battle = A.Fake<IBattle>();
-        A.CallTo(() => battle.Id)
-            .Returns(id);
-        return battle;        
-    }
-
     [TestMethod]
     public async Task Do_Nothing_When_Try_Cancel_An_Unregistered_Battle()
     {
@@ -126,24 +118,58 @@ public class BattleTests
     public void Add_Movement_Intention() 
     {
         Coordinate coordinate = new(1, 2);
+        string callerId = "callerUserId";
         CurrentCallerContext callerContext = new(
-            "callerId",
+            callerId,
             "callerConnectionId",
             Utils.FakeHubCallerContext());
-        var state = new GameHubStateBuilder().Build();
-        IGameEngine engine = new GameEngineBuilder()
-            .WithState(state)
-            .Build();
+        var battle = FakeBattle(Guid.NewGuid(), callerId);
+        IGameEngine engine = GameEngineWithBattleCollection(
+            FakeBattleCollection(battle)
+        );
         engine.Move(coordinate, callerContext);
-        A.CallTo(() => state
-                .MovementIntentions
-                .TryAdd(EntityMoveTo(callerContext.UserId, coordinate)))
-            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => 
+            battle.RegisterMove(callerId, coordinate)
+        ).MustHaveHappenedOnceExactly();
     }
 
-    MovementIntention EntityMoveTo(string entityId, Coordinate coordinate) {
-        return A<MovementIntention>.That.Matches(intention => 
-            intention.cell.IsEqual(coordinate) &&
-            intention.entityIdentifier == entityId);
+    IBattle FakeBattle(Guid id, params string[] entitiesIds) 
+    {
+        IBattle battle = A.Fake<IBattle>();
+        A.CallTo(() => battle.Id)
+            .Returns(id);
+        List<IEntity> fakeEntitties = new();
+        foreach (var entityId in entitiesIds)
+        {
+            fakeEntitties.Add(Utils.FakeEntity(entityId));
+        }
+        A.CallTo(() => battle.Entities).Returns(fakeEntitties);
+        return battle;        
     }
+
+    IBattleCollection FakeBattleCollection(IBattle battle)
+    {
+        var battles = A.Fake<IBattleCollection>();
+        foreach (var entity in battle.Entities)
+        {
+            A.CallTo(() => 
+                battles.GetBattleIdByEntity(entity.Id)
+            ).Returns(battle.Id);
+        }
+        A.CallTo(() => battles.Get(battle.Id))
+            .Returns(battle);
+        return battles;
+    }
+
+    IGameEngine GameEngineWithBattleCollection(
+        IBattleCollection collection)
+    {
+        var state = new GameHubStateBuilder()
+            .WithBattleCollection(collection)
+            .Build();
+        return new GameEngineBuilder()
+            .WithState(state)
+            .Build();
+    }
+    
 }

@@ -7,6 +7,7 @@ public interface IServerConfig
     string  ClaimTypeName { get; }
     int  SecondsAuthTokenExpire { get; }
     int  ManaRecoveryWorkerIntervalInMiliseconds { get; }
+    int  MovementWorkerIntervalInMiliseconds { get; }
     string  Issuer { get; }
     string  Audience { get; }
     byte[] SecretKey  { get; }

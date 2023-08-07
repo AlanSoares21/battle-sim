@@ -15,7 +15,9 @@ public interface IBattle
     bool EntityIsIntheBattle(string identifier);
     void AddEntity(IEntity entity);
     void AddEntity(IEntity entity, Coordinate position);
-    void Move(IEntity entity, MoveDirection direction);
+    void RegisterMove(string id, Coordinate moveTo);
+    Task MoveEntities();
+    DateTime EntitiesMovedAt { get; }
     void Attack(string targetId, string attackerId);
     Task RecoverMana();
     DateTime ManaRecoveredAt { get; }

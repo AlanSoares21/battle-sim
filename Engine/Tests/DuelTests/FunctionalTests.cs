@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BattleSimulator.Engine.Interfaces;
 using BattleSimulator.Engine.Tests.Builders;
@@ -68,19 +69,24 @@ public class FunctionalTests
     }
 
     [TestMethod]
-    [DataRow(MoveDirection.Up, 3, 4)]
-    [DataRow(MoveDirection.Right, 4, 3)]
-    [DataRow(MoveDirection.Down, 3, 2)]
-    [DataRow(MoveDirection.Left, 2, 3)]
-    public void Move_Entity_From_Middle_Cell_To_Coordinate(
-        MoveDirection direction, int expectedX, int expectedY
+    [DataRow(3,5, 3,4)]
+    [DataRow(5,3, 4,3)]
+    [DataRow(5,5, 4,4)]
+    [DataRow(3,1, 3,2)]
+    [DataRow(1,3, 2,3)]
+    [DataRow(1,1, 2,2)]
+    [DataRow(5,1, 4,2)]
+    [DataRow(1,5, 2,4)]
+    public async Task Move_Entity_From_Middle_Cell_To_Coordinate(
+        int x, int y, int expectedX, int expectedY
     ) {
+        Coordinate moveTo = new(x, y);
         Coordinate middle = new(3, 3);
-        string entityIdentifier = "entityOne";
-        IEntity entity = Utils.FakeEntity(entityIdentifier);
+        IEntity entity = Utils.FakeEntity("entityOne");
         IBattle battle = Utils.CreateDuel();
         battle.AddEntity(entity, middle);
-        battle.Move(entity, direction);
+        battle.RegisterMove(entity.Id, moveTo);
+        await battle.MoveEntities();
         Coordinate cell = battle
             .Board
             .GetEntityPosition(entity.Id);
@@ -91,12 +97,28 @@ public class FunctionalTests
     }
 
     [TestMethod]
-    [DataRow(MoveDirection.Up)]
-    [DataRow(MoveDirection.Right)]
-    [DataRow(MoveDirection.Down)]
-    [DataRow(MoveDirection.Left)]
+    public async Task After_Move_Entities_Notify_Event() 
+    {
+        var notifier = A.Fake<IEventsObserver>();
+        IBattle battle = new DuelBuilder()
+            .WithEventObserver(notifier)
+            .Build();
+        await battle.MoveEntities();
+        A.CallTo(() => notifier.Moved(An<Dictionary<string, Coordinate>>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [TestMethod]
+    [DataRow(-1, 0)]
+    [DataRow(0, -1)]
+    [DataRow(-1, -1)]
+    [DataRow(1, 0)]
+    [DataRow(0, 1)]
+    [DataRow(1, 1)]
+    [DataRow(-1, 1)]
+    [DataRow(1, -1)]
     public void Throws_Excepiton_When_Move_Entity_To_An_Invalid_Cell(
-        MoveDirection direction
+        double x, double y
     ) {
         const uint boardWidth = 1, boardHeight = 1;
         const string entityIdentifier = "entityOne";
@@ -108,19 +130,20 @@ public class FunctionalTests
             A.Fake<IEventsObserver>()
         );
         battle.AddEntity(entity);
+        Coordinate invalidCell = new(x, y);
         Assert.ThrowsException<Exception>(() => 
-            battle.Move(entity, direction)
+            battle.RegisterMove(entity.Id, invalidCell)
         );
     }
 
     [TestMethod]
     public void Throws_Excepiton_When_Move_An_Entity_That_Is_Not_In_The_Board() {
-        const MoveDirection direction = MoveDirection.Up;
+        Coordinate moveTo = new(0, 0);
         const string entityIdentifier = "entityOne";
         IEntity entity = Utils.FakeEntity(entityIdentifier);
         IBattle battle = Utils.CreateDuel();
         Assert.ThrowsException<Exception>(() => 
-            battle.Move(entity, direction)
+            battle.RegisterMove(entity.Id, moveTo)
         );
     }
 

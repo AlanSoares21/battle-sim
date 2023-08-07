@@ -85,6 +85,9 @@ public class BattleHandler : IBattleHandler
         observer.SubscribeToManaRecovered(
             () => client.ManaRecovered()
         );
+        observer.SubscribeToMove(
+            positions => client.EntitiesMove(positions)
+        );
         return observer;
     }
 

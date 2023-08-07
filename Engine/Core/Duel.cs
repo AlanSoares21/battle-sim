@@ -9,17 +9,19 @@ namespace BattleSimulator.Engine;
 
 public class Duel : IBattle
 {
-    private ICalculator Calc;
+    Dictionary<string, Coordinate> _moveIntentions;
+    ICalculator _calc;
     public Duel(
         Guid battleId, 
         IBoard board, 
         ICalculator calculator,
         IEventsObserver notifier) 
     {
+        _moveIntentions = new();
         this.Board = board;
         this.Entities = new();
         Id = battleId;
-        Calc = calculator;
+        _calc = calculator;
         Notify = notifier;
         ManaRecoveredAt = DateTime.MinValue;
     }
@@ -30,6 +32,7 @@ public class Duel : IBattle
     public IEventsObserver Notify { get; private set; }
 
     public DateTime ManaRecoveredAt { get; private set; }
+    public DateTime EntitiesMovedAt { get; private set; }
 
     public void AddEntity(IEntity entity)
     {
@@ -43,36 +46,6 @@ public class Duel : IBattle
         if (Entities.Count == 0)
             return firstCell;
         return Board.GetOppositeCoordinate(firstCell);
-    }
-
-    public void Move(IEntity entity, MoveDirection direction) {
-        if (!EntityIsIntheBattle(entity.Id))
-            throw new Exception($"The entity {entity.Id} is not in the board");
-        Coordinate curentCellWithEntity = Board
-            .GetEntityPosition(entity.Id);
-        Coordinate targetCell = _GetTargetCellToMove(
-            curentCellWithEntity, direction
-        );
-        Board.Move(entity.Id, targetCell);
-    }
-
-
-    Coordinate _GetTargetCellToMove(
-        Coordinate sourceCell, MoveDirection direction
-    ) {
-        double x = sourceCell.X, y = sourceCell.Y;
-        if (direction == MoveDirection.Up)
-            y += 1;
-        else if (direction == MoveDirection.Right)
-            x += 1;
-        else if (direction == MoveDirection.Down)
-            y -= 1;
-        else if (direction == MoveDirection.Left)
-            x -= 1;
-        Coordinate targetCell = new(x, y);
-        if (!Board.IsCoordinateValid(targetCell))
-            throw new Exception($"target cell ({x},{y}) not found.");
-        return targetCell;
     }
 
     public void AddEntity(IEntity entity, Coordinate position)
@@ -117,7 +90,7 @@ public class Duel : IBattle
         DamageDirection damageOnX,
         DamageDirection damageOnY) 
     {
-        damage = Calc.Damage(
+        damage = _calc.Damage(
             damage, 
             target.DefensiveStats.DefenseAbsorption, 
             attackerAttributes, 
@@ -168,5 +141,55 @@ public class Duel : IBattle
             entity.State.Mana += 5;
         else if (diference > 0)
             entity.State.Mana += diference;
+    }
+
+    public void RegisterMove(string id, Coordinate moveTo)
+    {
+        if (!EntityIsIntheBattle(id))
+            throw new Exception($"The entity {id} is not in the board");
+        if (!Board.IsCoordinateValid(moveTo))
+            throw new Exception($"Move to {moveTo} is invalid.");
+        this._moveIntentions.Add(id, moveTo);
+    }
+
+    public Task MoveEntities()
+    {
+        Dictionary<string, Coordinate> moved = new();
+        foreach (var entityToMove in _moveIntentions.Keys)
+            Move(entityToMove, ref moved);
+        EntitiesMovedAt = DateTime.UtcNow;
+        return Notify.Moved(moved);
+    }
+
+    void Move(string id, ref Dictionary<string, Coordinate> moved) {
+        Coordinate moveTo = _moveIntentions[id];
+        Coordinate curentCell = Board.GetEntityPosition(id);
+        Coordinate targetCell = _GetTargetCellToMove(curentCell, moveTo);
+        Board.Move(id, targetCell);
+        moved.Add(id, targetCell);
+        if (targetCell.Equals(curentCell))
+            _moveIntentions.Remove(id);
+    }
+
+
+    Coordinate _GetTargetCellToMove(
+        Coordinate sourceCell, 
+        Coordinate moveTo) 
+    {
+        Coordinate targetCell = new(sourceCell.X, sourceCell.Y);
+        double diffX = moveTo.X - sourceCell.X;
+        double diffY = moveTo.Y - sourceCell.Y;
+        if (diffX != 0)
+            if (diffX > 0)
+                targetCell.X += 1;
+            else 
+                targetCell.X -= 1;
+         
+        if (diffY != 0) 
+            if (diffY > 0)
+                targetCell.Y += 1;
+            else 
+                targetCell.Y -= 1;
+        return targetCell;
     }
 }

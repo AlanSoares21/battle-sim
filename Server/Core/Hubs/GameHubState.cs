@@ -7,13 +7,11 @@ public class GameHubState : IGameHubState
         IConnectionMapping connectionMapping, 
         ILogger<GameHubState> logger,
         IBattleRequestCollection battleRequests,
-        IBattleCollection battles,
-        IMovementIntentionCollection movementIntentions
+        IBattleCollection battles
     ) {
         Connections = connectionMapping;
         BattleRequests = battleRequests;
         Battles = battles;
-        MovementIntentions = movementIntentions;
         _logger = logger;
     }
     public IConnectionMapping Connections { get; private set; }
@@ -21,5 +19,4 @@ public class GameHubState : IGameHubState
     public IBattleRequestCollection BattleRequests { get; private set; }
 
     public IBattleCollection Battles { get; private set; }
-    public IMovementIntentionCollection MovementIntentions { get; private set; }
 }

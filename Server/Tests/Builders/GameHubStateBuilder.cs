@@ -9,7 +9,6 @@ public class GameHubStateBuilder
     ILogger<GameHubState>? logger;
     IBattleRequestCollection? requestCollection;
     IBattleCollection? battleCollection;
-    IMovementIntentionCollection? movementIntentions;
 
     public GameHubStateBuilder WithConnectionMapping(IConnectionMapping connectionMapping) 
     {
@@ -33,12 +32,6 @@ public class GameHubStateBuilder
         this.battleCollection = collection;
         return this;
     }
-    public GameHubStateBuilder WithMovementIntentionCollection(
-        IMovementIntentionCollection collection) 
-    {
-        this.movementIntentions = collection;
-        return this;
-    }
     
     public GameHubState Build() {
         if (connectionMapping is null)
@@ -49,14 +42,12 @@ public class GameHubStateBuilder
             requestCollection = FakeRequestCollection();
         if (battleCollection is null)
             battleCollection = FakeBattleCollection();
-        if (movementIntentions is null)
-            movementIntentions = FakeMovementIntentionCollection();
         return new GameHubState(
             connectionMapping, 
             logger,
             requestCollection,
-            battleCollection,
-            movementIntentions);
+            battleCollection
+        );
     }
 
     IConnectionMapping FakeConnectionMapping() {
@@ -84,7 +75,4 @@ public class GameHubStateBuilder
             .Returns(true);
         return collection;
     }
-
-    IMovementIntentionCollection FakeMovementIntentionCollection() =>
-        A.Fake<IMovementIntentionCollection>();
 }

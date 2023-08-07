@@ -39,6 +39,17 @@ public class ServerConfig : IServerConfig
 
     bool ManaRecoveryIntervalIsEmpty() => string.IsNullOrEmpty(_configuration["ManaRecoveryIntervalInMiliseconds"]);
     int _DefaultManaRecoveryInterval = 100;
+
+    public int MovementWorkerIntervalInMiliseconds => 
+        MovementIntervalIsEmpty() ?
+        _DefaultMovementWorkerInterval :
+        int.Parse("" + _configuration["MovementWorkerIntervalInMiliseconds"]);
+
+    bool MovementIntervalIsEmpty() => 
+        string.IsNullOrEmpty(_configuration["MovementWorkerIntervalInMiliseconds"]);
+    
+    int _DefaultMovementWorkerInterval = 100;
+
     public Entity DefaultEntity(string id) => new Entity() {
         Id = id,
         Damage = 10,

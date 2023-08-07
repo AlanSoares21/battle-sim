@@ -298,4 +298,32 @@ public class BattleCreationTests
         A.CallTo(() => client.ManaRecovered())
             .MustHaveHappenedOnceExactly();
     }
+
+    [TestMethod]
+    public async Task Notify_Move_Event_To_Users() 
+    {
+        IEntity callerEntity = Utils.FakeEntity("callerId");
+        var client = A.Fake<IGameHubClient>();
+        CurrentCallerContext caller = new(
+            callerEntity.Id, 
+            "callerConnectionId",
+            Utils.FakeHubCallerContext(client));
+        var battles = new BattleCollection();
+
+        IBattleHandler battleHandler = new BattleHandlerBuilder()
+            .WithDb(Utils.FakeDbWithEntities(callerEntity.Id))
+            .WithConverter(Utils.FakeConverterWithEntities(callerEntity))
+            .WithBattleCollection(battles)
+            .Build();
+        await battleHandler.CreateDuel("requesterEntityId", caller);
+        var battle = battles.Get(battles.GetBattleIdByEntity(callerEntity.Id));
+        await battle.Notify.Moved(new());
+        MoveCallHappened(client);
+    }
+
+    void MoveCallHappened(IGameHubClient client) 
+    {
+        A.CallTo(() => client.EntitiesMove(An<Dictionary<string, Coordinate>>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
 }

@@ -76,18 +76,6 @@ public class GameEngine : IGameEngine
     
     }
 
-    IBattle? GetBattleByEntity(string entityId) {
-        try {
-            Guid battleId = _state
-                .Battles
-                .GetBattleIdByEntity(entityId);
-            return _state.Battles.Get(battleId);
-        } catch (KeyNotFoundException ex) {
-            LogNotFoundBattleWithEntity(entityId, ex);
-            return null;
-        }
-    }
-
     void LogNotFoundBattleWithEntity(
         string entityId, 
         KeyNotFoundException ex) {
@@ -200,17 +188,21 @@ public class GameEngine : IGameEngine
 
     public void Move(Coordinate coordinate, CurrentCallerContext caller) 
     {
-        var movementIntention = new MovementIntention() {
-            cell = coordinate,
-            entityIdentifier = caller.UserId
-        };
-        if (!_state.MovementIntentions.TryAdd(movementIntention))
-            LogCanNotAddMoveIntention(coordinate, caller.UserId);
+        var battle = GetBattleByEntity(caller.UserId);
+        if (battle is null)
+            return;
+        battle.RegisterMove(caller.UserId, coordinate);
     }
 
-    void LogCanNotAddMoveIntention(Coordinate coordinate, string callerId) {
-        _logger.LogError("Can not add movement intention from {caller} to cell {cell}", 
-            callerId, 
-            coordinate);
+    IBattle? GetBattleByEntity(string entityId) {
+        try {
+            Guid battleId = _state
+                .Battles
+                .GetBattleIdByEntity(entityId);
+            return _state.Battles.Get(battleId);
+        } catch (KeyNotFoundException ex) {
+            LogNotFoundBattleWithEntity(entityId, ex);
+            return null;
+        }
     }
 }

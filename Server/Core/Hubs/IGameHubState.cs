@@ -7,5 +7,4 @@ public interface IGameHubState
     IConnectionMapping Connections { get; }
     IBattleRequestCollection BattleRequests { get; }
     IBattleCollection Battles { get; }
-    IMovementIntentionCollection MovementIntentions { get; }
 }

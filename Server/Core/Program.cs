@@ -23,7 +23,6 @@ builder.Services.AddSingleton<IGameDb, GameDb>();
 // state
 builder.Services.AddSingleton<IGameHubState, GameHubState>();
 builder.Services.AddSingleton<IBattleCollection, BattleCollection>();
-builder.Services.AddSingleton<IMovementIntentionCollection, MovementIntentionCollection>();
 builder.Services.AddSingleton<IConnectionMapping, ConnectionMapping>();
 builder.Services.AddSingleton<IBattleRequestCollection, BattleRequestCollection>();
 builder.Services.AddSingleton<IAttacksRequestedList, AttacksRequestedList>();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BattleSimulator.Engine.Interfaces;
@@ -10,4 +11,5 @@ public interface IEventsObserver
         string targetId,
         Coordinate targetCurrentHealth);
     Task ManaRecovered();
+    Task Moved(Dictionary<string, Coordinate> entitiesMovedTo);
 }
