@@ -97,6 +97,29 @@ public class FunctionalTests
     }
 
     [TestMethod]
+    public async Task When_Entity_Is_Moving_Update_Entity_Move(
+    ) {
+        Coordinate firstMove = new(0, 0);
+        Coordinate secondMove = new(7, 0);
+        Coordinate middle = new(3, 3);
+        Coordinate expected = new(3, 1);
+        IEntity entity = Utils.FakeEntity("entityOne");
+        IBattle battle = Utils.CreateDuel();
+        battle.AddEntity(entity, middle);
+        battle.RegisterMove(entity.Id, firstMove);
+        await battle.MoveEntities();
+        battle.RegisterMove(entity.Id, secondMove);
+        await battle.MoveEntities();
+        Coordinate cell = battle
+            .Board
+            .GetEntityPosition(entity.Id);
+        Assert.AreEqual(expected.X, cell.X,
+            "A coordenada X não está correta");
+        Assert.AreEqual(expected.Y, cell.Y,
+            "A coordenada Y não está correta");
+    }
+
+    [TestMethod]
     public async Task Update_Entities_Moved_At_Propertie_When_Call_Move_Method()
     {
         var notifier = A.Fake<IEventsObserver>();

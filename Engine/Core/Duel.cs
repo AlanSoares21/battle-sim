@@ -149,7 +149,10 @@ public class Duel : IBattle
             throw new Exception($"The entity {id} is not in the board");
         if (!Board.IsCoordinateValid(moveTo))
             throw new Exception($"Move to {moveTo} is invalid.");
-        this._moveIntentions.Add(id, moveTo);
+        if (this._moveIntentions.ContainsKey(id))
+            this._moveIntentions[id] = moveTo;
+        else
+            this._moveIntentions.Add(id, moveTo);
     }
 
     public async Task MoveEntities()
