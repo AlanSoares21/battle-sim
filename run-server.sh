@@ -17,8 +17,11 @@ fi
 if [ -z $DbFileName ]; then
 	DbFileName="/etc/game/gamedb.json"
 fi
+if [ -z $IntevalToMoveEntitiesInSeconds ]; then
+	IntervalToMoveEntitiesInSeconds=1
+fi
 # write server configs in env file
-echo -e "SecondsAuthTokenExpire=$SecondsAuthTokenExpire\nJwt:Issuer=$ApiUrl\nJwt:Secret=$JwtSecret\nJwt:Audience=$SiteUrl\nAllowedOrigin=$SiteUrl\nDbFileName=$DbFileName" > $EnvFilename
+echo -e "SecondsAuthTokenExpire=$SecondsAuthTokenExpire\nJwt:Issuer=$ApiUrl\nJwt:Secret=$JwtSecret\nJwt:Audience=$SiteUrl\nAllowedOrigin=$SiteUrl\nDbFileName=$DbFileName\nIntervalToMoveEntitiesInSeconds=$IntervalToMoveEntitiesInSeconds" > $EnvFilename
 Imagename="battlesim:server"
 ContainerName="battlesim-server"
 LocalPort=3002
