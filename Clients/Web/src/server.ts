@@ -126,7 +126,7 @@ export interface IServerEvents {
     NewBattleRequest(request: IBattleRequest): void;
     BattleRequestSent(request: IBattleRequest): void;
     NewBattle(battleData: IBattleData): void;
-    EntityMove(entity: string, x: number, y: number): void;
+    EntitiesMove(entitiesMoved: {[entity: string]: TCoordinates}): void;
     BattleRequestCancelled(cancellerId: string, request: IBattleRequest): void;
     BattleCancelled(cancellerId: string, battleId: string): void;
     Attack(source: string, target: string, currentHealth: TCoordinates): void;
@@ -169,8 +169,8 @@ export class ServerConnection implements IHubServer
         this.conn.on('NewBattle', listener);
         return this;
     }
-    onEntityMove(listener: IServerEvents['EntityMove']) {
-        this.conn.on('EntityMove', listener);
+    onEntitiesMove(listener: IServerEvents['EntitiesMove']) {
+        this.conn.on('EntitiesMove', listener);
         return this;
     }
     onBattleRequestCancelled(listener: IServerEvents['BattleRequestCancelled']) {

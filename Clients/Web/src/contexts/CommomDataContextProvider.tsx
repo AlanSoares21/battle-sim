@@ -104,16 +104,18 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         });
     }, []);
 
-    const updateEntitiesPosition = useCallback<IServerEvents['EntityMove']>(
-        (entity, x, y) => {
+    const updateEntitiesPosition = useCallback<IServerEvents['EntitiesMove']>(
+        entitiesMove => {
+            console.log('entities moved', entitiesMove)
             setBattle(b => (b && {
                 ...b, 
                 board: { 
                     ...b.board, 
                     entitiesPosition: b.board.entitiesPosition.map(value => {
-                        if (entity === value.entityIdentifier) {
-                            value.y = y;
-                            value.x = x;
+                        const move = entitiesMove[value.entityIdentifier];
+                        if (move) {
+                            value.x = move.x;
+                            value.y = move.y;
                         }
                         return value;
                     })
@@ -146,7 +148,8 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                 setAssetsData(assetsWithImage as IAssetsData);
             }
             assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
-        });
+        })
+        .catch(console.error);
     }, []);
 
     useEffect(() => {
@@ -175,7 +178,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     .onBattleRequestCancelled(onBattleRequestCancelled)
                     .onBattleCancelled(onBattleCancelled)
                     .onAttack(onAttack)
-                    .onEntityMove(updateEntitiesPosition)
+                    .onEntitiesMove(updateEntitiesPosition)
                     .onSkill(onSkill);
             }
         }, 
