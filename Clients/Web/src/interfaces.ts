@@ -82,6 +82,7 @@ export interface IEntity {
     damage: number;
     defenseAbsorption: number;
     equips: IEquip[];
+    maxMana: number;
 }
 
 export interface IBattleData {

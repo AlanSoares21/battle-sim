@@ -1,13 +1,16 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { sumCoordinate } from "../../../CoordinatesUtils";
-import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates } from "../../../interfaces";
+import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { IRender } from "./Render";
 
 const colors = {
     'sphere-background': '#FF0000',
     'name-text': "#FFFFFF",
     'life-coord': "#FFFFFF",
-    'life-equip': "#004F55"
+    'life-equip': "#004F55",
+    'mana-border': '#9595FF',
+    'mana-fill': '#0a0a99',
+    'mana-text': '#FFFFFF'
 }
 
 class EquipRender implements IRender {
@@ -91,6 +94,29 @@ class LifeSphereRender implements IRender {
     }
 }
 
+class ManaBarRender implements IRender {
+    canvas: ICanvasWrapper;
+    private canvasSize: TCanvasSize;
+    private scale: TSize;
+    private asset: IAsset;
+
+    constructor(
+        canvas: ICanvasWrapper,
+        scale: TCanvasSize,
+        asset: IAsset
+    ) {
+        this.asset = asset;
+        this.canvas = canvas;
+        this.canvasSize = canvas.getSize();
+        this.scale = scale;
+    }
+
+    render() {
+        this.canvas.drawRect(colors['mana-fill'], {x: 0, y: 0}, this.canvasSize);
+        this.canvas.drawEmptyRect(colors['mana-border'], {x: 0, y: 0}, this.canvasSize);
+    }
+}
+
 class LifeCoordRender {
     private canvas: ICanvasWrapper;
     private center: TCanvasCoordinates;
@@ -148,5 +174,6 @@ class LifeCoordRender {
 export {
     LifeSphereRender,
     LifeCoordRender,
-    EquipRender
+    EquipRender,
+    ManaBarRender
 };

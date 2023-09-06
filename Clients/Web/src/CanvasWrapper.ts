@@ -158,6 +158,7 @@ export default class CanvasWrapper implements ICanvasWrapper {
         start: TCanvasCoordinates, 
         size: TSize
     ) {
+        this.context.beginPath();
         this.context.strokeStyle = color;
         this.context.rect(start.x, start.y, size.width, size.height);
         this.context.stroke();

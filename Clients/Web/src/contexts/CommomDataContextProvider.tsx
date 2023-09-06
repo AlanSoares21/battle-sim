@@ -179,7 +179,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     .onBattleCancelled(onBattleCancelled)
                     .onAttack(onAttack)
                     .onEntitiesMove(updateEntitiesPosition)
-                    .onSkill(onSkill);
+                    .onSkill(onSkill)
             }
         }, 
         [

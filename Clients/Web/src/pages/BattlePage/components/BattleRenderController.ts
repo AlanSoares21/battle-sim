@@ -2,7 +2,7 @@ import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../.
 import { subCoordinates } from "../../../CoordinatesUtils";
 import { IAssetsData, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
-import { EquipRender, LifeCoordRender, LifeSphereRender } from "./LifeSphereRenderComponents";
+import { EquipRender, LifeCoordRender, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
 import { SkillBarController } from "./SkillBarRenderComponents";
 
 const boardMarginLeft = 0.2;
@@ -65,10 +65,13 @@ export default class BattleRenderController {
         lifePointer: LifeCoordRender,
         equips: EquipRender[]
     };
+
     private userLifeSphereCanvas: ICanvasWrapper;
+    private userManaBarCanvas: ICanvasWrapper;
     private userRenders?: {
         lifeSphere: LifeSphereRender,
         lifePointer: LifeCoordRender,
+        mana: ManaBarRender,
         equips: EquipRender[]
     };
 
@@ -149,6 +152,21 @@ export default class BattleRenderController {
             userLifeSphereArea
         );
 
+        const manaBarStartAt: TCanvasCoordinates = {
+            x: userLifeSphereStartAt.x,
+            y: userLifeSphereStartAt.y + userLifeSphereArea.height
+        }
+        const manaBarArea: TCanvasSize = {
+            height: 25,
+            width: userLifeSphereArea.width
+        }
+
+        this.userManaBarCanvas = new SubAreaOnCanvasDecorator(
+            canvas, 
+            manaBarStartAt, 
+            manaBarArea
+        );
+
         this.skillBarController = getSkillBar(
             canvas, 
             player.skills, 
@@ -194,7 +212,21 @@ export default class BattleRenderController {
                         healthRadiusInScale,
                         e.coordinates,
                         this.assets['barrier-equip-pattern']
-                    ))
+                    )),
+                    mana: new ManaBarRender(
+                        this.userManaBarCanvas, 
+                        {
+                            height: 1,
+                            width: 1
+                        },
+                        {
+                            size: {
+                                height: this.userLifeSphereCanvas.getSize().height / 4,
+                                width: this.userLifeSphereCanvas.getSize().width
+                            },
+                            start: {x: 0, y: 0}
+                        }
+                    )
                 };
             } else {
                 this.enemyRenders = {
@@ -258,6 +290,7 @@ export default class BattleRenderController {
             this.userRenders.lifeSphere.render();
             this.userRenders.equips.forEach(e => e.render());
             this.userRenders.lifePointer.render();
+            this.userRenders.mana.render();
         }
         // Board
         this.background.render();

@@ -136,6 +136,7 @@ export interface IServerEvents {
         target: string, 
         currentHealth: TCoordinates
     ): void;
+    ManaRecovered(): void;
 }
 
 export class ServerConnection implements IHubServer
@@ -187,6 +188,10 @@ export class ServerConnection implements IHubServer
     }
     onSkill(listener: IServerEvents['Skill']) {
         this.conn.on('Skill', listener);
+        return this;
+    }
+    onManaRecovered(listener: IServerEvents['ManaRecovered']) {
+        this.conn.on('ManaRecovered', listener);
         return this;
     }
     

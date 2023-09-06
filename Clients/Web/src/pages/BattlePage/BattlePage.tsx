@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 import { CommomDataContext } from "../../contexts/CommomDataContext";
 import './index.css'
@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BattleContext } from "./BattleContext";
 import { IEntity } from "../../interfaces";
 import { BattleCanvas } from "./components/BattleCanvas";
+import { IServerEvents } from "../../server";
 
 export const BattlePage: React.FC = () => {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ export const BattlePage: React.FC = () => {
     const commomData = useContext(CommomDataContext);
 
     const [player, setPlayer] = useState<IEntity>();
-
+    
     useEffect(() => {
         if (player !== undefined)
             return;

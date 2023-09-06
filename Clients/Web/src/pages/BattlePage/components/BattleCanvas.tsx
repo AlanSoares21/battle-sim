@@ -1,9 +1,37 @@
-import React, { MouseEventHandler, useCallback, useContext, useEffect, useState } from "react";
+import React, { MouseEventHandler, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { BattleContext } from "../BattleContext";
-import { TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
+import { IEntity, TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRenderController from "./BattleRenderController";
 import { IServerEvents } from "../../../server";
+
+type TEntityManaList = {[key: IEntity['id']]: {
+    current: number;
+    max: number;
+}};
+
+function onManaRecovered(
+    manaList: TEntityManaList, 
+    updateMana: (list: TEntityManaList) => void
+): IServerEvents['ManaRecovered'] {
+    const ids: Array<keyof TEntityManaList> = Object.keys(manaList);
+    let updated = 0;
+    return () => {
+        console.log("mana update in battle page f")
+        updated = 0;
+        for (const id of ids) {
+            if (manaList[id].current === manaList[id].max)
+                continue;
+            manaList[id].current += 5;
+            if (manaList[id].current > manaList[id].max)
+                manaList[id].current = manaList[id].max;
+            updated++;
+        }
+        console.log(`update ${updated} entities mana`, manaList)
+        if (updated > 0)
+            updateMana(manaList);
+    }
+}
 
 const onAttack = (render: BattleRenderController, userId: string): IServerEvents['Attack'] => 
 (
@@ -41,7 +69,7 @@ function getKeybordBindingsToSkills(skills: string[]): { [key: string]: string }
 
 export const BattleCanvas: React.FC = () => {
     const { battle, server, player, assets } = useContext(BattleContext);
-
+    
     const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
     const [renderController, setRenderController] = useState<BattleRenderController>();
 
@@ -126,6 +154,10 @@ export const BattleCanvas: React.FC = () => {
         
         setRenderController(value);
     }, [setRenderController, setCanvasOffset, assets, player, battle.board.size]);
+
+    useEffect(() => {
+        console.log(`Update mana in render. ${new Date()}`)
+    }, [])
 
     /**
      * update entities position on board

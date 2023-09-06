@@ -7,7 +7,7 @@ export interface IBattleContext {
     battle: IBattleData;
     player: IEntity;
     server: ServerConnection;
-    assets: IAssetsData
+    assets: IAssetsData;
 }
 
 export const BattleContext = createContext<IBattleContext>({
@@ -28,6 +28,7 @@ export const BattleContext = createContext<IBattleContext>({
         damage: 0,
         skills: [],
         healthRadius: 0,
+        maxMana: 0,
         weapon: {
             damageOnX: DamageDirection.Neutral,
             damageOnY: DamageDirection.Neutral,
