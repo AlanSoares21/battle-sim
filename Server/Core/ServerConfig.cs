@@ -66,6 +66,7 @@ public class ServerConfig : IServerConfig
         Damage = 10,
         DefenseAbsorption = 0.1,
         HealthRadius = 50,
+        MaxMana = 50,
         Skills = new List<string>() {
             "basicNegativeDamageOnX",
             "basicNegativeDamageOnY",

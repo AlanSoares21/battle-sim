@@ -40,6 +40,7 @@ public class GameDbConverter : IGameDbConverter
         player.State.HealthRadius = entity.HealthRadius;
         player.DefensiveStats.DefenseAbsorption = entity.DefenseAbsorption;
         player.OffensiveStats.Damage = entity.Damage;
+        player.State.MaxMana = entity.MaxMana;
         SetSkills(player, entity.Skills);
         return player;
     }

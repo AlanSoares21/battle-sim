@@ -20,6 +20,7 @@ public class ConverterTests
             Id = "entityOne",
             Damage = 10,
             DefenseAbsorption = 0.1,
+            MaxMana = 123,
             HealthRadius = 50
         };
         IGameDbConverter converter = CreateConverter();
@@ -35,6 +36,8 @@ public class ConverterTests
             converted.OffensiveStats.Damage);
         Assert.AreEqual(source.DefenseAbsorption, 
             converted.DefensiveStats.DefenseAbsorption);
+        Assert.AreEqual(source.MaxMana, converted.State.MaxMana);
+        Assert.AreEqual(0, converted.State.Mana);
     }
 
     [TestMethod]

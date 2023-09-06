@@ -7,6 +7,7 @@ public class Entity
     public int HealthRadius { get; set; }
 
     public int Damage { get; set; }
+    public int MaxMana { get; set; }
 
     public double DefenseAbsorption { get; set; }
 
