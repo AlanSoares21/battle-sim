@@ -99,6 +99,7 @@ class ManaBarRender implements IRender {
     canvas: ICanvasWrapper;
     private barSize: TCanvasSize;
     private wiriteAt: TCoordinates;
+    private currentValue: string = '0';
 
     constructor(
         canvas: ICanvasWrapper
@@ -115,6 +116,11 @@ class ManaBarRender implements IRender {
         }
     }
 
+    updateCurrentValue(value: number) {
+        this.currentValue = value.toString();
+        this.render();
+    }
+
     render() {
         this.canvas.drawRect(
             colors['mana-background'], 
@@ -128,7 +134,7 @@ class ManaBarRender implements IRender {
         );
         this.canvas.writeText(
             this.wiriteAt,
-            '0',
+            this.currentValue,
             colors['mana-text']
         );
     }

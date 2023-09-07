@@ -72,8 +72,21 @@ it('should render the background, the border and then  render the text', () => {
     });
     canvas['writeText'] = write;
     
+    new ManaBarRender(canvas).render();
+
+    expect(write).toBeCalledTimes(1);
+});
+
+it('When change the current value, change the text', () => {
+    const canvas = getCanvas({height: 100, width: 100});
+    const newValue = 123;
+    const write = mockCanvasWrite((_, text) => {
+        expect(text).toBe(`${newValue}`);    
+    });
+    canvas['writeText'] = write;
+    
     const manaBar = new ManaBarRender(canvas);
-    manaBar.render();
+    manaBar.updateCurrentValue(newValue);
 
     expect(write).toBeCalledTimes(1);
 });
