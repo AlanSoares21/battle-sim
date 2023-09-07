@@ -1,6 +1,7 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { sumCoordinate } from "../../../CoordinatesUtils";
 import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { scaledSize } from "../../../utils";
 import { IRender } from "./Render";
 
 const colors = {
@@ -8,8 +9,8 @@ const colors = {
     'name-text': "#FFFFFF",
     'life-coord': "#FFFFFF",
     'life-equip': "#004F55",
-    'mana-border': '#9595FF',
-    'mana-fill': '#0a0a99',
+    'mana-border': '#000000',
+    'mana-background': '#589099',
     'mana-text': '#FFFFFF'
 }
 
@@ -96,24 +97,40 @@ class LifeSphereRender implements IRender {
 
 class ManaBarRender implements IRender {
     canvas: ICanvasWrapper;
-    private canvasSize: TCanvasSize;
-    private scale: TSize;
-    private asset: IAsset;
+    private barSize: TCanvasSize;
+    private wiriteAt: TCoordinates;
 
     constructor(
-        canvas: ICanvasWrapper,
-        scale: TCanvasSize,
-        asset: IAsset
+        canvas: ICanvasWrapper
     ) {
-        this.asset = asset;
         this.canvas = canvas;
-        this.canvasSize = canvas.getSize();
-        this.scale = scale;
+        const canvasSize = canvas.getSize();
+        this.barSize = {
+            height: Math.round(canvasSize.width / 4),
+            width: canvasSize.width
+        };
+        this.wiriteAt = {
+            x: Math.round(this.barSize.width / 2 - 2),
+            y: Math.round(this.barSize.height * 3 / 5)
+        }
     }
 
     render() {
-        this.canvas.drawRect(colors['mana-fill'], {x: 0, y: 0}, this.canvasSize);
-        this.canvas.drawEmptyRect(colors['mana-border'], {x: 0, y: 0}, this.canvasSize);
+        this.canvas.drawRect(
+            colors['mana-background'], 
+            {x: 0, y: 0}, 
+            this.barSize
+        );
+        this.canvas.drawEmptyRect(
+            colors['mana-border'], 
+            {x: 0, y: 0}, 
+            this.barSize
+        );
+        this.canvas.writeText(
+            this.wiriteAt,
+            '0',
+            colors['mana-text']
+        );
     }
 }
 

@@ -214,18 +214,7 @@ export default class BattleRenderController {
                         this.assets['barrier-equip-pattern']
                     )),
                     mana: new ManaBarRender(
-                        this.userManaBarCanvas, 
-                        {
-                            height: 1,
-                            width: 1
-                        },
-                        {
-                            size: {
-                                height: this.userLifeSphereCanvas.getSize().height / 4,
-                                width: this.userLifeSphereCanvas.getSize().width
-                            },
-                            start: {x: 0, y: 0}
-                        }
+                        this.userManaBarCanvas
                     )
                 };
             } else {
