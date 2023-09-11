@@ -25,7 +25,7 @@ it('should draw circle to fill the canvas', () => {
         expect(radius).toBe(healthRadiusInScale);
     });
     canvas['drawCircle'] = drawCircle;
-    const sphere = new LifeSphereRender(canvas, healthRadiusInScale, fakeAsset);
+    const sphere = new LifeSphereRender({canvas, healthRadiusInScale, asset: fakeAsset});
     sphere.render();
 
     expect(drawCircle).toBeCalledTimes(1);
@@ -38,7 +38,7 @@ it('should not draw circle when the assets have an image', () => {
     const drawCircle = mockCanvasDrawCircle();
     canvas['drawCircle'] = drawCircle;
     canvas['drawAsset'] = mockCanvasDrawAsset();
-    const sphere = new LifeSphereRender(canvas, healthRadiusInScale, fakeAsset);
+    const sphere = new LifeSphereRender({canvas, healthRadiusInScale, asset: fakeAsset});
     sphere.render();
 
     expect(drawCircle).not.toBeCalled();
@@ -63,7 +63,7 @@ it('should draw asset to fill the canvas', () => {
     });
     canvas['drawCircle'] = mockCanvasDrawCircle();
     canvas['drawAsset'] = drawAsset;
-    const sphere = new LifeSphereRender(canvas, healthRadiusInScale, fakeAsset);
+    const sphere = new LifeSphereRender({canvas, healthRadiusInScale, asset: fakeAsset});
     sphere.render();
 
     expect(drawAsset).toBeCalledTimes(1);

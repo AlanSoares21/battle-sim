@@ -1,15 +1,41 @@
-import { IAssetsData, IEntity, IEquip, TBoard, TBoardCoordinates, TCanvasSize, TSize } from "../../../interfaces";
+import { ICanvasWrapper } from "../../../CanvasWrapper";
+import { IAsset, IAssetsData, IEntity, IEquip, TBoard, TBoardCoordinates, TCanvasSize, TSize } from "../../../interfaces";
 import { mockCanvas } from "../../../jest/helpers"
 import BattleRenderController, { ICreateRenders } from "./BattleRenderController"
 import { IPlayerRenderProps, PlayerRender } from "./BoardRenderComponents";
+import { ILifeSphereRenderProps, IManaBarRenderProps, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
 
 function mockPlayerRender() {
     const playerMock: Partial<PlayerRender> = {};
     return playerMock as PlayerRender;
 }
 
-function spyPlayerRender(impl?: ICreateRenders['playerRender']) {
+function spyCreatePlayerRender(impl?: ICreateRenders['playerRender']) {
     const spy = jest.fn<PlayerRender, Array<IPlayerRenderProps>>();
+    if (impl)
+        spy.mockImplementation((...args) => impl(args[0]));
+    return spy;
+}
+
+function mockLifeSphereRender() {
+    const mock: Partial<LifeSphereRender> = {};
+    return mock as LifeSphereRender;
+}
+
+function spyCreateLifeSphereRender(impl?: ICreateRenders['lifeSphere']) {
+    const spy = jest.fn<LifeSphereRender, Array<ILifeSphereRenderProps>>();
+    if (impl)
+        spy.mockImplementation((...args) => impl(args[0]));
+    return spy;
+}
+
+function mockManaBarRender() {
+    const mock: Partial<ManaBarRender> = {};
+    return mock as ManaBarRender;
+}
+
+function spyCreateManaBarRender(impl?: ICreateRenders['manaBar']) {
+    const spy = jest.fn<ManaBarRender, Array<IManaBarRenderProps>>();
     if (impl)
         spy.mockImplementation((...args) => impl(args[0]));
     return spy;
@@ -24,20 +50,36 @@ function mockEntity(id?: IEntity['id']) {
     return value as IEntity;
 }
 
-it('should create player render with correct properties', () => {
-    
-    const assets = {
+function getDefaultAssets() {
+    return {
         'player': {size: {height: 1, width: 2}, start: {x: 0, y: 0}},
         'board-background': {},
-        'life-pointer': { size: {height: 1, width: 2}}
+        'life-pointer': { size: {height: 1, width: 2}},
+        'life-sphere': { }
     } as IAssetsData;
+}
+
+function mockCreateRenders() {
+    const value: ICreateRenders = {
+        playerRender: mockPlayerRender,
+        lifeSphere: mockLifeSphereRender,
+        manaBar: mockManaBarRender
+    }
+    return value;
+}
+
+it('should create player render with correct properties', () => {
+    
+    const assets = getDefaultAssets();
     const canvasSize: TCanvasSize = {width: 100, height: 100};
     const canvas = mockCanvas(canvasSize);
     const boardSize: TBoard = {height: 4, width: 4}
     const player = mockEntity('myPlayerId');
     const skillKeysBindings = {};
+    const createRenders = mockCreateRenders();
+
     const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    const playerRenderSpy = spyPlayerRender(props => {
+    const playerRenderSpy = spyCreatePlayerRender(props => {
         expect(props.name).toBe(player.id)
         expect(props.current).toEqual(startPosition);
         expect(props.asset).toEqual(assets['player']);
@@ -52,16 +94,75 @@ it('should create player render with correct properties', () => {
         } as TSize);
         return mockPlayerRender();
     });
-    const controller = new BattleRenderController(
+    createRenders['playerRender'] = playerRenderSpy;
+    
+    new BattleRenderController(
         canvas, 
         boardSize, 
         assets, 
         player, 
         skillKeysBindings, 
-        {
-            playerRender: playerRenderSpy,
-        }
-    );
-    controller.setPlayer(player, startPosition, true);
+        createRenders
+    ).setPlayer(player, startPosition, true);
     expect(playerRenderSpy).toBeCalledTimes(1);
-})
+});
+
+it('should create player life sphere', () => {
+    const assets = getDefaultAssets();
+    const canvasSize: TCanvasSize = {width: 100, height: 100};
+    const canvas = mockCanvas(canvasSize);
+    const boardSize: TBoard = {height: 4, width: 4}
+    const player = mockEntity('myPlayerId');
+    player['healthRadius'] = 100;
+    const skillKeysBindings = {};
+    const createRenders = mockCreateRenders();
+
+    const createLifeSphereSpy = spyCreateLifeSphereRender((props) => {
+        const lifeSphereSide = canvasSize.width / 5;
+        expect(props.canvas.getSize())
+        .toEqual({width: lifeSphereSide, height: lifeSphereSide} as TCanvasSize);
+        expect(props.healthRadiusInScale).toBe(player.healthRadius * 2 / lifeSphereSide);
+        expect(props.asset).toEqual(assets['life-sphere']);
+        return mockLifeSphereRender();
+    });
+    createRenders['lifeSphere'] = createLifeSphereSpy;
+    
+    const startPosition: TBoardCoordinates = {x: 0, y: 0};
+    new BattleRenderController(
+        canvas, 
+        boardSize, 
+        assets, 
+        player, 
+        skillKeysBindings, 
+        createRenders
+    ).setPlayer(player, startPosition, true);
+    expect(createLifeSphereSpy).toBeCalledTimes(1);
+});
+
+it('should create mana bar', () => {
+    const assets = getDefaultAssets();
+    const canvasSize: TCanvasSize = {width: 100, height: 100};
+    const canvas = mockCanvas(canvasSize);
+    const boardSize: TBoard = {height: 4, width: 4}
+    const player = mockEntity('myPlayerId');
+    const skillKeysBindings = {};
+    const createRenders = mockCreateRenders();
+
+    const createManaBarSpy = spyCreateManaBarRender(props => {
+        expect(props.canvas.getSize())
+        .toEqual({width: canvasSize.width / 5, height: 25} as TCanvasSize);
+        return mockManaBarRender();
+    });
+    createRenders['manaBar'] = createManaBarSpy;
+
+    const startPosition: TBoardCoordinates = {x: 0, y: 0};
+    new BattleRenderController(
+        canvas, 
+        boardSize, 
+        assets, 
+        player, 
+        skillKeysBindings, 
+        createRenders
+    ).setPlayer(player, startPosition, true);
+    expect(createManaBarSpy).toBeCalledTimes(1);
+});

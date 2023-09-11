@@ -8,7 +8,7 @@ import {
     PointerRender, 
     canvasToBoardCoordinates 
 } from "./BoardRenderComponents";
-import { EquipRender, LifeCoordRender, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
+import { EquipRender, ILifeSphereRenderProps, IManaBarRenderProps, LifeCoordRender, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
 import { SkillBarController } from "./SkillBarRenderComponents";
 
 const boardMarginLeft = 0.2;
@@ -46,6 +46,8 @@ function getSkillBar(
 
 export interface ICreateRenders {
     playerRender: (props: IPlayerRenderProps) => PlayerRender;
+    lifeSphere(props: ILifeSphereRenderProps): LifeSphereRender;
+    manaBar(props: IManaBarRenderProps): ManaBarRender;
 }
 
 export default class BattleRenderController {
@@ -212,11 +214,11 @@ export default class BattleRenderController {
                         healthRadiusInScale,
                         this.assets['life-pointer']
                     ),
-                    lifeSphere: new LifeSphereRender(
-                        this.userLifeSphereCanvas,
-                        healthRadiusInScale,
-                        this.assets['life-sphere']
-                    ),
+                    lifeSphere: this.createRender.lifeSphere({
+                        canvas: this.userLifeSphereCanvas,
+                        healthRadiusInScale: healthRadiusInScale,
+                        asset: this.assets['life-sphere']
+                    }),
                     equips: data.equips.map(e => new EquipRender(
                         this.userLifeSphereCanvas,
                         lifeSphereScale,
@@ -224,9 +226,9 @@ export default class BattleRenderController {
                         e.coordinates,
                         this.assets['barrier-equip-pattern']
                     )),
-                    mana: new ManaBarRender(
-                        this.userManaBarCanvas
-                    )
+                    mana: this.createRender.manaBar({
+                        canvas: this.userManaBarCanvas
+                    })
                 };
             } else {
                 this.enemyRenders = {
@@ -236,11 +238,11 @@ export default class BattleRenderController {
                         healthRadiusInScale,
                         this.assets['life-pointer']
                     ),
-                    lifeSphere: new LifeSphereRender(
-                        this.enemyLifeSphereCanvas,
-                        healthRadiusInScale,
-                        this.assets['life-sphere']
-                    ),
+                    lifeSphere: this.createRender.lifeSphere({
+                        canvas: this.enemyLifeSphereCanvas,
+                        healthRadiusInScale: healthRadiusInScale,
+                        asset: this.assets['life-sphere']
+                    }),
                     equips: data.equips.map(e => new EquipRender(
                         this.enemyLifeSphereCanvas,
                         lifeSphereScale,

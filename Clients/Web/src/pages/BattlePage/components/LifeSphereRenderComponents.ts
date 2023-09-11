@@ -14,7 +14,7 @@ const colors = {
     'mana-text': '#FFFFFF'
 }
 
-class EquipRender implements IRender {
+export class EquipRender implements IRender {
     canvas: ICanvasWrapper;
     private coordinates: TCanvasCoordinates[];
     private asset: IAsset;
@@ -55,18 +55,24 @@ class EquipRender implements IRender {
     }
 }
 
-class LifeSphereRender implements IRender {
+export interface ILifeSphereRenderProps {
+    canvas: ICanvasWrapper;
+    healthRadiusInScale: number;
+    asset: IAsset;
+}
+
+export class LifeSphereRender implements IRender {
     canvas: ICanvasWrapper;
     private canvasSize: TCanvasSize;
     private lifeCenter: TCanvasCoordinates;
     private healthRadiusInScale: number;
     private asset: IAsset;
 
-    constructor(
-        canvas: ICanvasWrapper,
-        healthRadiusInScale: number,
-        asset: IAsset
-    ) {
+    constructor({
+        asset,
+        canvas,
+        healthRadiusInScale
+    }: ILifeSphereRenderProps) {
         this.asset = asset;
         this.canvas = canvas;
         this.canvasSize = canvas.getSize();
@@ -95,15 +101,19 @@ class LifeSphereRender implements IRender {
     }
 }
 
-class ManaBarRender implements IRender {
+export interface IManaBarRenderProps {
+    canvas: ICanvasWrapper;
+}
+
+export class ManaBarRender implements IRender {
     canvas: ICanvasWrapper;
     private barSize: TCanvasSize;
     private wiriteAt: TCoordinates;
     private currentValue: string = '0';
 
-    constructor(
-        canvas: ICanvasWrapper
-    ) {
+    constructor({
+        canvas
+    }: IManaBarRenderProps) {
         this.canvas = canvas;
         const canvasSize = canvas.getSize();
         this.barSize = {
@@ -140,7 +150,7 @@ class ManaBarRender implements IRender {
     }
 }
 
-class LifeCoordRender {
+export class LifeCoordRender {
     private canvas: ICanvasWrapper;
     private center: TCanvasCoordinates;
     private currentLife: TCanvasCoordinates;
@@ -193,10 +203,3 @@ class LifeCoordRender {
             );
     }
 }
-
-export {
-    LifeSphereRender,
-    LifeCoordRender,
-    EquipRender,
-    ManaBarRender
-};
