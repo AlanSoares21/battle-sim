@@ -1,7 +1,13 @@
-import CanvasWrapper, { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
+import { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
 import { subCoordinates } from "../../../CoordinatesUtils";
 import { IAssetsData, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
-import { BackgroundRender, PlayerRender, PointerRender, canvasToBoardCoordinates } from "./BoardRenderComponents";
+import { 
+    BackgroundRender, 
+    IPlayerRenderProps, 
+    PlayerRender, 
+    PointerRender, 
+    canvasToBoardCoordinates 
+} from "./BoardRenderComponents";
 import { EquipRender, LifeCoordRender, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
 import { SkillBarController } from "./SkillBarRenderComponents";
 
@@ -36,6 +42,10 @@ function getSkillBar(
         assetsData, 
         skillKeyBindings
     );
+}
+
+export interface ICreateRenders {
+    playerRender: (props: IPlayerRenderProps) => PlayerRender;
 }
 
 export default class BattleRenderController {
@@ -81,11 +91,12 @@ export default class BattleRenderController {
     private assets: IAssetsData;
 
     constructor(
-        canvas: CanvasWrapper,
+        canvas: ICanvasWrapper,
         board: TBoard,
         assetsData: IAssetsData,
         player: IEntity,
-        skillKeyBindings: { [skillName: string]: string }
+        skillKeyBindings: { [skillName: string]: string },
+        private createRender: ICreateRenders
     ) {
         this.assets = assetsData;
         this.board = board;
@@ -180,14 +191,14 @@ export default class BattleRenderController {
         const index = this.playersData.findIndex(p => p.name === data.id);
         if (index === -1) {
             this.playersData.push({ name: data.id });
-            this.playersRenders.push(new PlayerRender(
-                this.boardCanvas,
-                this.cellSize,
-                this.board,
-                data.id,
-                position,
-                isTheUser ? this.assets['player'] : this.assets['enemy']
-            ));
+            this.playersRenders.push(this.createRender.playerRender({
+                canvas: this.boardCanvas,
+                cellSize: this.cellSize,
+                board: this.board,
+                name: data.id,
+                current: position,
+                asset: isTheUser ? this.assets['player'] : this.assets['enemy']
+            }));
             
             const maxSphereSize = this.enemyLifeSphereCanvas.getSize().width;
             const lifeSphereScale = Math.abs(maxSphereSize / (data.healthRadius * 2));

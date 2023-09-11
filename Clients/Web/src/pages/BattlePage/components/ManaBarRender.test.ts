@@ -2,18 +2,10 @@ import { TCanvasSize, TCoordinates } from "../../../interfaces";
 import { mockCanvas, mockCanvasDrawEmptyRect, mockCanvasDrawRect, mockCanvasWrite } from "../../../jest/helpers";
 import { ManaBarRender } from "./LifeSphereRenderComponents";
 
-function getCanvas(size: TCanvasSize) {
-    const canvas = mockCanvas(size);
-    canvas['writeText'] = mockCanvasWrite();
-    canvas['drawEmptyRect'] = mockCanvasDrawEmptyRect();
-    canvas['drawRect'] = mockCanvasDrawRect();
-    return canvas;
-}
-
 it('should render border', () => {
     const borderColor = '#000000';
     const canvasSize: TCanvasSize = {height: 100, width: 100};
-    const canvas = getCanvas(canvasSize);
+    const canvas = mockCanvas(canvasSize);
     const drawBorders = mockCanvasDrawEmptyRect((color, start, size) => {
         expect(color).toBe(borderColor)
         expect(size)
@@ -28,7 +20,7 @@ it('should render border', () => {
 it('should fill background', () => {
     const backgroundColor = '#589099'
     const canvasSize: TCanvasSize = {height: 100, width: 100};
-    const canvas = getCanvas(canvasSize);
+    const canvas = mockCanvas(canvasSize);
     const drawBackground = mockCanvasDrawRect((color, start, size) => {
         expect(color).toBe(backgroundColor)
         expect(size)
@@ -43,7 +35,7 @@ it('should fill background', () => {
 it('should write the quantity of mana', () => {
     const textColor = '#FFFFFF'
     const canvasSize: TCanvasSize = {height: 100, width: 100};
-    const canvas = getCanvas(canvasSize);
+    const canvas = mockCanvas(canvasSize);
     const write = mockCanvasWrite((coordinates, value, color) => {
         expect(color).toBe(textColor);
         expect(value).toBe('0');
@@ -78,7 +70,7 @@ it('should render the background, the border and then  render the text', () => {
 });
 
 it('When change the current value, change the text', () => {
-    const canvas = getCanvas({height: 100, width: 100});
+    const canvas = mockCanvas({height: 100, width: 100});
     const newValue = 123;
     const write = mockCanvasWrite((_, text) => {
         expect(text).toBe(`${newValue}`);    

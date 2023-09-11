@@ -56,6 +56,15 @@ const colors = {
     'grid': '#000000'
 }
 
+export interface IPlayerRenderProps {
+    canvas: ICanvasWrapper;
+    cellSize: TSize;
+    board: TBoard;
+    name: string;
+    current: TBoardCoordinates;
+    asset: IAsset;
+}
+
 export class PlayerRender implements IRender {
     canvas: ICanvasWrapper;
     private name: string;
@@ -69,14 +78,14 @@ export class PlayerRender implements IRender {
     private textStart: TCanvasCoordinates;
     private asset: IAsset;
 
-    constructor(
-        canvas: ICanvasWrapper,
-        cellSize: TSize,
-        board: TBoard,
-        name: string,
-        current: TBoardCoordinates,
-        asset: IAsset
-    ) {
+    constructor({
+        asset, 
+        canvas, 
+        name, 
+        cellSize, 
+        board, 
+        current
+    }: IPlayerRenderProps) {
         this.asset = asset;
         this.canvas = canvas;
         this.name = name;

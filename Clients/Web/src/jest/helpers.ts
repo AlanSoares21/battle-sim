@@ -5,6 +5,9 @@ export function mockCanvas(size: TCanvasSize): ICanvasWrapper {
     const canvasMock: Partial<ICanvasWrapper> = {
         'getSize': () => size        
     }
+    canvasMock['writeText'] = mockCanvasWrite();
+    canvasMock['drawEmptyRect'] = mockCanvasDrawEmptyRect();
+    canvasMock['drawRect'] = mockCanvasDrawRect();
     return canvasMock as ICanvasWrapper;
 }
 
