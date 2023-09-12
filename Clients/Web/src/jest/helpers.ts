@@ -1,6 +1,11 @@
 import CanvasWrapper, { ICanvasWrapper } from "../CanvasWrapper";
 import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../interfaces";
 
+export function stubIt<T>(props?: Partial<T>) {
+    const v: Partial<T> =  {...props};
+    return v as T;
+}
+
 export function mockCanvas(size: TCanvasSize): ICanvasWrapper {
     const canvasMock: Partial<ICanvasWrapper> = {
         'getSize': () => size        

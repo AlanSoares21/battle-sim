@@ -88,6 +88,8 @@ export class CanvasController {
     private canvasOffset: TCanvasOffset;
     private battleRender: BattleRenderController;
     private mappedKeyBoard;
+    private server: ServerConnection;
+    private data: IBattleData;
     skillSelected?: string;
 
     constructor(
@@ -95,6 +97,8 @@ export class CanvasController {
         state: IBattleContext,
         createRender: (props:IBattleRenderControllerProps) => BattleRenderController
     ) {
+        this.data = state.battle;
+        this.server = state.server; 
         canvasRef.height = canvasRef.clientHeight;
         canvasRef.width = canvasRef.clientWidth;
         this.canvasOffset = getCanvasOffset(canvasRef);
@@ -121,15 +125,50 @@ export class CanvasController {
                 y: ev.clientY - this.canvasOffset.top
             };
             const boardClick = this.battleRender.clickOnBoard(canvasClick);
-            const skill = this.battleRender.clickOnSkill(canvasClick);
+            if (boardClick)
+                this.handleBoardClick(boardClick)
+            else {
+                const skill = this.battleRender.clickOnSkill(canvasClick);
+                if (skill !== undefined) {
+                    if (skill === this.skillSelected)
+                        this.unselectSkill();
+                    else
+                        this.selectSkill(skill);
+                }
+            }
         }
+    }
+
+    private handleBoardClick(click: TBoardCoordinates) {
+        if (this.skillSelected !== undefined) {
+            const index = this.data.board.entitiesPosition
+                .findIndex(e => e.x === click.x && e.y === click.y)
+            if (index > -1) {
+                this.server.Skill(
+                    this.skillSelected, 
+                    this.data.board.entitiesPosition[index].entityIdentifier
+                );
+                this.unselectSkill();
+                return;
+            }
+        }
+        this.server.Move(click.x, click.y);
+    }
+
+    private selectSkill(skillName: string) {
+        this.skillSelected = skillName;
+        this.battleRender.skillBarController.selectSkill(skillName);
+    }
+
+    private unselectSkill() {
+        this.skillSelected = undefined;
+        this.battleRender.skillBarController.unSelectSkill();
     }
 
     handleKey(key: string) {
         if (key in this.mappedKeyBoard) {
             const skill = this.mappedKeyBoard[key];
-            this.skillSelected = skill;
-            this.battleRender.skillBarController.selectSkill(skill);
+            this.selectSkill(skill);
         }
     }
 
@@ -140,78 +179,22 @@ export class CanvasController {
 
 export const BattleCanvas: React.FC = () => {
     const { battle, server, player, assets } = useContext(BattleContext);
-    
-    const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
+
     const [renderController, setRenderController] = useState<BattleRenderController>();
     const [canvasController, setCanvasController] = useState<CanvasController>();
-
-    const [skillSelected, setSkillSelected] = useState<string>();
-
-    const handleBoardClick = useCallback(
-        (cell: TBoardCoordinates) => {
-            const index = battle.board.entitiesPosition.findIndex(p =>
-                p.x === cell.x && p.y === cell.y);
-            if (index === -1) {
-                server.Move(cell.x, cell.y)
-                return;
-            }
-            const target = battle.board.entitiesPosition[index].entityIdentifier;
-            if (skillSelected !== undefined) {
-                server.Skill(skillSelected, target);    
-                setSkillSelected(s => s === skillSelected ? undefined : s);
-            }
-            else
-                server.Attack(target);
-        }, 
-    [battle.board.entitiesPosition, server, skillSelected]);
-
-    const handleCanvasClick = useCallback<MouseEventHandler<HTMLCanvasElement>>(
-        ev => {
-            if (!ev || !renderController)
-                return;
-            
-            const canvasClick: TCanvasCoordinates = { 
-                x: ev.clientX - canvasOffset.left,
-                y: ev.clientY - canvasOffset.top
-            };
-
-            const boardClick = renderController.clickOnBoard(canvasClick);
-            
-            if (boardClick) {
-                handleBoardClick(boardClick);
-                renderController.pointer.setPosition(boardClick);
-                return;
-            }
-            
-            const skill = renderController.clickOnSkill(canvasClick);
-            if (skill) {
-                if (skillSelected === skill) 
-                    setSkillSelected(undefined);
-                else {
-                    setSkillSelected(skill);
-                    renderController.skillBarController.selectSkill(skill);
-                }
-            }
-        }, 
-    [renderController, canvasOffset, handleBoardClick, skillSelected, setSkillSelected]);
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
         if (!canvasRef) {
             console.error('canvas reference is null');
             return;
         }
-        
-        setCanvasOffset({ 
-            left: canvasRef.offsetLeft + canvasRef.clientLeft, 
-            top: canvasRef.offsetTop + canvasRef.clientTop 
-        }); 
 
        setCanvasController(new CanvasController(
             canvasRef, 
             { battle, server, player, assets }, 
             p => new BattleRenderController(p)
         ));
-    }, [setCanvasController, setCanvasOffset, assets, player, battle.board.size]);
+    }, [setCanvasController, assets, player, battle.board.size]);
 
     /**
      * update entities position on board
@@ -253,14 +236,8 @@ export const BattleCanvas: React.FC = () => {
             };
         }
     }, [canvasController]);
-
-    useEffect(() => {
-        if (renderController !== undefined && skillSelected === undefined)
-            renderController.skillBarController.unSelectSkill();
-    }, [ renderController, skillSelected ]);
     
     return(<canvas
-        onClick={handleCanvasClick}
         ref={setCanvasRef}
         style={{background: "#000000", width: '99%'}}>
     </canvas>);
