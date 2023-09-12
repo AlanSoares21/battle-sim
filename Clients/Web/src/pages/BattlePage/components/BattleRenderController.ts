@@ -50,6 +50,15 @@ export interface ICreateRenders {
     manaBar(props: IManaBarRenderProps): ManaBarRender;
 }
 
+export interface IBattleRenderControllerProps {
+    canvas: ICanvasWrapper;
+    board: TBoard;
+    assetsData: IAssetsData;
+    player: IEntity;
+    skillKeyBindings: { [skillName: string]: string };
+    createRenders: ICreateRenders;
+}
+
 export default class BattleRenderController {
     
     /**
@@ -91,15 +100,17 @@ export default class BattleRenderController {
     private cellSize: TSize;
 
     private assets: IAssetsData;
+    private createRender: ICreateRenders;
 
-    constructor(
-        canvas: ICanvasWrapper,
-        board: TBoard,
-        assetsData: IAssetsData,
-        player: IEntity,
-        skillKeyBindings: { [skillName: string]: string },
-        private createRender: ICreateRenders
-    ) {
+    constructor({
+        canvas,
+        board,
+        assetsData,
+        player,
+        skillKeyBindings,
+        createRenders
+    }: IBattleRenderControllerProps) {
+        this.createRender = createRenders;
         this.assets = assetsData;
         this.board = board;
         
@@ -256,6 +267,11 @@ export default class BattleRenderController {
         else {
             this.playersRenders[index].updatePosition(position);
         }
+    }
+
+    updateMana(value: number) {
+        if (this.userRenders !== undefined)
+            this.userRenders.mana.updateCurrentValue(value);
     }
 
     clickOnBoard(canvasClick: TCanvasCoordinates): TCoordinates | undefined {

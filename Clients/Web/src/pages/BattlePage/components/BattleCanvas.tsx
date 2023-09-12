@@ -1,9 +1,11 @@
 import React, { MouseEventHandler, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { BattleContext } from "../BattleContext";
-import { IEntity, TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
+import { BattleContext, IBattleContext } from "../BattleContext";
+import { IAssetsData, IBattleData, IEntity, TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
-import BattleRenderController from "./BattleRenderController";
-import { IServerEvents } from "../../../server";
+import BattleRenderController, { IBattleRenderControllerProps, ICreateRenders } from "./BattleRenderController";
+import { IServerEvents, ServerConnection } from "../../../server";
+import { LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
+import { PlayerRender } from "./BoardRenderComponents";
 
 type TEntityManaList = {[key: IEntity['id']]: {
     current: number;
@@ -67,11 +69,81 @@ function getKeybordBindingsToSkills(skills: string[]): { [key: string]: string }
     }, {});
 }
 
+type TCanvasOffset = {left: number, top: number};
+
+function getCanvasOffset(canvasRef: HTMLCanvasElement): TCanvasOffset {
+    return { 
+        left: canvasRef.offsetLeft + canvasRef.clientLeft, 
+        top: canvasRef.offsetTop + canvasRef.clientTop 
+    }
+}
+
+const createRenders: ICreateRenders = {
+    lifeSphere: p => new LifeSphereRender(p),
+    manaBar: p => new ManaBarRender(p),
+    playerRender: p => new PlayerRender(p)
+}
+
+export class CanvasController {
+    private canvasOffset: TCanvasOffset;
+    private battleRender: BattleRenderController;
+    private mappedKeyBoard;
+    skillSelected?: string;
+
+    constructor(
+        canvasRef: HTMLCanvasElement, 
+        state: IBattleContext,
+        createRender: (props:IBattleRenderControllerProps) => BattleRenderController
+    ) {
+        canvasRef.height = canvasRef.clientHeight;
+        canvasRef.width = canvasRef.clientWidth;
+        this.canvasOffset = getCanvasOffset(canvasRef);
+        const canvasContext = canvasRef.getContext('2d');
+        if (canvasContext === null)
+            throw new Error(`Canvas context is null`);
+    
+        this.battleRender = createRender({
+            board: state.battle.board.size,
+            assetsData: state.assets,
+            canvas: new CanvasWrapper(canvasContext),
+            createRenders,
+            player: state.player,
+            skillKeyBindings: getSkillsBindingsToKeyboard(state.player.skills)
+        })
+        this.mappedKeyBoard = getKeybordBindingsToSkills(state.player.skills);
+        canvasRef.onclick = this.handleOnClick();
+    }
+
+    private handleOnClick() {
+        return (ev: MouseEvent) => {
+            const canvasClick: TCanvasCoordinates = { 
+                x: ev.clientX - this.canvasOffset.left,
+                y: ev.clientY - this.canvasOffset.top
+            };
+            const boardClick = this.battleRender.clickOnBoard(canvasClick);
+            const skill = this.battleRender.clickOnSkill(canvasClick);
+        }
+    }
+
+    handleKey(key: string) {
+        if (key in this.mappedKeyBoard) {
+            const skill = this.mappedKeyBoard[key];
+            this.skillSelected = skill;
+            this.battleRender.skillBarController.selectSkill(skill);
+        }
+    }
+
+    startRenderLoop() {
+        return setInterval(() => {this.battleRender.render()}, 500);
+    }
+}
+
 export const BattleCanvas: React.FC = () => {
     const { battle, server, player, assets } = useContext(BattleContext);
     
     const [canvasOffset, setCanvasOffset] = useState({ top: 0, left: 0 });
     const [renderController, setRenderController] = useState<BattleRenderController>();
+    const [canvasController, setCanvasController] = useState<CanvasController>();
 
     const [skillSelected, setSkillSelected] = useState<string>();
 
@@ -134,30 +206,12 @@ export const BattleCanvas: React.FC = () => {
             top: canvasRef.offsetTop + canvasRef.clientTop 
         }); 
 
-        canvasRef.height = canvasRef.clientHeight;
-        canvasRef.width = canvasRef.clientWidth;
-        
-        const context = canvasRef.getContext('2d');
-        if (!context) {
-            console.error("context is null")
-            return;
-        }
-        const canvasWrapper = new CanvasWrapper(context)
-        const board: TBoard = battle.board.size;
-        const value = new BattleRenderController(
-            canvasWrapper,
-            board,
-            assets,
-            player,
-            getSkillsBindingsToKeyboard(player.skills)
-        );
-        
-        setRenderController(value);
-    }, [setRenderController, setCanvasOffset, assets, player, battle.board.size]);
-
-    useEffect(() => {
-        console.log(`Update mana in render. ${new Date()}`)
-    }, [])
+       setCanvasController(new CanvasController(
+            canvasRef, 
+            { battle, server, player, assets }, 
+            p => new BattleRenderController(p)
+        ));
+    }, [setCanvasController, setCanvasOffset, assets, player, battle.board.size]);
 
     /**
      * update entities position on board
@@ -184,38 +238,26 @@ export const BattleCanvas: React.FC = () => {
             .onSkill(onSkill(renderController, player.id));
     }, [server, player.id, renderController]);
 
+    /**
+     * sets onkeydown event handler
+     * Starts and clear the render loop
+     */
     useEffect(() => {
-        if (renderController) {
+        if (canvasController) {
+            document.onkeydown = ev => canvasController.handleKey(ev.key);
             console.log("render loop start");
-            const renderLoop = setInterval(() => {renderController.render()}, 500);
+            const renderLoopInterval = canvasController.startRenderLoop();
             return () => {
-                clearInterval(renderLoop);
+                clearInterval(renderLoopInterval);
                 console.log("render loop finished");
             };
         }
-        console.log("render controller unset")
-    }, [renderController]);
+    }, [canvasController]);
 
-    
     useEffect(() => {
         if (renderController !== undefined && skillSelected === undefined)
             renderController.skillBarController.unSelectSkill();
     }, [ renderController, skillSelected ]);
-
-    useEffect(() => {
-        if (renderController) {
-            const mappedKeyBoard: { [key: string]: string } = 
-                getKeybordBindingsToSkills(player.skills);
-            document.onkeydown = (ev) => {
-                const key = ev.key;
-                if (key in mappedKeyBoard) {
-                    const skill = mappedKeyBoard[key];
-                    renderController.skillBarController.selectSkill(skill);
-                    setSkillSelected(skill);
-                }
-            };
-        }
-    }, [renderController, player]);
     
     return(<canvas
         onClick={handleCanvasClick}

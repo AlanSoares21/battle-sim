@@ -41,6 +41,11 @@ function spyCreateManaBarRender(impl?: ICreateRenders['manaBar']) {
     return spy;
 }
 
+function mockManaBarUpdate(impl: ManaBarRender['updateCurrentValue']) {
+    const mockObj = jest.fn(impl);
+    return mockObj;
+}
+
 function mockEntity(id?: IEntity['id']) {
     const value: Partial<IEntity> = {
         id, 
@@ -96,14 +101,14 @@ it('should create player render with correct properties', () => {
     });
     createRenders['playerRender'] = playerRenderSpy;
     
-    new BattleRenderController(
+    new BattleRenderController({
         canvas, 
-        boardSize, 
-        assets, 
+        board: boardSize, 
+        assetsData: assets, 
         player, 
-        skillKeysBindings, 
+        skillKeyBindings: skillKeysBindings, 
         createRenders
-    ).setPlayer(player, startPosition, true);
+    }).setPlayer(player, startPosition, true);
     expect(playerRenderSpy).toBeCalledTimes(1);
 });
 
@@ -128,14 +133,14 @@ it('should create player life sphere', () => {
     createRenders['lifeSphere'] = createLifeSphereSpy;
     
     const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    new BattleRenderController(
+    new BattleRenderController({
         canvas, 
-        boardSize, 
-        assets, 
+        board: boardSize, 
+        assetsData: assets, 
         player, 
-        skillKeysBindings, 
+        skillKeyBindings: skillKeysBindings, 
         createRenders
-    ).setPlayer(player, startPosition, true);
+    }).setPlayer(player, startPosition, true);
     expect(createLifeSphereSpy).toBeCalledTimes(1);
 });
 
@@ -156,13 +161,46 @@ it('should create mana bar', () => {
     createRenders['manaBar'] = createManaBarSpy;
 
     const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    new BattleRenderController(
+    new BattleRenderController({
         canvas, 
-        boardSize, 
-        assets, 
+        board: boardSize, 
+        assetsData: assets, 
         player, 
-        skillKeysBindings, 
+        skillKeyBindings: skillKeysBindings, 
         createRenders
-    ).setPlayer(player, startPosition, true);
+    }).setPlayer(player, startPosition, true);
     expect(createManaBarSpy).toBeCalledTimes(1);
+});
+
+it('should update mana bar current value', () => {
+    const assets = getDefaultAssets();
+    const canvasSize: TCanvasSize = {width: 100, height: 100};
+    const canvas = mockCanvas(canvasSize);
+    const boardSize: TBoard = {height: 4, width: 4}
+    const player = mockEntity('myPlayerId');
+    const skillKeysBindings = {};
+    const createRenders = mockCreateRenders();
+
+    const newValue = 123;
+    const updateManaBarMock = mockManaBarUpdate(value => {
+        expect(value).toBe(newValue);
+    });
+
+    const manaBarMock = mockManaBarRender();
+    manaBarMock['updateCurrentValue'] = updateManaBarMock;
+    createRenders['manaBar'] = () => manaBarMock;
+
+    const startPosition: TBoardCoordinates = {x: 0, y: 0};
+    const controller = new BattleRenderController({
+        canvas, 
+        board: boardSize, 
+        assetsData: assets, 
+        player, 
+        skillKeyBindings: skillKeysBindings, 
+        createRenders
+    });
+    controller.setPlayer(player, startPosition, true);
+    controller.updateMana(newValue);
+
+    expect(updateManaBarMock).toBeCalledTimes(1);
 });
