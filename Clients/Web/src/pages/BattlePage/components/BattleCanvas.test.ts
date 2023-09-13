@@ -4,6 +4,7 @@ import { IServerEvents, ServerConnection } from "../../../server";
 import { IBattleContext } from "../BattleContext";
 import { CanvasController } from "./BattleCanvas"
 import BattleRenderController, { IBattleRenderControllerProps } from "./BattleRenderController";
+import { PointerRender } from "./BoardRenderComponents";
 import { SkillBarController } from "./SkillBarRenderComponents";
 
 
@@ -38,9 +39,18 @@ function stubSkillBarController() {
     return controller as SkillBarController;
 }
 
+function stubPointer(p?: Partial<PointerRender>) {
+    const pointer = stubIt<PointerRender>({
+        setPosition: () => {},
+        ...p
+    })
+    return pointer;
+}
+
 function stubRender(p?: Partial<BattleRenderController>) {
     const render : Partial<BattleRenderController> = {
         skillBarController: stubSkillBarController(),
+        pointer: stubPointer(),
         clickOnBoard: () => undefined,
         clickOnSkill: () => undefined,
         updateMana: () => {},
@@ -52,6 +62,7 @@ function stubRender(p?: Partial<BattleRenderController>) {
 
 function stubServer() {
     const server: Partial<ServerConnection> = {
+        Move: () => {},
         Skill: () => {},
         onEntitiesMove: () => server as ServerConnection,
         onSkill: () => server as ServerConnection,
@@ -298,6 +309,32 @@ it('when click on board, should send movement call to server', () => {
     }
     canvasRef.onclick(ev);
     expect(spyMove).toBeCalledTimes(1);
+});
+
+it('when click on board, should set pointer', () => {
+    const canvasRef = stubCanvasRef();
+    const ev = clickOn({});
+    const moveTo: TCoordinates = {x: 0, y: 0};
+    const pointer = stubPointer({
+        setPosition(cell) {
+            expect(cell).toEqual(moveTo);
+        }
+    })
+    const spySetPosition = jest.spyOn(pointer, 'setPosition');
+    new CanvasController(
+        canvasRef, 
+        stubBattleContext(), 
+        () => stubRender({
+            pointer,
+            clickOnBoard: () => moveTo
+        })
+    );
+    if (canvasRef.onclick === null) {
+        fail('the canvas reference dont have the onclick function seted');
+        return;
+    }
+    canvasRef.onclick(ev);
+    expect(spySetPosition).toBeCalledTimes(1);
 });
 
 it('should use corrrect key bindings', () => {

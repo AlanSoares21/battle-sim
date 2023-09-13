@@ -179,6 +179,7 @@ export class CanvasController {
     }
 
     private handleBoardClick(click: TBoardCoordinates) {
+        this.battleRender.pointer.setPosition(click);
         if (this.skillSelected !== undefined) {
             const index = this.data.board.entitiesPosition
                 .findIndex(e => e.x === click.x && e.y === click.y)
