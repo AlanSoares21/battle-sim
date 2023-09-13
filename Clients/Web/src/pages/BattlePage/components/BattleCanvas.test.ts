@@ -51,6 +51,7 @@ function stubRender(p?: Partial<BattleRenderController>) {
     const render : Partial<BattleRenderController> = {
         skillBarController: stubSkillBarController(),
         pointer: stubPointer(),
+        setPlayer: () => {},
         clickOnBoard: () => undefined,
         clickOnSkill: () => undefined,
         updateMana: () => {},
@@ -396,19 +397,17 @@ it('when the skill is selected, handle it in the skillbarcontroller', () => {
     expect(spySelectSkill).toBeCalledTimes(1);
 });
 
-it('when click on a player and have a skill selected, should send a skill call to the server', () => {
+it('when click in a player and have a skill selected, should send a skill call to the server', () => {
     const skillTarget = 'skillTargetId';
     const canvasRef = stubCanvasRef();
-    const render = stubRender();
-    const boardClick: TCoordinates = {x: 0, y: 0};
-    const battle = stubBattleData({
-        board: stubBoard({
-            entitiesPosition: [{entityIdentifier: skillTarget, ...boardClick}]
-        })
-    });
-    const player = stubEntity();
-    player.skills = ['qSkill'];
-    render.clickOnBoard = () => boardClick;
+    const boardClick: TCoordinates = {x: 1, y: 1};
+    const targetPosition: IEntityPosition = {
+        entityIdentifier: skillTarget, 
+        ...boardClick
+    }
+    const player = stubEntity({skills: ['qSkill']});
+    
+    const render = stubRender({clickOnBoard: () => boardClick});
     
     const server = stubServer();
     let manaRecoveredEventListener
@@ -425,10 +424,12 @@ it('when click on a player and have a skill selected, should send a skill call t
     
     const controller = new CanvasController(
         canvasRef, 
-        stubBattleContext({server, player, battle}), 
+        stubBattleContext({server, player}), 
         () => render
     );
     controller.handleKey('q');
+    controller.state.positions[0] = targetPosition;
+
     if (canvasRef.onclick === null) {
         fail('the canvas reference dont have the onclick function seted');
         return;
@@ -437,6 +438,7 @@ it('when click on a player and have a skill selected, should send a skill call t
         fail(`The listener to the mana recover event is undefined`);
         return;
     }
+    
     manaRecoveredEventListener();
     canvasRef.onclick(clickOn());
     expect(spySkill).toBeCalledTimes(1);
@@ -564,7 +566,8 @@ it('render entities when the battle starts', () => {
 it('updates the board when a movement happens', () => {
     const entityid = 'entitieMoved';
     const player = stubEntity({id: entityid});
-    const battle = stubBattleData({entities: [player]});
+    const playerPosition: IEntityPosition = 
+        {entityIdentifier: player.id, x: 0, y: 0};
     const server = stubServer();
     let entitiesMoveListener: IServerEvents['EntitiesMove'] | undefined;
     server.onEntitiesMove = listener => {
@@ -573,8 +576,19 @@ it('updates the board when a movement happens', () => {
     }
 
     const entitiesMoves = {[entityid]: {x: 1, y:1}};
+    /**
+     * this function is called two times,
+     * the first one is in the initial setup and will have the
+     * player initial position,
+     * the second will be the event from the server
+     */
+    let isTheFirstRender = true;
     const render = stubRender({
         setPlayer(data, position, isTheUser) {
+            if (isTheFirstRender) {
+                isTheFirstRender = false;
+                return;
+            }
             expect(data.id).toBe(entityid);
             expect(isTheUser).toBeTruthy();
             expect(position).toEqual(entitiesMoves[entityid]);
@@ -584,7 +598,14 @@ it('updates the board when a movement happens', () => {
 
     const controller = new CanvasController(
         stubCanvasRef(), 
-        stubBattleContext({server, battle, player}), 
+        stubBattleContext({
+            server, 
+            battle: stubBattleData({
+                entities: [player], 
+                board: stubBoard({entitiesPosition: [playerPosition]})
+            }), 
+            player
+        }), 
         () => render
     );
 
@@ -593,7 +614,47 @@ it('updates the board when a movement happens', () => {
         return;
     }
     entitiesMoveListener(entitiesMoves);
-    expect(spySetPlayer).toBeCalledTimes(1);
+    expect(spySetPlayer).toBeCalledTimes(2);
+})
+
+it('updates the entities position when a movement happens', () => {
+    const player = stubEntity({id: 'playerid'});
+    const initialPlayerPosition: IEntityPosition = {
+        entityIdentifier: player.id, 
+        x: 0, y: 0
+    };
+    const battle = stubBattleData({
+        board: stubBoard({
+            entitiesPosition: [initialPlayerPosition]
+        }),
+        entities: [player]
+    });
+    const server = stubServer();
+    let entitiesMoveListener: IServerEvents['EntitiesMove'] | undefined;
+    server.onEntitiesMove = listener => {
+        entitiesMoveListener = listener;
+        return server;
+    }
+
+    const entitiesMoves = {[player.id]: {x: 1, y:1}};
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, battle, player}), 
+        () => stubRender()
+    );
+
+    if (entitiesMoveListener === undefined) {
+        fail(`The listener to the entities move event is undefined`);
+        return;
+    }
+    expect(controller.state.positions[0]).toEqual(initialPlayerPosition);
+    entitiesMoveListener(entitiesMoves);
+    const expectedPlayerPosition: IEntityPosition = {
+        entityIdentifier: player.id,
+        ...entitiesMoves[player.id]
+    }
+    expect(controller.state.positions[0]).toEqual(expectedPlayerPosition);
 })
 
 it('updates the user life when a skill event happens and he is the target', () => {

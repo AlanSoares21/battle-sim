@@ -58,12 +58,26 @@ interface IPlayerState extends IEntity {
     mana: number;
 }
 
+type TEntitiesDataDictionary = {[id: IEntity['id']]: IEntity};
+
+interface IBattleState {
+    positions: IBattleData['board']['entitiesPosition'];
+    entities: TEntitiesDataDictionary;
+}
+
+function transformInEntitiesDictionary(
+    dictionary: TEntitiesDataDictionary, 
+    value: IEntity) {
+    dictionary[value.id] = value;
+    return dictionary;
+}
+
 export class CanvasController {
     private canvasOffset: TCanvasOffset;
     private battleRender: BattleRenderController;
     private mappedKeyBoard;
     private server: ServerConnection;
-    private data: IBattleData;
+    state: IBattleState 
     private currentPlayer: IPlayerState;
     skillSelected?: string;
 
@@ -72,7 +86,10 @@ export class CanvasController {
         state: IBattleContext,
         createRender: (props:IBattleRenderControllerProps) => BattleRenderController
     ) {
-        this.data = state.battle;
+        this.state = {
+            positions: state.battle.board.entitiesPosition,
+            entities: state.battle.entities.reduce(transformInEntitiesDictionary, {})
+        };
         this.server = state.server; 
         this.canvasOffset = getCanvasOffset(canvasRef);
         this.currentPlayer = {...state.player, mana: 0};
@@ -107,11 +124,19 @@ export class CanvasController {
     }
 
     private handleEntitiesMove(): IServerEvents['EntitiesMove'] {
-        return (moves: {[entity: string]: TCoordinates}) => {
+        return moves => {
             for (const key in moves) {
-                const entityIndex = this.data.entities.findIndex(e => e.id === key);
+                const positionIndex = this.state.positions
+                    .findIndex(p => p.entityIdentifier === key);
+                if (positionIndex === -1)
+                    continue;
+                this.state.positions[positionIndex].x = moves[key].x;
+                this.state.positions[positionIndex].y = moves[key].y;
+
+                if (this.state.entities[key] === undefined) 
+                    continue;
                 this.battleRender.setPlayer(
-                    this.data.entities[entityIndex], 
+                    this.state.entities[key], 
                     moves[key], 
                     this.currentPlayer.id === key
                 );
@@ -144,14 +169,12 @@ export class CanvasController {
     }
 
     private setBattleInitialState() {
-        for (const position of this.data.board.entitiesPosition) {
-            const index = this.data.entities
-                .findIndex(e => e.id === position.entityIdentifier);
-            if (index === -1) 
+        for (const position of this.state.positions) {
+            if (this.state.entities[position.entityIdentifier] === undefined) 
                 continue;
             this.battleRender.setPlayer(
-                this.data.entities[index],
-                position,
+                this.state.entities[position.entityIdentifier],
+                {x: position.x, y: position.y},
                 position.entityIdentifier === this.currentPlayer.id
             );
         }
@@ -179,13 +202,17 @@ export class CanvasController {
     }
 
     private handleBoardClick(click: TBoardCoordinates) {
+        console.log('click happened', {
+            controller: this,
+            click
+        })
         this.battleRender.pointer.setPosition(click);
         if (this.skillSelected !== undefined) {
-            const index = this.data.board.entitiesPosition
+            const index = this.state.positions
                 .findIndex(e => e.x === click.x && e.y === click.y)
             if (index > -1) {
                 this.useSkillIn(
-                    this.data.board.entitiesPosition[index].entityIdentifier, 
+                    this.state.positions[index].entityIdentifier, 
                     this.skillSelected
                 );
                 return;
