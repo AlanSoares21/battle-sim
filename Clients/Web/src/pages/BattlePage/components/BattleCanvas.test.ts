@@ -1,6 +1,6 @@
-import { DamageDirection, IBattleData, IBoardData, IEntity, IEntityPosition, TCoordinates } from "../../../interfaces";
+import { DamageDirection, IBattleData, IBoardData, IEntity, IEntityPosition, TBoardCoordinates, TCoordinates } from "../../../interfaces";
 import { stubIt } from "../../../jest/helpers";
-import { ServerConnection } from "../../../server";
+import { IServerEvents, ServerConnection } from "../../../server";
 import { IBattleContext } from "../BattleContext";
 import { CanvasController } from "./BattleCanvas"
 import BattleRenderController, { IBattleRenderControllerProps } from "./BattleRenderController";
@@ -50,7 +50,8 @@ function stubRender(p?: Partial<BattleRenderController>) {
 
 function stubServer() {
     const server: Partial<ServerConnection> = {
-        Skill: () => {}
+        Skill: () => {},
+        onEntitiesMove: () => server as ServerConnection
     }
     return server as ServerConnection;
 }
@@ -79,17 +80,27 @@ function stubBattleContext(p?: Partial<IBattleContext>) {
 }
 
 function stubEntity(p?: Partial<IEntity>) {
-    const entity: Partial<IEntity> = {...p};
+    const entity: Partial<IEntity> = {
+        skills: [],
+        ...p
+    };
     return entity as IEntity;
 }
 
 function stubBoard(p?: Partial<IBoardData>) {
-    const stub = stubIt<IBoardData>({...p});
+    const stub = stubIt<IBoardData>({
+        entitiesPosition: [],
+        ...p
+    });
     return stub as IBoardData;
 }
 
 function stubBattleData(p?: Partial<IBattleData>) {
-    const stub = stubIt<IBattleData>({...p});
+    const stub = stubIt<IBattleData>({
+        board: stubBoard(),
+        entities: [],
+        ...p
+    });
     return stub as IBattleData;
 }
 
@@ -409,3 +420,88 @@ it('after use a skill, unselect the skill', () => {
     expect(controller.skillSelected).toBeUndefined();
     expect(spyUnSelectSkill).toBeCalledTimes(1);
 });
+
+it('render entities when the battle starts', () => {
+    const player = stubEntity({id: 'playerId'});
+    const playerPosition: TBoardCoordinates = {x: 0, y: 0};
+    const enemyPosition: TBoardCoordinates = {x: 1, y: 1};
+    const enemy = stubEntity({id: 'enemyId'});
+    const battle = stubBattleData({
+        board: stubBoard({
+            entitiesPosition: [
+                {entityIdentifier: player.id, ...playerPosition},
+                {entityIdentifier: enemy.id, ...enemyPosition}
+            ]
+        }),
+        entities: [enemy, player]
+    });
+    let userChecked = false;
+    let enemyChecked = false;
+    const render = stubRender({
+        setPlayer(data, position, isTheUser) {
+            if (isTheUser) {
+                expect(data.id).toBe(player.id);
+                expect(position.x).toBe(playerPosition.x);
+                expect(position.y).toBe(playerPosition.y);
+                userChecked = true;
+            } else {
+                expect(data.id).toBe(enemy.id);
+                expect(position.x).toBe(enemyPosition.x);
+                expect(position.y).toBe(enemyPosition.y);
+                enemyChecked = true;
+            }
+        },
+    });
+    const spySetPlayer = jest.spyOn(render, 'setPlayer');
+
+    new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({battle, player}), 
+        () => render
+    );
+
+    expect(spySetPlayer).toBeCalledTimes(2);
+    expect(userChecked).toBeTruthy();
+    expect(enemyChecked).toBeTruthy();
+})
+
+it('updates the board when a movement happens', () => {
+    const entityid = 'entitieMoved';
+    const player = stubEntity({id: entityid});
+    const battle = stubBattleData({entities: [player]});
+    const server = stubServer();
+    let entitiesMoveListener: IServerEvents['EntitiesMove'] | undefined;
+    server.onEntitiesMove = listener => {
+        entitiesMoveListener = listener;
+        return server;
+    }
+
+    const entitiesMoves = {[entityid]: {x: 1, y:1}};
+    const render = stubRender({
+        setPlayer(data, position, isTheUser) {
+            expect(data.id).toBe(entityid);
+            expect(isTheUser).toBeTruthy();
+            expect(position).toEqual(entitiesMoves[entityid]);
+        },
+    });
+    const spySetPlayer = jest.spyOn(render, 'setPlayer');
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, battle, player}), 
+        () => render
+    );
+
+    if (entitiesMoveListener === undefined) {
+        fail(`The listener to the entities move event is undefined`);
+        return;
+    }
+    entitiesMoveListener(entitiesMoves);
+    expect(spySetPlayer).toBeCalledTimes(1);
+})
+
+/**
+ * TODO
+ * atualiza a vida quando uma skill é disparada
+ * atualiza a mana quando o jogador recebe mana
+ */

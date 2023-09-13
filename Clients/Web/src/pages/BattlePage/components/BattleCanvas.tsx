@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { BattleContext, IBattleContext } from "../BattleContext";
-import { IAssetsData, IBattleData, IEntity, TBoard, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
+import { IAssetsData, IBattleData, IEntity, TBoard, TBoardCoordinates, TCanvasCoordinates, TCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRenderController, { IBattleRenderControllerProps, ICreateRenders } from "./BattleRenderController";
 import { IServerEvents, ServerConnection } from "../../../server";
@@ -90,6 +90,7 @@ export class CanvasController {
     private mappedKeyBoard;
     private server: ServerConnection;
     private data: IBattleData;
+    private currentPlayer: IEntity;
     skillSelected?: string;
 
     constructor(
@@ -99,9 +100,12 @@ export class CanvasController {
     ) {
         this.data = state.battle;
         this.server = state.server; 
+        this.canvasOffset = getCanvasOffset(canvasRef);
+        this.currentPlayer = state.player;
+
         canvasRef.height = canvasRef.clientHeight;
         canvasRef.width = canvasRef.clientWidth;
-        this.canvasOffset = getCanvasOffset(canvasRef);
+
         const canvasContext = canvasRef.getContext('2d');
         if (canvasContext === null)
             throw new Error(`Canvas context is null`);
@@ -114,8 +118,42 @@ export class CanvasController {
             player: state.player,
             skillKeyBindings: getSkillsBindingsToKeyboard(state.player.skills)
         })
+        
         this.mappedKeyBoard = getKeybordBindingsToSkills(state.player.skills);
         canvasRef.onclick = this.handleOnClick();
+        this.setServerEventsListenners();
+        this.setBattleInitialState();
+    }
+
+    private setBattleInitialState() {
+        for (const position of this.data.board.entitiesPosition) {
+            const index = this.data.entities
+                .findIndex(e => e.id === position.entityIdentifier);
+            if (index === -1) 
+                continue;
+            this.battleRender.setPlayer(
+                this.data.entities[index],
+                position,
+                position.entityIdentifier === this.currentPlayer.id
+            );
+        }
+    }
+
+    private setServerEventsListenners() {
+        this.server.onEntitiesMove(this.handleEntitiesMove());
+    }
+
+    private handleEntitiesMove(): IServerEvents['EntitiesMove'] {
+        return (moves: {[entity: string]: TCoordinates}) => {
+            for (const key in moves) {
+                const entityIndex = this.data.entities.findIndex(e => e.id === key);
+                this.battleRender.setPlayer(
+                    this.data.entities[entityIndex], 
+                    moves[key], 
+                    this.currentPlayer.id === key
+                );
+            }
+        }
     }
 
     private handleOnClick() {
@@ -197,27 +235,11 @@ export const BattleCanvas: React.FC = () => {
     }, [setCanvasController, assets, player, battle.board.size]);
 
     /**
-     * update entities position on board
-     */
-    useEffect(() => {
-        if (!renderController)
-            return;
-        for (let index = 0; index < battle.entities.length; index++) {
-            const entity = battle.entities[index];
-            const position = battle.board.entitiesPosition
-                .find(e => e.entityIdentifier === entity.id);
-            if (position !== undefined)
-                renderController.setPlayer(entity, position, entity.id === player.id);
-        }
-    }, [battle.board.entitiesPosition, renderController, player.id, battle.entities]);
-
-    /**
      * update entities life when server events happen
      */
     useEffect(() => {
         if (renderController)
             server
-            .onAttack(onAttack(renderController, player.id))
             .onSkill(onSkill(renderController, player.id));
     }, [server, player.id, renderController]);
 
