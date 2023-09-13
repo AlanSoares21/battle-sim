@@ -43,6 +43,8 @@ function stubRender(p?: Partial<BattleRenderController>) {
         skillBarController: stubSkillBarController(),
         clickOnBoard: () => undefined,
         clickOnSkill: () => undefined,
+        updateMana: () => {},
+        updateEntityCurrentHealth: () => {},
         ...p
     }
     return render as BattleRenderController;
@@ -370,12 +372,20 @@ it('when click on a player and have a skill selected, should send a skill call t
     const player = stubEntity();
     player.skills = ['qSkill'];
     render.clickOnBoard = () => boardClick;
+    
     const server = stubServer();
+    let manaRecoveredEventListener
+        : IServerEvents['ManaRecovered'] | undefined;
+    server.onManaRecovered = listener => {
+        manaRecoveredEventListener = listener;
+        return server;
+    }
     server.Skill = (skill, target) => {
         expect(skill).toBe(player.skills[0]);
         expect(target).toBe(skillTarget);
     }
     const spySkill = jest.spyOn(server, 'Skill');
+    
     const controller = new CanvasController(
         canvasRef, 
         stubBattleContext({server, player, battle}), 
@@ -386,6 +396,11 @@ it('when click on a player and have a skill selected, should send a skill call t
         fail('the canvas reference dont have the onclick function seted');
         return;
     }
+    if (manaRecoveredEventListener === undefined) {
+        fail(`The listener to the mana recover event is undefined`);
+        return;
+    }
+    manaRecoveredEventListener();
     canvasRef.onclick(clickOn());
     expect(spySkill).toBeCalledTimes(1);
 });
@@ -419,6 +434,48 @@ it('after use a skill, unselect the skill', () => {
         return;
     }
     canvasRef.onclick(clickOn());
+    expect(controller.skillSelected).toBeUndefined();
+    expect(spyUnSelectSkill).toBeCalledTimes(1);
+});
+
+it('dont use skill when dont have mana enough', () => {
+    const canvasRef = stubCanvasRef();
+    const skillNameUsedByThePlayer = "basicNegativeDamageOnX"
+    const player = stubEntity({
+        id: "playerId", 
+        maxMana: 1,
+        skills: [skillNameUsedByThePlayer]
+    });
+    const playerPosition: TBoardCoordinates = {x: 0, y:0};
+    const board = stubBoard({
+        entitiesPosition: [{entityIdentifier: player.id, ...playerPosition}]
+    })
+
+    const server = stubServer();
+    const spySkill = jest.spyOn(server, 'Skill');
+
+    const skillBarController = stubSkillBarController();
+    skillBarController.unSelectSkill = () => {};
+    const spyUnSelectSkill = jest.spyOn(skillBarController, 'unSelectSkill');
+
+    const controller = new CanvasController(
+        canvasRef, 
+        stubBattleContext({server, player, battle: stubBattleData({board})}), 
+        () => stubRender({
+            clickOnBoard: () => playerPosition,
+            skillBarController
+        })
+    );
+
+    if (canvasRef['onclick'] === null) {
+        fail(`The canvas ref onclick function is null`);
+        return;
+    }
+
+    controller.skillSelected = skillNameUsedByThePlayer;
+    canvasRef['onclick'](clickOn());
+
+    expect(spySkill).toBeCalledTimes(0);
     expect(controller.skillSelected).toBeUndefined();
     expect(spyUnSelectSkill).toBeCalledTimes(1);
 });
@@ -568,7 +625,121 @@ it('updates the target life when a skill event happens and he is the target', ()
     expect(spyUpdateCurrentHealth).toBeCalledTimes(1);
 });
 
-/**
- * TODO
- * atualiza a mana quando o jogador recebe mana
- */
+it('add 5 units in the mana bar when a mana recover event happens', () => {
+    const player = stubEntity({
+        id: "playerId", 
+        maxMana: 10
+    });
+    const server = stubServer();
+    let manaRecoveredEventListener
+        : IServerEvents['ManaRecovered'] | undefined;
+    server.onManaRecovered = listener => {
+        manaRecoveredEventListener = listener;
+        return server;
+    }
+    let mana = 0;
+    const render = stubRender({
+        updateMana(value) {
+            expect(value).toBe(mana + 5);
+            mana = value;
+        },
+    });
+    const spyUpdateMana = jest.spyOn(render, 'updateMana');
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, player}), 
+        () => render
+    );
+
+    if (manaRecoveredEventListener === undefined) {
+        fail(`The listener to the mana recover event is undefined`);
+        return;
+    }
+    manaRecoveredEventListener();
+    manaRecoveredEventListener();
+    expect(spyUpdateMana).toBeCalledTimes(2);
+});
+
+it('dont add mana when a mana recover event happens and the user mana is at limit ', () => {
+    const player = stubEntity({
+        id: "playerId", 
+        maxMana: 10
+    });
+    const server = stubServer();
+    let manaRecoveredEventListener
+        : IServerEvents['ManaRecovered'] | undefined;
+    server.onManaRecovered = listener => {
+        manaRecoveredEventListener = listener;
+        return server;
+    }
+
+    const render = stubRender();
+    const spyUpdateMana = jest.spyOn(render, 'updateMana');
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, player}), 
+        () => render
+    );
+
+    if (manaRecoveredEventListener === undefined) {
+        fail(`The listener to the mana recover event is undefined`);
+        return;
+    }
+    manaRecoveredEventListener();
+    manaRecoveredEventListener();
+    manaRecoveredEventListener();
+    expect(spyUpdateMana).toBeCalledTimes(2);
+});
+
+it('decrease mana when a skill is used by the player', () => {
+    const skillName = "basicNegativeDamageOnX"
+    const player = stubEntity({
+        id: "playerId", 
+        maxMana: 5,
+        skills: [skillName]
+    });
+
+    const server = stubServer();
+    let manaRecoveredEventListener
+        : IServerEvents['ManaRecovered'] | undefined;
+    server.onManaRecovered = listener => {
+        manaRecoveredEventListener = listener;
+        return server;
+    }
+    let skillEventListener
+        : IServerEvents['Skill'] | undefined;
+    server.onSkill = listener => {
+        skillEventListener = listener;
+        return server;
+    }
+
+    let lastManaValue = -1;
+    const render = stubRender({
+        updateMana(value) {
+            lastManaValue = value;
+        }
+    });
+    const spyUpdateMana = jest.spyOn(render, 'updateMana');
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, player}), 
+        () => render
+    );
+
+    if (skillEventListener === undefined) {
+        fail(`The listener to the skill event is undefined`);
+        return;
+    }
+    if (manaRecoveredEventListener === undefined) {
+        fail(`The listener to the mana recover event is undefined`);
+        return;
+    }
+
+    manaRecoveredEventListener();
+    skillEventListener(skillName, player.id, 'someOne', {x: 0, y: 0});
+    expect(spyUpdateMana).toBeCalledTimes(2);
+    expect(lastManaValue).toBe(0);
+});

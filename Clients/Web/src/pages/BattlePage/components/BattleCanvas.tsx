@@ -1,41 +1,27 @@
-import React, { MouseEventHandler, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { BattleContext, IBattleContext } from "../BattleContext";
-import { IAssetsData, IBattleData, IEntity, TBoard, TBoardCoordinates, TCanvasCoordinates, TCoordinates } from "../../../interfaces";
+import { IBattleData, IEntity, TBoardCoordinates, TCanvasCoordinates, TCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRenderController, { IBattleRenderControllerProps, ICreateRenders } from "./BattleRenderController";
 import { IServerEvents, ServerConnection } from "../../../server";
 import { LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
 import { PlayerRender } from "./BoardRenderComponents";
 
-type TEntityManaList = {[key: IEntity['id']]: {
-    current: number;
-    max: number;
-}};
-
-function onManaRecovered(
-    manaList: TEntityManaList, 
-    updateMana: (list: TEntityManaList) => void
-): IServerEvents['ManaRecovered'] {
-    const ids: Array<keyof TEntityManaList> = Object.keys(manaList);
-    let updated = 0;
-    return () => {
-        console.log("mana update in battle page f")
-        updated = 0;
-        for (const id of ids) {
-            if (manaList[id].current === manaList[id].max)
-                continue;
-            manaList[id].current += 5;
-            if (manaList[id].current > manaList[id].max)
-                manaList[id].current = manaList[id].max;
-            updated++;
-        }
-        console.log(`update ${updated} entities mana`, manaList)
-        if (updated > 0)
-            updateMana(manaList);
-    }
-}
 
 const keysToMap = [ "q", "w", "e", "r", "a", "s", "d", "f" ];
+
+const skillManaCost: {[skilllname: string]: number} =  {
+    'basicNegativeDamageOnX': 5,
+    'basicNegativeDamageOnY': 5,
+    'basicPositiveDamageOnX': 5,
+    'basicPositiveDamageOnY': 5,
+}
+
+function getSkillManaCost(skill: string) {
+    if (skill in skillManaCost)
+        return skillManaCost[skill];
+    return 5;
+}
 
 function getSkillsBindingsToKeyboard(skills: string[]): { [skill: string]: string } {
     return skills.reduce<{ [skill: string]: string }>((keyBindings, skill, i) => {
@@ -68,13 +54,17 @@ const createRenders: ICreateRenders = {
     playerRender: p => new PlayerRender(p)
 }
 
+interface IPlayerState extends IEntity {
+    mana: number;
+}
+
 export class CanvasController {
     private canvasOffset: TCanvasOffset;
     private battleRender: BattleRenderController;
     private mappedKeyBoard;
     private server: ServerConnection;
     private data: IBattleData;
-    private currentPlayer: IEntity;
+    private currentPlayer: IPlayerState;
     skillSelected?: string;
 
     constructor(
@@ -85,7 +75,7 @@ export class CanvasController {
         this.data = state.battle;
         this.server = state.server; 
         this.canvasOffset = getCanvasOffset(canvasRef);
-        this.currentPlayer = state.player;
+        this.currentPlayer = {...state.player, mana: 0};
 
         canvasRef.height = canvasRef.clientHeight;
         canvasRef.width = canvasRef.clientWidth;
@@ -109,24 +99,11 @@ export class CanvasController {
         this.setBattleInitialState();
     }
 
-    private setBattleInitialState() {
-        for (const position of this.data.board.entitiesPosition) {
-            const index = this.data.entities
-                .findIndex(e => e.id === position.entityIdentifier);
-            if (index === -1) 
-                continue;
-            this.battleRender.setPlayer(
-                this.data.entities[index],
-                position,
-                position.entityIdentifier === this.currentPlayer.id
-            );
-        }
-    }
-
     private setServerEventsListenners() {
         this.server
             .onEntitiesMove(this.handleEntitiesMove())
-            .onSkill(this.handleSkill());
+            .onSkill(this.handleSkill())
+            .onManaRecovered(this.handleManaRecovered());
     }
 
     private handleEntitiesMove(): IServerEvents['EntitiesMove'] {
@@ -143,10 +120,39 @@ export class CanvasController {
     }
 
     private handleSkill(): IServerEvents['Skill'] {
-        return (_, __, target, currentHealth) => {
+        return (skillName, source, target, currentHealth) => {
+            if (source === this.currentPlayer.id)
+                this.increseManaIn(- getSkillManaCost(skillName));
             this.battleRender.updateEntityCurrentHealth(
                 target === this.currentPlayer.id,
                 currentHealth
+            );
+        }
+    }
+
+    private handleManaRecovered(): IServerEvents['ManaRecovered'] {
+        return () => {
+            this.increseManaIn(5);
+        }
+    }
+
+    private increseManaIn(value: number) {
+        if (this.currentPlayer.mana >= this.currentPlayer.maxMana && value > 0)
+            return;
+        this.currentPlayer.mana += value;
+        this.battleRender.updateMana(this.currentPlayer.mana);
+    }
+
+    private setBattleInitialState() {
+        for (const position of this.data.board.entitiesPosition) {
+            const index = this.data.entities
+                .findIndex(e => e.id === position.entityIdentifier);
+            if (index === -1) 
+                continue;
+            this.battleRender.setPlayer(
+                this.data.entities[index],
+                position,
+                position.entityIdentifier === this.currentPlayer.id
             );
         }
     }
@@ -177,15 +183,23 @@ export class CanvasController {
             const index = this.data.board.entitiesPosition
                 .findIndex(e => e.x === click.x && e.y === click.y)
             if (index > -1) {
-                this.server.Skill(
-                    this.skillSelected, 
-                    this.data.board.entitiesPosition[index].entityIdentifier
+                this.useSkillIn(
+                    this.data.board.entitiesPosition[index].entityIdentifier, 
+                    this.skillSelected
                 );
-                this.unselectSkill();
                 return;
             }
         }
         this.server.Move(click.x, click.y);
+    }
+
+    private useSkillIn(entityId: string, skill: string) {
+        if (getSkillManaCost(skill) <= this.currentPlayer.mana)
+            this.server.Skill(
+                skill, 
+                entityId
+            );
+        this.unselectSkill();
     }
 
     private selectSkill(skillName: string) {

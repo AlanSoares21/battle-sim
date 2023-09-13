@@ -85,45 +85,6 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             setBattle(undefined);
         }, []);
 
-    const onAttack = useCallback<IServerEvents['Attack']>(
-        async (source, target, currentHealth) => {
-            console.log('new-attack', {
-                source,
-                target,
-                currentHealth
-            });
-        }, []);
-
-    const onSkill = useCallback<IServerEvents['Skill']>(
-        async (skillName, source, target, currentHealth) => {
-            console.log('skill', {
-                skillName,
-                source,
-                target,
-                currentHealth
-        });
-    }, []);
-
-    const updateEntitiesPosition = useCallback<IServerEvents['EntitiesMove']>(
-        entitiesMove => {
-            console.log('entities moved', entitiesMove)
-            setBattle(b => (b && {
-                ...b, 
-                board: { 
-                    ...b.board, 
-                    entitiesPosition: b.board.entitiesPosition.map(value => {
-                        const move = entitiesMove[value.entityIdentifier];
-                        if (move) {
-                            value.x = move.x;
-                            value.y = move.y;
-                        }
-                        return value;
-                    })
-                }
-            }));
-        }
-    , []);
-
     useEffect(() => {
         fetch(`${process.env.PUBLIC_URL}/assets/assets.map.json`)
         .then(async r => JSON.parse(await r.text()) as IAssetsFile)
@@ -177,9 +138,6 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                     .onNewBattle(onNewBattle)
                     .onBattleRequestCancelled(onBattleRequestCancelled)
                     .onBattleCancelled(onBattleCancelled)
-                    .onAttack(onAttack)
-                    .onEntitiesMove(updateEntitiesPosition)
-                    .onSkill(onSkill)
             }
         }, 
         [
@@ -191,10 +149,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
             onBattleRequestSent, 
             onNewBattle,
             onBattleRequestCancelled,
-            onBattleCancelled,
-            onAttack,
-            updateEntitiesPosition,
-            onSkill
+            onBattleCancelled
         ]
     )
 
