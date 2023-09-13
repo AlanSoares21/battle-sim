@@ -35,22 +35,6 @@ function onManaRecovered(
     }
 }
 
-const onAttack = (render: BattleRenderController, userId: string): IServerEvents['Attack'] => 
-(
-    (_, target, currentHealth) => {
-        render.updateEntityCurrentHealth(target === userId, currentHealth);
-        render.render();
-    }
-)
-
-const onSkill = (render: BattleRenderController, userId: string): IServerEvents['Skill'] => 
-(
-    (_, source, target, currentHealth) => {
-        render.updateEntityCurrentHealth(target === userId, currentHealth);
-        render.render();
-    }
-)
-
 const keysToMap = [ "q", "w", "e", "r", "a", "s", "d", "f" ];
 
 function getSkillsBindingsToKeyboard(skills: string[]): { [skill: string]: string } {
@@ -140,7 +124,9 @@ export class CanvasController {
     }
 
     private setServerEventsListenners() {
-        this.server.onEntitiesMove(this.handleEntitiesMove());
+        this.server
+            .onEntitiesMove(this.handleEntitiesMove())
+            .onSkill(this.handleSkill());
     }
 
     private handleEntitiesMove(): IServerEvents['EntitiesMove'] {
@@ -153,6 +139,15 @@ export class CanvasController {
                     this.currentPlayer.id === key
                 );
             }
+        }
+    }
+
+    private handleSkill(): IServerEvents['Skill'] {
+        return (_, __, target, currentHealth) => {
+            this.battleRender.updateEntityCurrentHealth(
+                target === this.currentPlayer.id,
+                currentHealth
+            );
         }
     }
 
@@ -216,9 +211,8 @@ export class CanvasController {
 }
 
 export const BattleCanvas: React.FC = () => {
-    const { battle, server, player, assets } = useContext(BattleContext);
+    const context = useContext(BattleContext);
 
-    const [renderController, setRenderController] = useState<BattleRenderController>();
     const [canvasController, setCanvasController] = useState<CanvasController>();
 
     const setCanvasRef = useCallback((canvasRef: HTMLCanvasElement | null) => {
@@ -229,19 +223,10 @@ export const BattleCanvas: React.FC = () => {
 
        setCanvasController(new CanvasController(
             canvasRef, 
-            { battle, server, player, assets }, 
+            context, 
             p => new BattleRenderController(p)
         ));
-    }, [setCanvasController, assets, player, battle.board.size]);
-
-    /**
-     * update entities life when server events happen
-     */
-    useEffect(() => {
-        if (renderController)
-            server
-            .onSkill(onSkill(renderController, player.id));
-    }, [server, player.id, renderController]);
+    }, [setCanvasController, context]);
 
     /**
      * sets onkeydown event handler

@@ -51,7 +51,9 @@ function stubRender(p?: Partial<BattleRenderController>) {
 function stubServer() {
     const server: Partial<ServerConnection> = {
         Skill: () => {},
-        onEntitiesMove: () => server as ServerConnection
+        onEntitiesMove: () => server as ServerConnection,
+        onSkill: () => server as ServerConnection,
+        onManaRecovered: () => server as ServerConnection
     }
     return server as ServerConnection;
 }
@@ -500,8 +502,73 @@ it('updates the board when a movement happens', () => {
     expect(spySetPlayer).toBeCalledTimes(1);
 })
 
+it('updates the user life when a skill event happens and he is the target', () => {
+    const playerId = 'playerId';
+    const currentHealth: TCoordinates = {x: 123, y: 321};
+    const player = stubEntity({id: playerId});
+    const server = stubServer();
+    let skillEventListener: IServerEvents['Skill'] | undefined;
+    server.onSkill = listener => {
+        skillEventListener = listener;
+        return server;
+    }
+
+    const render = stubRender({
+        updateEntityCurrentHealth(isTheUser, health) {
+            expect(isTheUser).toBeTruthy();
+            expect(health).toEqual(currentHealth);   
+        }
+    });
+    const spyUpdateCurrentHealth = jest.spyOn(render, 'updateEntityCurrentHealth');
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, player}), 
+        () => render
+    );
+
+    if (skillEventListener === undefined) {
+        fail(`The listener to the skill event is undefined`);
+        return;
+    }
+    skillEventListener('someSkillName', 'someSource', playerId, currentHealth);
+    expect(spyUpdateCurrentHealth).toBeCalledTimes(1);
+});
+
+it('updates the target life when a skill event happens and he is the target', () => {
+    const targetId = 'targetId';
+    const currentHealth: TCoordinates = {x: 123, y: 321};
+    const player = stubEntity({id: "playerId"});
+    const server = stubServer();
+    let skillEventListener: IServerEvents['Skill'] | undefined;
+    server.onSkill = listener => {
+        skillEventListener = listener;
+        return server;
+    }
+
+    const render = stubRender({
+        updateEntityCurrentHealth(isTheUser, health) {
+            expect(isTheUser).toBeFalsy();
+            expect(health).toEqual(currentHealth);   
+        }
+    });
+    const spyUpdateCurrentHealth = jest.spyOn(render, 'updateEntityCurrentHealth');
+
+    const controller = new CanvasController(
+        stubCanvasRef(), 
+        stubBattleContext({server, player}), 
+        () => render
+    );
+
+    if (skillEventListener === undefined) {
+        fail(`The listener to the skill event is undefined`);
+        return;
+    }
+    skillEventListener('someSkillName', 'someSource', targetId, currentHealth);
+    expect(spyUpdateCurrentHealth).toBeCalledTimes(1);
+});
+
 /**
  * TODO
- * atualiza a vida quando uma skill é disparada
  * atualiza a mana quando o jogador recebe mana
  */
