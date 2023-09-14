@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { BattleContext, IBattleContext } from "../BattleContext";
-import { IBattleData, IEntity, TBoardCoordinates, TCanvasCoordinates, TCoordinates } from "../../../interfaces";
+import { IBattleData, IEntity, IEntityPosition, ISkillData, TBoardCoordinates, TCanvasCoordinates } from "../../../interfaces";
 import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRenderController, { IBattleRenderControllerProps, ICreateRenders } from "./BattleRenderController";
 import { IServerEvents, ServerConnection } from "../../../server";
@@ -10,17 +10,27 @@ import { PlayerRender } from "./BoardRenderComponents";
 
 const keysToMap = [ "q", "w", "e", "r", "a", "s", "d", "f" ];
 
-const skillManaCost: {[skilllname: string]: number} =  {
-    'basicNegativeDamageOnX': 5,
-    'basicNegativeDamageOnY': 5,
-    'basicPositiveDamageOnX': 5,
-    'basicPositiveDamageOnY': 5,
+const unknowedSkill: ISkillData = {
+    cost: 5,
+    range: 1
 }
 
-function getSkillManaCost(skill: string) {
-    if (skill in skillManaCost)
-        return skillManaCost[skill];
-    return 5;
+const commomDamageSkill: ISkillData = {
+    cost: 5,
+    range: 5
+}
+
+const skillInfo: {[skilllname: string]: ISkillData} =  {
+    'basicNegativeDamageOnX': commomDamageSkill,
+    'basicNegativeDamageOnY': commomDamageSkill,
+    'basicPositiveDamageOnX': commomDamageSkill,
+    'basicPositiveDamageOnY': commomDamageSkill
+}
+
+function getSkillInfo(skill: string): ISkillData {
+    if (skill in skillInfo)
+        return skillInfo[skill];
+    return unknowedSkill;
 }
 
 function getSkillsBindingsToKeyboard(skills: string[]): { [skill: string]: string } {
@@ -61,6 +71,7 @@ interface IPlayerState extends IEntity {
 type TEntitiesDataDictionary = {[id: IEntity['id']]: IEntity};
 
 interface IBattleState {
+    currentPlayer: IPlayerState;
     positions: IBattleData['board']['entitiesPosition'];
     entities: TEntitiesDataDictionary;
 }
@@ -77,8 +88,7 @@ export class CanvasController {
     private battleRender: BattleRenderController;
     private mappedKeyBoard;
     private server: ServerConnection;
-    state: IBattleState 
-    private currentPlayer: IPlayerState;
+    state: IBattleState;
     skillSelected?: string;
 
     constructor(
@@ -88,11 +98,11 @@ export class CanvasController {
     ) {
         this.state = {
             positions: state.battle.board.entitiesPosition,
-            entities: state.battle.entities.reduce(transformInEntitiesDictionary, {})
+            entities: state.battle.entities.reduce(transformInEntitiesDictionary, {}),
+            currentPlayer: {...state.player, mana: 0}
         };
         this.server = state.server; 
         this.canvasOffset = getCanvasOffset(canvasRef);
-        this.currentPlayer = {...state.player, mana: 0};
 
         canvasRef.height = canvasRef.clientHeight;
         canvasRef.width = canvasRef.clientWidth;
@@ -138,7 +148,7 @@ export class CanvasController {
                 this.battleRender.setPlayer(
                     this.state.entities[key], 
                     moves[key], 
-                    this.currentPlayer.id === key
+                    this.state.currentPlayer.id === key
                 );
             }
         }
@@ -146,10 +156,10 @@ export class CanvasController {
 
     private handleSkill(): IServerEvents['Skill'] {
         return (skillName, source, target, currentHealth) => {
-            if (source === this.currentPlayer.id)
-                this.increseManaIn(- getSkillManaCost(skillName));
+            if (source === this.state.currentPlayer.id)
+                this.increseManaIn(- getSkillInfo(skillName).cost);
             this.battleRender.updateEntityCurrentHealth(
-                target === this.currentPlayer.id,
+                target === this.state.currentPlayer.id,
                 currentHealth
             );
         }
@@ -162,10 +172,10 @@ export class CanvasController {
     }
 
     private increseManaIn(value: number) {
-        if (this.currentPlayer.mana >= this.currentPlayer.maxMana && value > 0)
+        if (this.state.currentPlayer.mana >= this.state.currentPlayer.maxMana && value > 0)
             return;
-        this.currentPlayer.mana += value;
-        this.battleRender.updateMana(this.currentPlayer.mana);
+        this.state.currentPlayer.mana += value;
+        this.battleRender.updateMana(this.state.currentPlayer.mana);
     }
 
     private setBattleInitialState() {
@@ -175,7 +185,7 @@ export class CanvasController {
             this.battleRender.setPlayer(
                 this.state.entities[position.entityIdentifier],
                 {x: position.x, y: position.y},
-                position.entityIdentifier === this.currentPlayer.id
+                position.entityIdentifier === this.state.currentPlayer.id
             );
         }
     }
@@ -202,10 +212,6 @@ export class CanvasController {
     }
 
     private handleBoardClick(click: TBoardCoordinates) {
-        console.log('click happened', {
-            controller: this,
-            click
-        })
         this.battleRender.pointer.setPosition(click);
         if (this.skillSelected !== undefined) {
             const index = this.state.positions
@@ -222,12 +228,39 @@ export class CanvasController {
     }
 
     private useSkillIn(entityId: string, skill: string) {
-        if (getSkillManaCost(skill) <= this.currentPlayer.mana)
+        const info = getSkillInfo(skill);
+        if (info.cost <= this.state.currentPlayer.mana 
+            && info.range >= this.distancePlayerTo(entityId))
             this.server.Skill(
                 skill, 
                 entityId
             );
         this.unselectSkill();
+    }
+
+    private distancePlayerTo(target: string): number {
+        let targetPosition: IEntityPosition | undefined;
+        let playerPosition: IEntityPosition | undefined;
+        for (let index = 0; index < this.state.positions.length; index++) {
+            if (this.state.positions[index].entityIdentifier !== target)
+                targetPosition = this.state.positions[index];
+            if (this.state.positions[index].entityIdentifier !== 
+                this.state.currentPlayer.id)
+                playerPosition = this.state.positions[index];
+            if (playerPosition !== undefined && targetPosition !== undefined)
+                break;
+        }
+        
+        if (targetPosition === undefined)
+            throw new Error(`${target} not found in state.positions array`);
+        if (playerPosition === undefined)
+            throw new Error(`Current player not found in state.positions array`);
+
+        return Math.sqrt(
+            Math.pow(playerPosition.x - targetPosition.x, 2)
+            +
+            Math.pow(playerPosition.y - targetPosition.y, 2)
+        );
     }
 
     private selectSkill(skillName: string) {

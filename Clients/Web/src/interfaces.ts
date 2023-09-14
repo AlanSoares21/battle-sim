@@ -54,6 +54,11 @@ export enum DamageDirection {
     Negative = 2
 }
 
+export interface ISkillData {
+    cost: number;
+    range: number;
+}
+
 export interface IWeapon {
     name: string;
     damageOnX: DamageDirection;

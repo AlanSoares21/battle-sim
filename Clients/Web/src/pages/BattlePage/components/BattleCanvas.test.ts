@@ -357,7 +357,6 @@ it('should use corrrect key bindings', () => {
     expect(spyCreateRender).toBeCalledTimes(1);    
 });
 
-
 it('select the right skill when key pressed correspond to it', () => {
     const canvasRef = stubCanvasRef();
     const player = stubEntity();
@@ -398,62 +397,67 @@ it('when the skill is selected, handle it in the skillbarcontroller', () => {
 });
 
 it('when click in a player and have a skill selected, should send a skill call to the server', () => {
-    const skillTarget = 'skillTargetId';
+    const skill = 'skillName';
     const canvasRef = stubCanvasRef();
     const boardClick: TCoordinates = {x: 1, y: 1};
+    const target = stubEntity({id: 'targetId'});
     const targetPosition: IEntityPosition = {
-        entityIdentifier: skillTarget, 
+        entityIdentifier: target.id, 
         ...boardClick
     }
-    const player = stubEntity({skills: ['qSkill']});
-    
+    const player = stubEntity({id: 'playerId'});
+    const playerPosition: IEntityPosition = {
+        entityIdentifier: player.id, 
+        x: 0, y: 1
+    }
     const render = stubRender({clickOnBoard: () => boardClick});
     
     const server = stubServer();
-    let manaRecoveredEventListener
-        : IServerEvents['ManaRecovered'] | undefined;
-    server.onManaRecovered = listener => {
-        manaRecoveredEventListener = listener;
-        return server;
-    }
-    server.Skill = (skill, target) => {
-        expect(skill).toBe(player.skills[0]);
-        expect(target).toBe(skillTarget);
+    server.Skill = (skill, targetId) => {
+        expect(skill).toBe(skill);
+        expect(targetId).toBe(target.id);
     }
     const spySkill = jest.spyOn(server, 'Skill');
     
     const controller = new CanvasController(
         canvasRef, 
-        stubBattleContext({server, player}), 
+        stubBattleContext({
+            server, 
+            player
+        }), 
         () => render
     );
-    controller.handleKey('q');
+    controller.skillSelected = skill;
     controller.state.positions[0] = targetPosition;
+    controller.state.positions[1] = playerPosition;
+    controller.state.currentPlayer.mana = 5;
 
     if (canvasRef.onclick === null) {
         fail('the canvas reference dont have the onclick function seted');
         return;
     }
-    if (manaRecoveredEventListener === undefined) {
-        fail(`The listener to the mana recover event is undefined`);
-        return;
-    }
     
-    manaRecoveredEventListener();
     canvasRef.onclick(clickOn());
     expect(spySkill).toBeCalledTimes(1);
 });
 
 it('after use a skill, unselect the skill', () => {
-    const boardClick: TCoordinates = {x: 0, y: 0};
+    const skill = 'skillName';
     const canvasRef = stubCanvasRef();
-    const player = stubEntity({skills: ['qSkill']});
-    
-    const battle = stubBattleData({
-        board: stubBoard({
-            entitiesPosition: [{entityIdentifier: 'target', ...boardClick}]
-        })
-    });
+    const boardClick: TCoordinates = {x: 1, y: 1};
+    const target = stubEntity({id: 'targetId'});
+    const targetPosition: IEntityPosition = {
+        entityIdentifier: target.id, 
+        ...boardClick
+    }
+    const player = stubEntity({id: 'playerId'});
+    const playerPosition: IEntityPosition = {
+        entityIdentifier: player.id, 
+        x: 0, y: 1
+    }
+
+    const server = stubServer();
+    const spySkill = jest.spyOn(server, 'Skill');
 
     const skillBarController = stubSkillBarController();
     skillBarController.unSelectSkill = () => {};
@@ -461,18 +465,24 @@ it('after use a skill, unselect the skill', () => {
     
     const controller = new CanvasController(
         canvasRef, 
-        stubBattleContext({player, battle}), 
+        stubBattleContext({player, server}), 
         () => stubRender({
             clickOnBoard: () => boardClick,
             skillBarController
         })
     );
-    controller.handleKey('q');
+    controller.skillSelected = skill;
+    controller.state.currentPlayer.mana = 5;
+    controller.state.positions[0] = targetPosition;
+    controller.state.positions[1] = playerPosition;
+
     if (canvasRef.onclick === null) {
         fail('the canvas reference dont have the onclick function seted');
         return;
     }
+
     canvasRef.onclick(clickOn());
+    expect(spySkill).toBeCalledTimes(1);
     expect(controller.skillSelected).toBeUndefined();
     expect(spyUnSelectSkill).toBeCalledTimes(1);
 });
@@ -482,7 +492,7 @@ it('dont use skill when dont have mana enough', () => {
     const skillNameUsedByThePlayer = "basicNegativeDamageOnX"
     const player = stubEntity({
         id: "playerId", 
-        maxMana: 1,
+        maxMana: 10,
         skills: [skillNameUsedByThePlayer]
     });
     const playerPosition: TBoardCoordinates = {x: 0, y:0};
@@ -512,8 +522,60 @@ it('dont use skill when dont have mana enough', () => {
     }
 
     controller.skillSelected = skillNameUsedByThePlayer;
+    controller.state.currentPlayer.mana = 4;
     canvasRef['onclick'](clickOn());
 
+    expect(spySkill).toBeCalledTimes(0);
+    expect(controller.skillSelected).toBeUndefined();
+    expect(spyUnSelectSkill).toBeCalledTimes(1);
+});
+
+it('dont use skill when the target is out of the range', () => {
+    const canvasRef = stubCanvasRef();
+    const skillNameUsedByThePlayer = "basicNegativeDamageOnX"
+    const player = stubEntity({
+        id: "playerId", 
+        maxMana: 1,
+        skills: [skillNameUsedByThePlayer]
+    });
+    const playerPosition: IEntityPosition = {
+        entityIdentifier: player.id,
+        x: 0, y:0
+    }
+    const targetCell: TBoardCoordinates = {x: 999, y: 999};
+    const targetPosition: IEntityPosition = {
+        entityIdentifier: 'target',
+        ...targetCell
+    }
+    const board = stubBoard({
+        entitiesPosition: [playerPosition, targetPosition]
+    })
+
+    const server = stubServer();
+    const spySkill = jest.spyOn(server, 'Skill');
+
+    const skillBarController = stubSkillBarController();
+    skillBarController.unSelectSkill = () => {};
+    const spyUnSelectSkill = jest.spyOn(skillBarController, 'unSelectSkill');
+
+    const controller = new CanvasController(
+        canvasRef, 
+        stubBattleContext({server, player, battle: stubBattleData({board})}), 
+        () => stubRender({
+            clickOnBoard: () => targetCell,
+            skillBarController
+        })
+    );
+
+    if (canvasRef['onclick'] === null) {
+        fail(`The canvas ref onclick function is null`);
+        return;
+    }
+
+    controller.skillSelected = skillNameUsedByThePlayer;
+    controller.state.currentPlayer.mana = 5;
+    canvasRef['onclick'](clickOn());
+    
     expect(spySkill).toBeCalledTimes(0);
     expect(controller.skillSelected).toBeUndefined();
     expect(spyUnSelectSkill).toBeCalledTimes(1);
