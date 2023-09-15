@@ -17,7 +17,6 @@ const colors = {
 export class EquipRender implements IRender {
     canvas: ICanvasWrapper;
     private coordinates: TCanvasCoordinates[];
-    private asset: IAsset;
     private equipPattern?: CanvasPattern;
 
     constructor(
@@ -25,9 +24,8 @@ export class EquipRender implements IRender {
         scale: number,
         healthRadiusInScale: number,
         coordinates: TCoordinates[],
-        asset: IAsset
+        asset?: IAsset
     ) {
-        this.asset = asset;
         this.canvas = canvas;
         this.coordinates = coordinates.map(c => 
             ({ 
@@ -35,7 +33,7 @@ export class EquipRender implements IRender {
                 y: healthRadiusInScale - c.y * scale
             })
         );
-        if (asset.image) {
+        if (asset) {
             const pattern = canvas.createPattern(asset.image);
             if (pattern)
                 this.equipPattern = pattern;
@@ -58,7 +56,7 @@ export class EquipRender implements IRender {
 export interface ILifeSphereRenderProps {
     canvas: ICanvasWrapper;
     healthRadiusInScale: number;
-    asset: IAsset;
+    asset?: IAsset;
 }
 
 export class LifeSphereRender implements IRender {
@@ -66,7 +64,7 @@ export class LifeSphereRender implements IRender {
     private canvasSize: TCanvasSize;
     private lifeCenter: TCanvasCoordinates;
     private healthRadiusInScale: number;
-    private asset: IAsset;
+    private asset?: IAsset;
 
     constructor({
         asset,
@@ -84,7 +82,7 @@ export class LifeSphereRender implements IRender {
     }
 
     render() {
-        if (this.asset.image)
+        if (this.asset)
             this.canvas.drawAsset(
                 this.asset, 
                 {
@@ -103,6 +101,9 @@ export class LifeSphereRender implements IRender {
 
 export interface IManaBarRenderProps {
     canvas: ICanvasWrapper;
+    background?: IAsset;
+    border?: IAsset;
+    fill?: IAsset;
 }
 
 export class ManaBarRender implements IRender {
@@ -110,11 +111,21 @@ export class ManaBarRender implements IRender {
     private barSize: TCanvasSize;
     private wiriteAt: TCoordinates;
     private currentValue: string = '0';
+    private assets?: {
+        background: IAsset;
+        border: IAsset;
+        fill: IAsset;
+    };
 
     constructor({
-        canvas
+        canvas,
+        background,
+        border,
+        fill
     }: IManaBarRenderProps) {
         this.canvas = canvas;
+        if (background && border && fill)
+            this.assets = {background, border, fill};
         const canvasSize = canvas.getSize();
         this.barSize = {
             height: Math.round(canvasSize.width / 4),
@@ -156,13 +167,14 @@ export class LifeCoordRender {
     private currentLife: TCanvasCoordinates;
     private assetPoint: TCanvasCoordinates;
     private scale: number;
-    private asset: IAsset
+    private asset?: IAsset
+    private assetHeight: number = 0;
 
     constructor(
         canvas: ICanvasWrapper,
         scale: number,
         healthRadiusInScale: number,
-        asset: IAsset
+        asset?: IAsset
     ) {
         this.asset = asset;
         this.canvas = canvas;
@@ -175,7 +187,9 @@ export class LifeCoordRender {
             x: healthRadiusInScale,
             y: healthRadiusInScale
         };
-        this.assetPoint = sumCoordinate(this.currentLife, - this.asset.size.height / 2);
+        if (this.asset)
+            this.assetHeight = this.asset.size.height;
+        this.assetPoint = sumCoordinate(this.currentLife, - this.assetHeight / 2);
     }
 
     setLife(life: TCoordinates) {
@@ -183,11 +197,11 @@ export class LifeCoordRender {
             x: this.center.x + (life.x * this.scale),
             y: this.center.y - (life.y * this.scale)
         };
-        this.assetPoint = sumCoordinate(this.currentLife, - this.asset.size.height / 2);
+        this.assetPoint = sumCoordinate(this.currentLife, - this.assetHeight / 2);
     }
 
     render() {
-        if (this.asset.image)
+        if (this.asset)
             this.canvas.drawAsset(
                 this.asset, 
                 {

@@ -1,5 +1,5 @@
 import { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
-import { IAsset, IAssetsData, TCanvasCoordinates, TCanvasSize, TSize } from "../../../interfaces";
+import { IAsset, TGameAssets, TCanvasCoordinates, TCanvasSize, TSize, TAssetsNames } from "../../../interfaces";
 import { IRender } from "./Render";
 
 const colors = {
@@ -14,13 +14,13 @@ export class SkillRender implements IRender {
     canvas: ICanvasWrapper;
     private size: TCanvasSize;
     private text: string;
-    private asset: IAsset;
+    private asset?: IAsset;
     private textRectHeight: number;
     private assetPosition: TCanvasCoordinates;
     private assetSize: TSize;
     private isSelected: boolean = false;
 
-    constructor(canvas: ICanvasWrapper, text: string, asset: IAsset) {
+    constructor(canvas: ICanvasWrapper, text: string, asset?: IAsset) {
         this.canvas = canvas;
         this.text = text;
         this.asset = asset;
@@ -57,13 +57,14 @@ export class SkillRender implements IRender {
     }
 
     private drawAsset() {
-        this.canvas.drawAsset(
-            this.asset, 
-            {
-                ...this.assetSize,
-                startAt: this.assetPosition
-            }
-        );
+        if (this.asset)
+            this.canvas.drawAsset(
+                this.asset, 
+                {
+                    ...this.assetSize,
+                    startAt: this.assetPosition
+                }
+            );
     }
 
     private drawBlur() {
@@ -84,7 +85,7 @@ export class SkillRender implements IRender {
     }
 }
 
-const skillAssetsMap: { [skillName: string]: keyof IAssetsData } = {
+const skillAssetsMap: { [skillName: string]: TAssetsNames } = {
     'basicNegativeDamageOnX': 'base-damage-x-negative',
     'basicNegativeDamageOnY': 'base-damage-y-negative',
     'basicPositiveDamageOnX': 'base-damage-x-positive',
@@ -97,7 +98,7 @@ const skillSpaceFromTop = 10;
 
 function getSkillRenders(
     skills: string[], 
-    assets: IAssetsData, 
+    assets: TGameAssets, 
     canvas: ICanvasWrapper,
     skillKeyBinginds: { [skillName: string]: string }
 ): SkillRender[] {
@@ -109,7 +110,7 @@ function getSkillRenders(
     }
 
     return skills.map((name, i) => {
-        let asset: IAsset;
+        let asset: IAsset | undefined;
         if (name in skillAssetsMap)
             asset = assets[skillAssetsMap[name]];
         else
@@ -136,7 +137,7 @@ export class SkillBarController implements IRender {
     constructor(
         canvas: ICanvasWrapper, 
         skills: string[], 
-        assetsData: IAssetsData,
+        assetsData: TGameAssets,
         skillKeyBinginds: { [skillName: string]: string }
     ) {
         this.canvas = canvas;

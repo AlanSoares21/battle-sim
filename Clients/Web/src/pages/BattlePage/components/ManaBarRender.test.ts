@@ -1,6 +1,8 @@
 import { TCanvasSize, TCoordinates } from "../../../interfaces";
-import { mockCanvas, mockCanvasDrawEmptyRect, mockCanvasDrawRect, mockCanvasWrite } from "../../../jest/helpers";
-import { ManaBarRender } from "./LifeSphereRenderComponents";
+import { mockCanvas, mockCanvasDrawEmptyRect, mockCanvasDrawRect, mockCanvasWrite, stubIt } from "../../../jest/helpers";
+import { IManaBarRenderProps, ManaBarRender } from "./LifeSphereRenderComponents";
+
+const getProperties = stubIt<IManaBarRenderProps>;
 
 it('should render border', () => {
     const borderColor = '#000000';
@@ -13,7 +15,7 @@ it('should render border', () => {
         expect(start).toEqual({x: 0, y: 0} as TCoordinates)
     });
     canvas['drawEmptyRect'] = drawBorders;
-    new ManaBarRender({canvas}).render();
+    new ManaBarRender(getProperties({canvas})).render();
     expect(drawBorders).toBeCalledTimes(1);
 });
 
@@ -28,7 +30,7 @@ it('should fill background', () => {
         expect(start).toEqual({x: 0, y: 0} as TCoordinates)
     });
     canvas['drawRect'] = drawBackground;
-    new ManaBarRender({canvas}).render();
+    new ManaBarRender(getProperties({canvas})).render();
     expect(drawBackground).toBeCalledTimes(1);
 });
 
@@ -44,7 +46,7 @@ it('should write the quantity of mana', () => {
         .toEqual({x: (canvasSize.width / 2) - 2, y: manaBarHeight - 10} as TCoordinates);
     });
     canvas['writeText'] = write;
-    new ManaBarRender({canvas}).render();
+    new ManaBarRender(getProperties({canvas})).render();
     expect(write).toBeCalledTimes(1);
 });
 
@@ -64,7 +66,7 @@ it('should render the background, the border and then  render the text', () => {
     });
     canvas['writeText'] = write;
     
-    new ManaBarRender({canvas}).render();
+    new ManaBarRender(getProperties({canvas})).render();
 
     expect(write).toBeCalledTimes(1);
 });
@@ -77,8 +79,23 @@ it('When change the current value, change the text', () => {
     });
     canvas['writeText'] = write;
     
-    const manaBar = new ManaBarRender({canvas});
+    const manaBar = new ManaBarRender(getProperties({canvas}));
     manaBar.updateCurrentValue(newValue);
 
     expect(write).toBeCalledTimes(1);
+});
+
+describe('rendering assets', () => {
+    it('should not draw rectangles when have assets', () => {
+        const canvas = mockCanvas({height: 100, width: 100});
+        const spyDrawBackground = jest.spyOn(canvas, 'drawRect');
+        const spyDrawBorder = jest.spyOn(canvas, 'drawEmptyRect');
+        
+        new ManaBarRender(getProperties({canvas})).render();
+
+        expect(spyDrawBackground).toBeCalledTimes(0);
+        expect(spyDrawBorder).toBeCalledTimes(0);
+    });
+    // it('should draw the assets in order');
+    // it('should draw the assets before write the text');
 });

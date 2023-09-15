@@ -1,5 +1,5 @@
 import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
-import { mockCanvas, mockCanvasDrawAsset, mockCanvasDrawCircle } from "../../../jest/helpers";
+import { mockCanvas, mockCanvasDrawAsset, mockCanvasDrawCircle, stubAsset } from "../../../jest/helpers";
 import { LifeSphereRender } from "./LifeSphereRenderComponents"
 
 function sizesMatch(currentSize: TSize, expected: TSize) {
@@ -13,7 +13,6 @@ function sizesMatch(currentSize: TSize, expected: TSize) {
  */
 
 it('should draw circle to fill the canvas', () => {
-    const fakeAsset = {} as IAsset;
     const canvas = mockCanvas({width: 100, height: 100});
     const healthRadiusInScale  = 50;
     const expectedCenter: TCanvasCoordinates = {
@@ -25,7 +24,7 @@ it('should draw circle to fill the canvas', () => {
         expect(radius).toBe(healthRadiusInScale);
     });
     canvas['drawCircle'] = drawCircle;
-    const sphere = new LifeSphereRender({canvas, healthRadiusInScale, asset: fakeAsset});
+    const sphere = new LifeSphereRender({canvas, healthRadiusInScale});
     sphere.render();
 
     expect(drawCircle).toBeCalledTimes(1);

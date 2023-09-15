@@ -6,6 +6,14 @@ export function stubIt<T>(props?: Partial<T>) {
     return v as T;
 }
 
+export function stubAsset(p?: Partial<IAsset>) {
+    const asset = stubIt<IAsset>({
+        image: stubIt(),
+        ...p
+    });
+    return asset;
+}
+
 export function mockCanvas(size: TCanvasSize): ICanvasWrapper {
     const canvasMock: Partial<ICanvasWrapper> = {
         'getSize': () => size        
@@ -13,6 +21,8 @@ export function mockCanvas(size: TCanvasSize): ICanvasWrapper {
     canvasMock['writeText'] = mockCanvasWrite();
     canvasMock['drawEmptyRect'] = mockCanvasDrawEmptyRect();
     canvasMock['drawRect'] = mockCanvasDrawRect();
+    canvasMock['createPattern'] = () => null;
+    canvasMock['drawAsset'] = () => {};
     return canvasMock as ICanvasWrapper;
 }
 

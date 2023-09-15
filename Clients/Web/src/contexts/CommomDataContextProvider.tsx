@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { CommomDataContext, ICommomDataContext } from "./CommomDataContext";
 import { AuthContext } from "./AuthContext";
-import { IAssetFileItem, IAssetsData, IAssetsFile, IUserConnected } from "../interfaces";
+import { IAssetFileItem, TGameAssets, TAssetsMapFile, IUserConnected, TAssetsNames } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 import { IServerEvents } from "../server";
 import configs from "../configs";
@@ -17,7 +17,7 @@ function getAssetBitMap(assetImage: HTMLImageElement, item: IAssetFileItem) {
 export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({ 
     children 
 }) => {
-    const [assetsData, setAssetsData] = useState<ICommomDataContext['assets']>();
+    const [assetsData, setAssetsData] = useState<ICommomDataContext['assets']>({});
 
     const authContext = useContext(AuthContext);
     const [usersConnected, setUsersConnected] = useState<ICommomDataContext['usersConnected']>([]);
@@ -88,26 +88,30 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
 
     useEffect(() => {
         fetch(`${configs.assetsUrl}/assets.map.json`)
-        .then(async r => JSON.parse(await r.text()) as IAssetsFile)
+        .then(async r => JSON.parse(await r.text()) as TAssetsMapFile)
         .then(map => {
             const assetsImage = new Image();
             assetsImage.onload = async () => {
                 const convertingAssetsImageToBitMap: Promise<ImageBitmap>[] = [];
-                const keysOfMap: Array<keyof IAssetsFile> = [];
-                for (const key in map) {
-                    const asset = map[key as keyof IAssetsFile];
-                    keysOfMap.push(key as keyof IAssetsFile);
-                    convertingAssetsImageToBitMap.push(getAssetBitMap(assetsImage, asset));
+                const keysOfMap: Array<TAssetsNames> = [];
+                for (let key in map) {
+                    if (key in map) {
+                        const assetName = key as TAssetsNames;
+                        const asset = map[assetName];
+                        keysOfMap.push(assetName);
+                        convertingAssetsImageToBitMap
+                            .push(getAssetBitMap(assetsImage, asset));
+                    }
                 }
                 const result = await Promise.all(convertingAssetsImageToBitMap);
-                const assetsWithImage = keysOfMap.reduce<Partial<IAssetsData>>(
+                const assetsWithImage = keysOfMap.reduce<Partial<TGameAssets>>(
                     (data, key, i) => {
-                        data[key] = { image: result[i], ...map[key] }
+                        data[key] = {image: result[i], ...map[key]}
                         return data;
                     }, 
                     {}
                 );
-                setAssetsData(assetsWithImage as IAssetsData);
+                setAssetsData(assetsWithImage);
             }
             assetsImage.src = `${configs.assetsUrl}/assets.png`;
         })

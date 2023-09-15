@@ -1,6 +1,6 @@
 import { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
 import { subCoordinates } from "../../../CoordinatesUtils";
-import { IAssetsData, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
+import { TGameAssets, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
 import { 
     BackgroundRender, 
     IPlayerRenderProps, 
@@ -21,7 +21,7 @@ const skillBarMarginTop = 10;
 function getSkillBar(
     canvas: ICanvasWrapper, 
     playerSkills: string[], 
-    assetsData: IAssetsData,
+    assetsData: TGameAssets,
     skillKeyBindings: { [skillName: string]: string }
 ): SkillBarController {
     const canvasSize = canvas.getSize();
@@ -53,7 +53,7 @@ export interface ICreateRenders {
 export interface IBattleRenderControllerProps {
     canvas: ICanvasWrapper;
     board: TBoard;
-    assetsData: IAssetsData;
+    assetsData: TGameAssets;
     player: IEntity;
     skillKeyBindings: { [skillName: string]: string };
     createRenders: ICreateRenders;
@@ -99,7 +99,7 @@ export default class BattleRenderController {
     private board: TBoard;
     private cellSize: TSize;
 
-    private assets: IAssetsData;
+    private assets: TGameAssets;
     private createRender: ICreateRenders;
 
     constructor({

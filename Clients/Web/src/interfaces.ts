@@ -101,39 +101,33 @@ export interface IAssetFileItem {
     size: TSize;
 }
 
-export type IAssetsFile = {
-    "board-background": IAssetFileItem;
-    "enemy": IAssetFileItem;
-    "player": IAssetFileItem;
-    "unknowed-skill": IAssetFileItem;
+export type TAssetsNames = 
+    "board-background" 
+    | "enemy" 
+    | "player" 
+    |"unknowed-skill"
+    | "barrier-equip-pattern"
+    | "base-damage-x-negative"
+    | "base-damage-x-positive"
+    | "life-sphere"
+    | "life-pointer"
+    | "base-damage-y-negative"
+    | "base-damage-y-positive"
+    | "mana-bar-border"
+    | "mana-bar-background"
+    | "mana-bar-fill";
 
-    "barrier-equip-pattern": IAssetFileItem;
-    "base-damage-x-negative": IAssetFileItem;
-    "base-damage-x-positive": IAssetFileItem;
-    "life-sphere": IAssetFileItem;
-    "life-pointer": IAssetFileItem;
-    "base-damage-y-negative": IAssetFileItem;
-    "base-damage-y-positive": IAssetFileItem
+export type TAssetsMapFile = {
+    [assetName in TAssetsNames] : IAssetFileItem;
 }
 
 export interface IAsset {
-    image?: ImageBitmap;
+    image: ImageBitmap;
     size: TSize;
     start: TCoordinates;
 }
 
-export interface IAssetsData {
-    "board-background": IAsset;
-    "enemy": IAsset;
-    "player": IAsset;
-    "unknowed-skill": IAsset;
-
-    "barrier-equip-pattern": IAsset;
-    "base-damage-x-negative": IAsset;
-    "base-damage-x-positive": IAsset;
-    "life-sphere": IAsset;
-    "life-pointer": IAsset;
-    "base-damage-y-negative": IAsset;
-    "base-damage-y-positive": IAsset
+export type TGameAssets = {
+    [assetName in TAssetsNames]?: IAsset;
 }
 

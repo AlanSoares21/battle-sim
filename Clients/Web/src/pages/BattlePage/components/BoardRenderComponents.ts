@@ -62,7 +62,7 @@ export interface IPlayerRenderProps {
     board: TBoard;
     name: string;
     current: TBoardCoordinates;
-    asset: IAsset;
+    asset?: IAsset;
 }
 
 export class PlayerRender implements IRender {
@@ -76,7 +76,7 @@ export class PlayerRender implements IRender {
     private circleCenter: TCanvasCoordinates;
     private assetPostion: TCanvasCoordinates;
     private textStart: TCanvasCoordinates;
-    private asset: IAsset;
+    private asset?: IAsset;
 
     constructor({
         asset, 
@@ -124,7 +124,7 @@ export class PlayerRender implements IRender {
     }
 
     private drawPlayerCircle() {
-        if (this.asset.image)
+        if (this.asset)
             this.canvas.drawAsset(this.asset, {
                 height: this.asset.size.height,
                 width: this.asset.size.width,
@@ -203,22 +203,20 @@ export class BackgroundRender implements IRender {
 
     private canvasSize: TCanvasSize;
 
-    private asset: IAsset;
     private backgroundPattern?: CanvasPattern;
     
     constructor (
         canvas: ICanvasWrapper,
         board: TBoard,
         cellSize: TSize,
-        asset: IAsset
+        asset?: IAsset
     ) {
-        this.asset = asset;
         this.canvas = canvas;
         this.board = board;
         this.cellSize = cellSize;
         this.canvasSize = canvas.getSize();
-        if (this.asset.image) {
-            const pattern = canvas.createPattern(this.asset.image);
+        if (asset) {
+            const pattern = canvas.createPattern(asset.image);
             if (pattern)
                 this.backgroundPattern = pattern;
         }

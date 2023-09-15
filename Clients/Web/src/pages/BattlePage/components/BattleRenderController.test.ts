@@ -1,6 +1,6 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
-import { IAsset, IAssetsData, IEntity, IEquip, TBoard, TBoardCoordinates, TCanvasSize, TSize } from "../../../interfaces";
-import { mockCanvas } from "../../../jest/helpers"
+import { IAsset, TGameAssets, IEntity, IEquip, TBoard, TBoardCoordinates, TCanvasSize, TSize } from "../../../interfaces";
+import { mockCanvas, stubAsset, stubIt } from "../../../jest/helpers"
 import BattleRenderController, { ICreateRenders } from "./BattleRenderController"
 import { IPlayerRenderProps, PlayerRender } from "./BoardRenderComponents";
 import { ILifeSphereRenderProps, IManaBarRenderProps, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
@@ -55,13 +55,13 @@ function mockEntity(id?: IEntity['id']) {
     return value as IEntity;
 }
 
-function getDefaultAssets() {
+function getDefaultAssets(): TGameAssets {
     return {
-        'player': {size: {height: 1, width: 2}, start: {x: 0, y: 0}},
-        'board-background': {},
-        'life-pointer': { size: {height: 1, width: 2}},
-        'life-sphere': { }
-    } as IAssetsData;
+        'player': stubAsset({size: {height: 1, width: 2}, start: {x: 0, y: 0}}),
+        'board-background': stubAsset(),
+        'life-pointer': stubAsset({size: {height: 1, width: 2}}),
+        'life-sphere': stubAsset()
+    };
 }
 
 function mockCreateRenders() {

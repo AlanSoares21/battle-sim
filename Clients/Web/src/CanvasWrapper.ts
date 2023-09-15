@@ -194,18 +194,17 @@ export default class CanvasWrapper implements ICanvasWrapper {
             width: number
         }
     ) {
-        if (image.image)
-            this.context.drawImage(
-                image.image,
-                0,
-                0,
-                image.size.width,
-                image.size.height,
-                destination.startAt.x,
-                destination.startAt.y,
-                destination.width,
-                destination.height
-            );
+        this.context.drawImage(
+            image.image,
+            0,
+            0,
+            image.size.width,
+            image.size.height,
+            destination.startAt.x,
+            destination.startAt.y,
+            destination.width,
+            destination.height
+        );
     }
 
     createPattern (image: ImageBitmap) {
