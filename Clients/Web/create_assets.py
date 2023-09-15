@@ -56,6 +56,14 @@ def create_assets_folder(folder_path):
         json.dump(asset_info, json_file, indent=4)
     print("assets files created")
 
-# Exemplo de uso
-folder_path = 'public/assets/'
+folder_path = ''
+
+try:
+    folder_path = os.environ['AssetsFolder']
+except:
+    print("Error when try get the AssetsFolder variable")
+    exit()
+
+if (len(folder_path) == 0):
+    print('you should provide the AssetsFolder variable')
 create_assets_folder(folder_path)

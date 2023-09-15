@@ -4,6 +4,7 @@ declare global {
             REACT_APP_ServerApiUrl?: string;
             REACT_APP_ServerWsUrl?: string;
             PUBLIC_URL: string;
+            REACT_APP_AssetsUrl: string;
         }
     }
 }

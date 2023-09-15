@@ -4,6 +4,7 @@ import { AuthContext } from "./AuthContext";
 import { IAssetFileItem, IAssetsData, IAssetsFile, IUserConnected } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 import { IServerEvents } from "../server";
+import configs from "../configs";
 
 function getAssetBitMap(assetImage: HTMLImageElement, item: IAssetFileItem) {
     return createImageBitmap(
@@ -86,7 +87,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
         }, []);
 
     useEffect(() => {
-        fetch(`${process.env.PUBLIC_URL}/assets/assets.map.json`)
+        fetch(`${configs.assetsUrl}/assets.map.json`)
         .then(async r => JSON.parse(await r.text()) as IAssetsFile)
         .then(map => {
             const assetsImage = new Image();
@@ -108,7 +109,7 @@ export const CommomDataContextProvider: React.FC<PropsWithChildren> = ({
                 );
                 setAssetsData(assetsWithImage as IAssetsData);
             }
-            assetsImage.src = `${process.env.PUBLIC_URL}/assets/assets.png`;
+            assetsImage.src = `${configs.assetsUrl}/assets.png`;
         })
         .catch(console.error);
     }, []);
