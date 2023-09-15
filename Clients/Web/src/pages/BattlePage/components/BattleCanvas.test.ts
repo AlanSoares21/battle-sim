@@ -799,8 +799,9 @@ it('add 5 units in the mana bar when a mana recover event happens', () => {
     }
     let mana = 0;
     const render = stubRender({
-        updateMana(value) {
+        updateMana(value, maxMana) {
             expect(value).toBe(mana + 5);
+            expect(maxMana).toBe(player.maxMana);
             mana = value;
         },
     });

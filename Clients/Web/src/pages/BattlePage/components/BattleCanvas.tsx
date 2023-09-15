@@ -175,7 +175,10 @@ export class CanvasController {
         if (this.state.currentPlayer.mana >= this.state.currentPlayer.maxMana && value > 0)
             return;
         this.state.currentPlayer.mana += value;
-        this.battleRender.updateMana(this.state.currentPlayer.mana);
+        this.battleRender.updateMana(
+            this.state.currentPlayer.mana, 
+            this.state.currentPlayer.maxMana
+        );
     }
 
     private setBattleInitialState() {

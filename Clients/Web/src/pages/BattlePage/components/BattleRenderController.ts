@@ -238,7 +238,10 @@ export default class BattleRenderController {
                         this.assets['barrier-equip-pattern']
                     )),
                     mana: this.createRender.manaBar({
-                        canvas: this.userManaBarCanvas
+                        canvas: this.userManaBarCanvas,
+                        background: this.assets['mana-bar-background'],
+                        border: this.assets['mana-bar-border'],
+                        fill: this.assets['mana-bar-fill']
                     })
                 };
             } else {
@@ -269,9 +272,9 @@ export default class BattleRenderController {
         }
     }
 
-    updateMana(value: number) {
+    updateMana(value: number, maxMana: number) {
         if (this.userRenders !== undefined)
-            this.userRenders.mana.updateCurrentValue(value);
+            this.userRenders.mana.updateCurrentValue(value, maxMana);
     }
 
     clickOnBoard(canvasClick: TCanvasCoordinates): TCoordinates | undefined {

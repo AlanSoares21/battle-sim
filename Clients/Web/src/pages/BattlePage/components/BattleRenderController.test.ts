@@ -182,8 +182,10 @@ it('should update mana bar current value', () => {
     const createRenders = mockCreateRenders();
 
     const newValue = 123;
-    const updateManaBarMock = mockManaBarUpdate(value => {
-        expect(value).toBe(newValue);
+    const newMax = 1234;
+    const updateManaBarMock = mockManaBarUpdate((currentMana, currentMaxMana) => {
+        expect(currentMana).toBe(newValue);
+        expect(currentMaxMana).toBe(newMax);
     });
 
     const manaBarMock = mockManaBarRender();
@@ -200,7 +202,7 @@ it('should update mana bar current value', () => {
         createRenders
     });
     controller.setPlayer(player, startPosition, true);
-    controller.updateMana(newValue);
+    controller.updateMana(newValue, newMax);
 
     expect(updateManaBarMock).toBeCalledTimes(1);
 });

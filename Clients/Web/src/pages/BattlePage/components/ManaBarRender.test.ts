@@ -1,5 +1,6 @@
+import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { TCanvasSize, TCoordinates } from "../../../interfaces";
-import { mockCanvas, mockCanvasDrawEmptyRect, mockCanvasDrawRect, mockCanvasWrite, stubIt } from "../../../jest/helpers";
+import { mockCanvas, mockCanvasDrawEmptyRect, mockCanvasDrawRect, mockCanvasWrite, stubAsset, stubIt } from "../../../jest/helpers";
 import { IManaBarRenderProps, ManaBarRender } from "./LifeSphereRenderComponents";
 
 const getProperties = stubIt<IManaBarRenderProps>;
@@ -80,22 +81,122 @@ it('When change the current value, change the text', () => {
     canvas['writeText'] = write;
     
     const manaBar = new ManaBarRender(getProperties({canvas}));
-    manaBar.updateCurrentValue(newValue);
+    manaBar.updateCurrentValue(newValue, 100);
 
     expect(write).toBeCalledTimes(1);
 });
 
 describe('rendering assets', () => {
+    let canvas: ICanvasWrapper;
+    let assets: {
+        background: IManaBarRenderProps['background'],
+        border: IManaBarRenderProps['border'],
+        fill: IManaBarRenderProps['fill']
+    };
+
+    beforeEach(() => {
+        assets = {
+            background: stubAsset(),
+            border: stubAsset(),
+            fill: stubAsset()
+        }
+        canvas = mockCanvas({height: 100, width: 100});
+    });
+
     it('should not draw rectangles when have assets', () => {
-        const canvas = mockCanvas({height: 100, width: 100});
         const spyDrawBackground = jest.spyOn(canvas, 'drawRect');
         const spyDrawBorder = jest.spyOn(canvas, 'drawEmptyRect');
         
-        new ManaBarRender(getProperties({canvas})).render();
+        new ManaBarRender(getProperties({
+            canvas,
+            ...assets
+        })).render();
 
         expect(spyDrawBackground).toBeCalledTimes(0);
         expect(spyDrawBorder).toBeCalledTimes(0);
     });
-    // it('should draw the assets in order');
-    // it('should draw the assets before write the text');
+    it('should draw the assets in order', () => {
+        let assetsChecked = 0;
+        canvas.drawAsset = (asset, _) => {
+            if (assetsChecked === 0)
+                expect(asset).toBe(assets.background);
+            else if (assetsChecked === 1)
+                expect(asset).toBe(assets.fill);
+            else if (assetsChecked === 3)
+                expect(asset).toBe(assets.border);
+            assetsChecked++;
+        };
+        const spyDrawAsset = jest.spyOn(canvas, 'drawAsset');
+        
+        new ManaBarRender(getProperties({
+            canvas,
+            ...assets
+        })).render();
+        expect(spyDrawAsset).toBeCalledTimes(3);
+    });
+    it('should draw background and border assets with the mana bar size', () => {
+        let assertNumber = 0;
+        const canvasSize = canvas.getSize();
+        canvas.drawAsset = (asset, destinaton) => {
+            if (assertNumber === 0) {
+                expect(asset).toBe(assets.background);
+                expect(destinaton.height).toBe(canvasSize.width / 4);
+                expect(destinaton.width)
+                    .toBe(canvasSize.width);
+            }
+            else if (assertNumber === 2) {
+                expect(asset).toBe(assets.border);
+                expect(destinaton.height).toBe(canvasSize.width / 4);
+                expect(destinaton.width)
+                    .toBe(canvasSize.width);
+            }
+            assertNumber++;
+        }
+        const spyDrawAsset = jest.spyOn(canvas, 'drawAsset');
+        new ManaBarRender(getProperties({
+            canvas,
+            ...assets
+        })).render();
+        expect(spyDrawAsset).toBeCalledTimes(3);
+    })
+    it('should draw the assets before write the text', () => {
+        const spyDrawAsset = jest.spyOn(canvas, 'drawAsset');
+        canvas.writeText = () => {
+            expect(spyDrawAsset).toBeCalledTimes(3);
+        };
+        const spyWriteText = jest.spyOn(canvas, 'writeText');
+        new ManaBarRender(getProperties({
+            canvas,
+            ...assets
+        })).render();
+        expect(spyWriteText).toBeCalledTimes(1);
+    });
+    it('should fill mana bar accordingly to the ammount of mana', () => {
+        const fillHappensInAssert = [1, 4, 7];
+        const fillProportion = [5/100, 50/100, 100/100];
+        const canvasSize = canvas.getSize();
+        let assertNumber = 0;
+        canvas.drawAsset = (asset, destinaton) => {
+            const proportionIndex = fillHappensInAssert.findIndex(a => a === assertNumber);
+            if (proportionIndex !== -1) {
+                expect(asset).toBe(assets.fill);
+                expect(destinaton.height).toBe(canvasSize.width / 4);
+                expect(destinaton.width)
+                    .toBe(canvasSize.width * fillProportion[proportionIndex]);
+            }
+            assertNumber++;
+        }
+        const spyDrawAsset = jest.spyOn(canvas, 'drawAsset');
+        const manaBar = new ManaBarRender(getProperties({
+            canvas,
+            ...assets
+        }));
+        const maxMana = 100;
+        manaBar.updateCurrentValue(5, maxMana);
+        expect(spyDrawAsset).toBeCalledTimes(3);
+        manaBar.updateCurrentValue(50, maxMana);
+        expect(spyDrawAsset).toBeCalledTimes(6);
+        manaBar.updateCurrentValue(100, maxMana);
+        expect(spyDrawAsset).toBeCalledTimes(9);
+    });
 });

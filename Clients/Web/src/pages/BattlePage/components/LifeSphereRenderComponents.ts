@@ -1,7 +1,6 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { sumCoordinate } from "../../../CoordinatesUtils";
-import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
-import { scaledSize } from "../../../utils";
+import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates } from "../../../interfaces";
 import { IRender } from "./Render";
 
 const colors = {
@@ -116,6 +115,7 @@ export class ManaBarRender implements IRender {
         border: IAsset;
         fill: IAsset;
     };
+    private fillWidth: number = 0;
 
     constructor({
         canvas,
@@ -137,22 +137,49 @@ export class ManaBarRender implements IRender {
         }
     }
 
-    updateCurrentValue(value: number) {
+    updateCurrentValue(value: number, max: number) {
         this.currentValue = value.toString();
+        if (max !== 0)
+            this.fillWidth = this.barSize.width * (value/max);
         this.render();
     }
 
     render() {
-        this.canvas.drawRect(
-            colors['mana-background'], 
-            {x: 0, y: 0}, 
-            this.barSize
-        );
-        this.canvas.drawEmptyRect(
-            colors['mana-border'], 
-            {x: 0, y: 0}, 
-            this.barSize
-        );
+        if (this.assets) {
+            this.canvas.drawAsset(
+                this.assets.background,
+                {
+                    startAt: {x: 0, y: 0},
+                    ...this.barSize
+                }
+            );
+            this.canvas.drawAsset(
+                this.assets.fill,
+                {
+                    startAt: {x: 0, y: 0},
+                    height: this.barSize.height,
+                    width: this.fillWidth
+                }
+            )
+            this.canvas.drawAsset(
+                this.assets.border,
+                {
+                    startAt: {x: 0, y: 0},
+                    ...this.barSize
+                }
+            )
+        } else {
+            this.canvas.drawRect(
+                colors['mana-background'], 
+                {x: 0, y: 0}, 
+                this.barSize
+            );
+            this.canvas.drawEmptyRect(
+                colors['mana-border'], 
+                {x: 0, y: 0}, 
+                this.barSize
+            );  
+        }
         this.canvas.writeText(
             this.wiriteAt,
             this.currentValue,
