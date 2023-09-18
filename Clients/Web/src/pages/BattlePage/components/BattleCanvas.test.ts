@@ -1,5 +1,5 @@
 import { DamageDirection, IBattleData, IBoardData, IEntity, IEntityPosition, TBoardCoordinates, TCoordinates } from "../../../interfaces";
-import { stubIt } from "../../../jest/helpers";
+import { stubEntity, stubIt } from "../../../jest/helpers";
 import { IServerEvents, ServerConnection } from "../../../server";
 import { IBattleContext } from "../BattleContext";
 import { CanvasController } from "./BattleCanvas"
@@ -93,14 +93,6 @@ function stubBattleContext(p?: Partial<IBattleContext>) {
         ...p
     }
     return context as IBattleContext;
-}
-
-function stubEntity(p?: Partial<IEntity>) {
-    const entity: Partial<IEntity> = {
-        skills: [],
-        ...p
-    };
-    return entity as IEntity;
 }
 
 function stubBoard(p?: Partial<IBoardData>) {

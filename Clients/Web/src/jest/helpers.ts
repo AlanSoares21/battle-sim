@@ -1,5 +1,5 @@
-import CanvasWrapper, { ICanvasWrapper } from "../CanvasWrapper";
-import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../interfaces";
+import CanvasWrapper, { ICanvasWrapper, TCanvasTransformations } from "../CanvasWrapper";
+import { IAsset, IEntity, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../interfaces";
 
 export function stubIt<T>(props?: Partial<T>) {
     const v: Partial<T> =  {...props};
@@ -117,7 +117,9 @@ export function mockCanvasDrawAsset(impl?: ICanvasWrapper['drawAsset']) {
             startAt: TCoordinates;
             height: number;
             width: number;
-        }
+        } |
+        TCanvasTransformations |
+        undefined
     >,
     CanvasWrapper>();
     if (impl)
@@ -128,8 +130,17 @@ export function mockCanvasDrawAsset(impl?: ICanvasWrapper['drawAsset']) {
                     startAt: TCoordinates;
                     height: number;
                     width: number;
-                }
+                },
+                args[2] as TCanvasTransformations | undefined
             );
         });
     return value;
+}
+
+export function stubEntity(p?: Partial<IEntity>) {
+    const entity: Partial<IEntity> = {
+        skills: [],
+        ...p
+    };
+    return entity as IEntity;
 }

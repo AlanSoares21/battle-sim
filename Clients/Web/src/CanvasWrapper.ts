@@ -1,6 +1,19 @@
 import { subCoordinates, sumCoordinates } from "./CoordinatesUtils";
 import { IAsset, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "./interfaces";
 
+type TCanvasTransformationsTypes = "Scale";
+
+interface ICanvasTransformation {
+    type: TCanvasTransformationsTypes;
+}
+export interface IScale extends ICanvasTransformation{
+    x: number;
+    y: number;
+    type: 'Scale'
+}
+
+export type TCanvasTransformations = Array<IScale>;
+
 export interface ICanvasWrapper {
     canvasWidth: () => number;
 
@@ -66,7 +79,8 @@ export interface ICanvasWrapper {
             startAt: TCoordinates,
             height: number,
             width: number
-        }
+        },
+        tranformations?: TCanvasTransformations
     ) => void;
 
     createPattern: (image: ImageBitmap) => CanvasPattern | null;
@@ -192,8 +206,17 @@ export default class CanvasWrapper implements ICanvasWrapper {
             startAt: TCoordinates,
             height: number,
             width: number
-        }
+        },
+        tranformations?: TCanvasTransformations
     ) {
+        this.context.beginPath();
+        if (tranformations) {
+            for (const tranformation of tranformations) {
+                if (tranformation.type === 'Scale') {
+                    this.context.scale(tranformation.x, tranformation.y);
+                }
+            }
+        }
         this.context.drawImage(
             image.image,
             0,
@@ -205,6 +228,7 @@ export default class CanvasWrapper implements ICanvasWrapper {
             destination.width,
             destination.height
         );
+        this.context.closePath();
     }
 
     createPattern (image: ImageBitmap) {
@@ -237,9 +261,10 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
 
     drawAsset(
         image: IAsset, 
-        destination: { startAt: TCoordinates; height: number; width: number; }
+        destination: { startAt: TCoordinates; height: number; width: number; },
+        tranformations?: TCanvasTransformations
     ) {
-        this.canvasWarapper.drawAsset(image, destination);
+        this.canvasWarapper.drawAsset(image, destination, tranformations);
     }
 
     createPattern(image: ImageBitmap) {
@@ -363,10 +388,11 @@ export class SubAreaOnCanvasDecorator extends CanvasWarapperDecorator {
 
     drawAsset(
         image: IAsset, 
-        destination: { startAt: TCoordinates; height: number; width: number; }
+        destination: { startAt: TCoordinates; height: number; width: number; },
+        tranformations?: TCanvasTransformations
     ): void {
         destination.startAt = sumCoordinates(destination.startAt, this.newOrigin);
-        super.drawAsset(image, destination);
+        super.drawAsset(image, destination, tranformations);
     }
 
     drawEmptyElipse(
