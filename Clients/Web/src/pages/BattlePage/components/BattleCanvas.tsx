@@ -5,7 +5,7 @@ import CanvasWrapper from "../../../CanvasWrapper";
 import BattleRenderController, { IBattleRenderControllerProps, ICreateRenders } from "./BattleRenderController";
 import { IServerEvents, ServerConnection } from "../../../server";
 import { LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
-import { PlayerRender } from "./BoardRenderComponents";
+import { createBoardController } from "./BoardController";
 
 
 const keysToMap = [ "q", "w", "e", "r", "a", "s", "d", "f" ];
@@ -61,7 +61,7 @@ function getCanvasOffset(canvasRef: HTMLCanvasElement): TCanvasOffset {
 const createRenders: ICreateRenders = {
     lifeSphere: p => new LifeSphereRender(p),
     manaBar: p => new ManaBarRender(p),
-    playerRender: p => new PlayerRender(p)
+    
 }
 
 interface IPlayerState extends IEntity {
@@ -117,7 +117,10 @@ export class CanvasController {
             canvas: new CanvasWrapper(canvasContext),
             createRenders,
             player: state.player,
-            skillKeyBindings: getSkillsBindingsToKeyboard(state.player.skills)
+            skillKeyBindings: getSkillsBindingsToKeyboard(state.player.skills),
+            createController: {
+                boardController: createBoardController
+            }
         })
         
         this.mappedKeyBoard = getKeybordBindingsToSkills(state.player.skills);
@@ -215,7 +218,6 @@ export class CanvasController {
     }
 
     private handleBoardClick(click: TBoardCoordinates) {
-        this.battleRender.pointer.setPosition(click);
         if (this.skillSelected !== undefined) {
             const index = this.state.positions
                 .findIndex(e => e.x === click.x && e.y === click.y)

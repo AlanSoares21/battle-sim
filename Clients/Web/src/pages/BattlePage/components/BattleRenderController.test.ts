@@ -1,21 +1,11 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { IAsset, TGameAssets, IEntity, IEquip, TBoard, TBoardCoordinates, TCanvasSize, TSize } from "../../../interfaces";
-import { mockCanvas, stubAsset, stubIt } from "../../../jest/helpers"
-import BattleRenderController, { ICreateRenders } from "./BattleRenderController"
-import { IPlayerRenderProps, PlayerRender } from "./BoardRenderComponents";
+import { mockCanvas, stubAsset, stubEntity, stubIt } from "../../../jest/helpers"
+import BattleRenderController, { IBattleRenderControllerProps, IControllerFactory, ICreateRenders } from "./BattleRenderController"
+import { BoardController } from "./BoardController";
+import { createEntityFactory } from "./EntityRenders";
 import { ILifeSphereRenderProps, IManaBarRenderProps, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
-
-function mockPlayerRender() {
-    const playerMock: Partial<PlayerRender> = {};
-    return playerMock as PlayerRender;
-}
-
-function spyCreatePlayerRender(impl?: ICreateRenders['playerRender']) {
-    const spy = jest.fn<PlayerRender, Array<IPlayerRenderProps>>();
-    if (impl)
-        spy.mockImplementation((...args) => impl(args[0]));
-    return spy;
-}
+import { createPointerRender } from "./PointerRender";
 
 function mockLifeSphereRender() {
     const mock: Partial<LifeSphereRender> = {};
@@ -66,50 +56,109 @@ function getDefaultAssets(): TGameAssets {
 
 function mockCreateRenders() {
     const value: ICreateRenders = {
-        playerRender: mockPlayerRender,
         lifeSphere: mockLifeSphereRender,
         manaBar: mockManaBarRender
     }
     return value;
 }
 
-it('should create player render with correct properties', () => {
+function stubBoardController(p?: Partial<BoardController>) {
+    const controller = stubIt<BoardController>({
+        addEntity: () => {},
+        render: () => {},
+        ...p
+    });
+    return controller;
+}
+
+function stubControllersFactory(p?: Partial<IControllerFactory>) {
+    const factory = stubIt<IControllerFactory>({
+        boardController: () => stubBoardController(),
+        ...p
+    });
+    return factory;
+}
+
+function getProperties(p?: Partial<IBattleRenderControllerProps>) {
+    const props = stubIt<IBattleRenderControllerProps>({
+        canvas: mockCanvas({height: 10, width: 10}),
+        player: mockEntity(),
+        assetsData: getDefaultAssets(),
+        createRenders: mockCreateRenders(),
+        createController: stubControllersFactory(),
+        ...p
+    });
+    return props;
+}
+
+it('should create board controller with correct properties', () => {
     
     const assets = getDefaultAssets();
-    const canvasSize: TCanvasSize = {width: 100, height: 100};
+    const canvasSize: TCanvasSize = {width: 1000, height: 500};
     const canvas = mockCanvas(canvasSize);
     const boardSize: TBoard = {height: 4, width: 4}
     const player = mockEntity('myPlayerId');
-    const skillKeysBindings = {};
-    const createRenders = mockCreateRenders();
 
-    const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    const playerRenderSpy = spyCreatePlayerRender(props => {
-        expect(props.name).toBe(player.id)
-        expect(props.current).toEqual(startPosition);
-        expect(props.asset).toEqual(assets['player']);
-        expect(props.board).toEqual(boardSize)
-        const boardCanvasSize: TCanvasSize = {
-            width: canvasSize.width / 2,
-            height: canvasSize.height / 2
-        }
-        expect(props.cellSize).toEqual({
-            width: boardCanvasSize.width / boardSize.width,
-            height: boardCanvasSize.height / boardSize.height
-        } as TSize);
-        return mockPlayerRender();
-    });
-    createRenders['playerRender'] = playerRenderSpy;
+    const createController = stubIt<IControllerFactory>();
+    createController.boardController = props => {
+        expect(props.assets).toBe(assets);
+        expect(props.canvas.wrapper).toBe(canvas);
+        expect(props.canvas.startAt).toEqual({x: 200, y: 50});
+        expect(props.canvas.boarCanvasSize)
+            .toEqual({width: 500, height: 250});
+        expect(props.board).toEqual(boardSize);
+        expect(props.playerId).toBe(player.id);
+        expect(props.renderFactory.entity).toBe(createEntityFactory);
+        expect(props.renderFactory.pointer).toBe(createPointerRender);
+        return stubIt<BoardController>();
+    }
+
+    const spyCreateBoardController = jest.spyOn(createController, 'boardController');
     
-    new BattleRenderController({
+    new BattleRenderController(getProperties({
         canvas, 
         board: boardSize, 
         assetsData: assets, 
-        player, 
-        skillKeyBindings: skillKeysBindings, 
-        createRenders
-    }).setPlayer(player, startPosition, true);
-    expect(playerRenderSpy).toBeCalledTimes(1);
+        player,
+        createController
+    }));
+
+    expect(spyCreateBoardController).toBeCalledTimes(1);
+});
+
+it('when render, should call board controller render method', () => {
+    const controller = stubBoardController();
+
+    const spyRender = jest.spyOn(controller, 'render');
+    
+    new BattleRenderController(getProperties({
+        createController: stubControllersFactory({
+            boardController: () => controller
+        })
+    })).render();
+
+    expect(spyRender).toBeCalledTimes(1);
+});
+
+it('should call board controller addEntity when add a new player', () => {
+    const player = mockEntity('myPlayerId');
+    const playerPostition: TBoardCoordinates = {x: 1, y: 2};
+
+    const boardController = stubBoardController({
+        addEntity(entity, position) {
+            expect(entity).toEqual(player);
+            expect(position).toEqual(playerPostition);
+        }
+    });
+    const spyAddEntity = jest.spyOn(boardController, 'addEntity');
+    
+    new BattleRenderController(getProperties({
+        createController: stubControllersFactory({
+            boardController: () => boardController
+        })
+    })).setPlayer(player, playerPostition, false);
+
+    expect(spyAddEntity).toBeCalledTimes(1);
 });
 
 it('should create player life sphere', () => {
@@ -133,14 +182,14 @@ it('should create player life sphere', () => {
     createRenders['lifeSphere'] = createLifeSphereSpy;
     
     const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    new BattleRenderController({
+    new BattleRenderController(getProperties({
         canvas, 
         board: boardSize, 
         assetsData: assets, 
         player, 
         skillKeyBindings: skillKeysBindings, 
         createRenders
-    }).setPlayer(player, startPosition, true);
+    })).setPlayer(player, startPosition, true);
     expect(createLifeSphereSpy).toBeCalledTimes(1);
 });
 
@@ -161,14 +210,14 @@ it('should create mana bar', () => {
     createRenders['manaBar'] = createManaBarSpy;
 
     const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    new BattleRenderController({
+    new BattleRenderController(getProperties({
         canvas, 
         board: boardSize, 
         assetsData: assets, 
         player, 
         skillKeyBindings: skillKeysBindings, 
         createRenders
-    }).setPlayer(player, startPosition, true);
+    })).setPlayer(player, startPosition, true);
     expect(createManaBarSpy).toBeCalledTimes(1);
 });
 
@@ -193,14 +242,14 @@ it('should update mana bar current value', () => {
     createRenders['manaBar'] = () => manaBarMock;
 
     const startPosition: TBoardCoordinates = {x: 0, y: 0};
-    const controller = new BattleRenderController({
+    const controller = new BattleRenderController(getProperties({
         canvas, 
         board: boardSize, 
         assetsData: assets, 
         player, 
         skillKeyBindings: skillKeysBindings, 
         createRenders
-    });
+    }));
     controller.setPlayer(player, startPosition, true);
     controller.updateMana(newValue, newMax);
 

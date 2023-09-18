@@ -1,14 +1,10 @@
 import { ICanvasWrapper, SubAreaOnCanvasDecorator } from "../../../CanvasWrapper";
 import { subCoordinates } from "../../../CoordinatesUtils";
 import { TGameAssets, IEntity, IPlayerRenderData, TBoard, TBoardCoordinates, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../../../interfaces";
-import { 
-    BackgroundRender, 
-    IPlayerRenderProps, 
-    PlayerRender, 
-    PointerRender, 
-    canvasToBoardCoordinates 
-} from "./BoardRenderComponents";
+import { BoardController, IBoardControllerProps, IBoardItemRender } from "./BoardController";
+import { IEntityFactoryProps, createEntityFactory } from "./EntityRenders";
 import { EquipRender, ILifeSphereRenderProps, IManaBarRenderProps, LifeCoordRender, LifeSphereRender, ManaBarRender } from "./LifeSphereRenderComponents";
+import { IPointerRenderFactoryProps, PointerRender, createPointerRender } from "./PointerRender";
 import { SkillBarController } from "./SkillBarRenderComponents";
 
 const boardMarginLeft = 0.2;
@@ -45,9 +41,12 @@ function getSkillBar(
 }
 
 export interface ICreateRenders {
-    playerRender: (props: IPlayerRenderProps) => PlayerRender;
     lifeSphere(props: ILifeSphereRenderProps): LifeSphereRender;
     manaBar(props: IManaBarRenderProps): ManaBarRender;
+}
+
+export interface IControllerFactory {
+    boardController(props: IBoardControllerProps): BoardController;
 }
 
 export interface IBattleRenderControllerProps {
@@ -57,25 +56,14 @@ export interface IBattleRenderControllerProps {
     player: IEntity;
     skillKeyBindings: { [skillName: string]: string };
     createRenders: ICreateRenders;
+    createController: IControllerFactory;
 }
 
 export default class BattleRenderController {
-    
-    /**
-     * Board components
-     */
-    private boardCanvas: ICanvasWrapper;
-    private boardStartAt: TCanvasCoordinates;
-    
-    pointer: PointerRender;
-    private background: BackgroundRender;
     private playersData: IPlayerRenderData[] = [];
-    private playersRenders: PlayerRender[] = [];
 
-    /**
-     * Skill Bar components
-     */
     skillBarController: SkillBarController;
+    boardController: BoardController;
 
     /**
      * Life
@@ -96,9 +84,6 @@ export default class BattleRenderController {
         equips: EquipRender[]
     };
 
-    private board: TBoard;
-    private cellSize: TSize;
-
     private assets: TGameAssets;
     private createRender: ICreateRenders;
 
@@ -108,11 +93,11 @@ export default class BattleRenderController {
         assetsData,
         player,
         skillKeyBindings,
-        createRenders
+        createRenders,
+        createController
     }: IBattleRenderControllerProps) {
         this.createRender = createRenders;
         this.assets = assetsData;
-        this.board = board;
         
         const canvasSize = canvas.getSize();
 
@@ -124,25 +109,6 @@ export default class BattleRenderController {
             x: canvasSize.width * boardMarginLeft, 
             y: canvasSize.height * boardMarginTop 
         };
-        this.cellSize = {
-            width: boardAreaToDraw.width / board.width,
-            height:boardAreaToDraw.height / board.height
-        };
-        
-        this.boardStartAt = boardStartDrawAt;
-        this.boardCanvas = new SubAreaOnCanvasDecorator(
-            canvas, 
-            boardStartDrawAt, 
-            boardAreaToDraw
-        );
-        
-        this.pointer = new PointerRender(this.boardCanvas, board, this.cellSize);
-        this.background = new BackgroundRender(
-            this.boardCanvas, 
-            board, 
-            this.cellSize,
-            assetsData['board-background']
-        );
         
         const enemyLifeSphereStartAt: TCanvasCoordinates = {
             x: 0,
@@ -198,20 +164,28 @@ export default class BattleRenderController {
             skillKeyBindings
         );
         this.skillBarController.render();
+
+        this.boardController = createController.boardController({
+            assets: assetsData,
+            board,
+            canvas: {
+                wrapper: canvas,
+                boarCanvasSize: boardAreaToDraw,
+                startAt: boardStartDrawAt
+            },
+            playerId: player.id,
+            renderFactory: {
+                entity: createEntityFactory,
+                pointer: createPointerRender
+            },
+        })
     }
 
     setPlayer(data: IEntity, position: TBoardCoordinates, isTheUser: boolean) {
         const index = this.playersData.findIndex(p => p.name === data.id);
         if (index === -1) {
             this.playersData.push({ name: data.id });
-            this.playersRenders.push(this.createRender.playerRender({
-                canvas: this.boardCanvas,
-                cellSize: this.cellSize,
-                board: this.board,
-                name: data.id,
-                current: position,
-                asset: isTheUser ? this.assets['player'] : this.assets['enemy']
-            }));
+            this.boardController.addEntity(data, position);
             
             const maxSphereSize = this.enemyLifeSphereCanvas.getSize().width;
             const lifeSphereScale = Math.abs(maxSphereSize / (data.healthRadius * 2));
@@ -268,7 +242,7 @@ export default class BattleRenderController {
             }
         }
         else {
-            this.playersRenders[index].updatePosition(position);
+            // this.playersRenders[index].updatePosition(position);
         }
     }
 
@@ -278,6 +252,7 @@ export default class BattleRenderController {
     }
 
     clickOnBoard(canvasClick: TCanvasCoordinates): TCoordinates | undefined {
+        /*
         if (this.background.canvas.isOnCanvas(canvasClick)) {
             const b = canvasToBoardCoordinates(
                 subCoordinates(canvasClick, this.boardStartAt), 
@@ -285,6 +260,8 @@ export default class BattleRenderController {
             );
             return b;
         }
+        */
+       return undefined;
     }
 
     clickOnSkill(canvasClick: TCanvasCoordinates): string | undefined {
@@ -313,11 +290,6 @@ export default class BattleRenderController {
             this.userRenders.lifePointer.render();
             this.userRenders.mana.render();
         }
-        // Board
-        this.background.render();
-        for (let index = 0; index < this.playersRenders.length; index++) {
-            this.playersRenders[index].render();
-        }
-        this.pointer.render();
+        this.boardController.render();
     }
 }

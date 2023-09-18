@@ -146,3 +146,7 @@ export class BoardController {
         this.canvas.drawRect(this.backgroundFill, this.startAt, this.canvasSize);
     }
 }
+
+export function createBoardController(props: IBoardControllerProps): BoardController {
+    return new BoardController(props);
+}
