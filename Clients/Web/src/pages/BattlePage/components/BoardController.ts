@@ -76,6 +76,7 @@ export class BoardController {
             width: this.canvasSize.width / this.board.width,
             height: this.canvasSize.height / this.board.height
         }
+        console.log({cellSize: this.cellSize, startAt: this.startAt, area: this.canvasSize})
         this.pointer = this.renderFactory
             .pointer({canvas: this.canvas, cellSize: this.cellSize});
         this.setPointer({
@@ -106,13 +107,14 @@ export class BoardController {
     }
 
     addEntity(entity: IEntity, position: TBoardCoordinates) {
-
+        const cord = this.boardToCanvasCoordinate(position);
+        console.log(`add entity ${entity.id} in board`, {position, cord});
         this.entityRenders[entity.id] = this.renderFactory.entity({
             isThePlayer: this.playerId === entity.id,
             cellSize: this.cellSize,
             assets: this.assets,
             canvas: this.canvas,
-            start: this.boardToCanvasCoordinate(position)
+            start: cord
         });
     }
 
@@ -130,7 +132,7 @@ export class BoardController {
     private boardToCanvasCoordinate(coord: TBoardCoordinates): TCanvasCoordinates {
         return {
             x: (coord.x * this.cellSize.width) + this.startAt.x,
-            y: (coord.y * this.cellSize.height) + this.startAt.x
+            y: (coord.y * this.cellSize.height) + this.startAt.y
         }
     }
 

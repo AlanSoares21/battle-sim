@@ -347,14 +347,14 @@ describe('drawning entities', () => {
     });
     it('update entity position', () => {
         const canvas = mockCanvas({height: 1000, width: 1000});
-        const startAt: TCanvasCoordinates =  {x: 500, y: 500};
+        const startAt: TCanvasCoordinates =  {x: 500, y: 600};
         const board: TBoard = {width: 10, height: 10};
         const boardSize: TCanvasSize =  {height: 200, width: 200};
         
         const entity = stubEntity({id: 'entityId'});
         const entityInitialPosition: TBoardCoordinates = {x:0, y:0};
-        const entityIFinalPosition: TBoardCoordinates = {x:1, y:1};
-        const finalPositionInCanvas: TCanvasCoordinates = {x: 520, y: 520};
+        const entityIFinalPosition: TBoardCoordinates = {x:1, y:2};
+        const finalPositionInCanvas: TCanvasCoordinates = {x: 520, y: 640};
 
         const entityRender = stubEntityRender();
         entityRender.turnTo = coord => {
