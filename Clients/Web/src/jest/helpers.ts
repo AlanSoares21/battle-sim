@@ -1,5 +1,6 @@
 import CanvasWrapper, { ICanvasWrapper, TCanvasTransformations } from "../CanvasWrapper";
 import { IAsset, IEntity, TCanvasCoordinates, TCanvasSize, TCoordinates, TSize } from "../interfaces";
+import { BoardController } from "../pages/BattlePage/components/BoardController";
 
 export function stubIt<T>(props?: Partial<T>) {
     const v: Partial<T> =  {...props};
@@ -143,4 +144,14 @@ export function stubEntity(p?: Partial<IEntity>) {
         ...p
     };
     return entity as IEntity;
+}
+
+export function stubBoardController(p?: Partial<BoardController>) {
+    const controller = stubIt<BoardController>({
+        addEntity: () => {},
+        render: () => {},
+        clickOnBoard: () => undefined,
+        ...p
+    });
+    return controller;
 }

@@ -1,5 +1,5 @@
 import { DamageDirection, IBattleData, IBoardData, IEntity, IEntityPosition, TBoardCoordinates, TCoordinates } from "../../../interfaces";
-import { stubEntity, stubIt } from "../../../jest/helpers";
+import { stubBoardController, stubEntity, stubIt } from "../../../jest/helpers";
 import { IServerEvents, ServerConnection } from "../../../server";
 import { IBattleContext } from "../BattleContext";
 import { CanvasController } from "./BattleCanvas"
@@ -41,8 +41,8 @@ function stubSkillBarController() {
 function stubRender(p?: Partial<BattleRenderController>) {
     const render : Partial<BattleRenderController> = {
         skillBarController: stubSkillBarController(),
+        boardController: stubBoardController(),
         setPlayer: () => {},
-        clickOnBoard: () => undefined,
         clickOnSkill: () => undefined,
         updateMana: () => {},
         updateEntityCurrentHealth: () => {},
@@ -158,12 +158,12 @@ it('send click to the board', () => {
     const canvasRef = stubCanvasRef();
     const render = stubRender();
     const ev = clickOn({clientX: 987, clientY: 781});
-    render.clickOnBoard = (click) => {
+    render.boardController.clickOnBoard = (click) => {
         expect(click.x).toBe(ev.clientX);
         expect(click.y).toBe(ev.clientY);
         return undefined;
     };
-    const spyClickOnBoard = jest.spyOn(render, 'clickOnBoard');
+    const spyClickOnBoard = jest.spyOn(render.boardController, 'clickOnBoard');
     new CanvasController(canvasRef, stubBattleContext(), () => render);
     if (canvasRef.onclick === null) {
         fail('the canvas reference dont have the onclick function seted');
@@ -258,12 +258,12 @@ it('the click should use canvas offset to adjust', () => {
     });
     const render = stubRender();
     const ev = clickOn({clientX: 1000, clientY: 500});
-    render.clickOnBoard = (click) => {
+    render.boardController.clickOnBoard = (click) => {
         expect(click.x).toBe(ev.clientX - (canvasRef.offsetLeft + canvasRef.clientLeft));
         expect(click.y).toBe(ev.clientY - (canvasRef.offsetTop + canvasRef.clientTop));
         return undefined;
     };
-    const spyClickOnBoard = jest.spyOn(render, 'clickOnBoard');
+    const spyClickOnBoard = jest.spyOn(render.boardController, 'clickOnBoard');
     new CanvasController(canvasRef, stubBattleContext(), () => render);
     if (canvasRef.onclick === null) {
         fail('the canvas reference dont have the onclick function seted');
@@ -278,7 +278,7 @@ it('when click on board, should send movement call to server', () => {
     const render = stubRender();
     const ev = clickOn({});
     const moveTo: TCoordinates = {x: 0, y: 0};
-    render.clickOnBoard = () => moveTo;
+    render.boardController.clickOnBoard = () => moveTo;
     const server = stubServer();
     server.Move = (x, y) => {
         expect(x).toBe(moveTo.x);
@@ -366,7 +366,8 @@ it('when click in a player and have a skill selected, should send a skill call t
         entityIdentifier: player.id, 
         x: 0, y: 1
     }
-    const render = stubRender({clickOnBoard: () => boardClick});
+    const render = stubRender();
+    render.boardController.clickOnBoard = () => boardClick;
     
     const server = stubServer();
     server.Skill = (skill, targetId) => {
@@ -423,7 +424,7 @@ it('after use a skill, unselect the skill', () => {
         canvasRef, 
         stubBattleContext({player, server}), 
         () => stubRender({
-            clickOnBoard: () => boardClick,
+            boardController: stubBoardController({clickOnBoard: () => boardClick}),
             skillBarController
         })
     );
@@ -467,7 +468,7 @@ it('dont use skill when dont have mana enough', () => {
         canvasRef, 
         stubBattleContext({server, player, battle: stubBattleData({board})}), 
         () => stubRender({
-            clickOnBoard: () => playerPosition,
+            boardController: stubBoardController({clickOnBoard: () => playerPosition}),
             skillBarController
         })
     );
@@ -518,7 +519,7 @@ it('dont use skill when the target is out of the range', () => {
         canvasRef, 
         stubBattleContext({server, player, battle: stubBattleData({board})}), 
         () => stubRender({
-            clickOnBoard: () => targetCell,
+            boardController: stubBoardController({clickOnBoard: () => targetCell}),
             skillBarController
         })
     );

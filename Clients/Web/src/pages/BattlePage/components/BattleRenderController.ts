@@ -251,19 +251,6 @@ export default class BattleRenderController {
             this.userRenders.mana.updateCurrentValue(value, maxMana);
     }
 
-    clickOnBoard(canvasClick: TCanvasCoordinates): TCoordinates | undefined {
-        /*
-        if (this.background.canvas.isOnCanvas(canvasClick)) {
-            const b = canvasToBoardCoordinates(
-                subCoordinates(canvasClick, this.boardStartAt), 
-                this.cellSize
-            );
-            return b;
-        }
-        */
-       return undefined;
-    }
-
     clickOnSkill(canvasClick: TCanvasCoordinates): string | undefined {
         if (this.skillBarController.canvas.isOnCanvas(canvasClick)) 
             return this.skillBarController.clickOnSkill(canvasClick);

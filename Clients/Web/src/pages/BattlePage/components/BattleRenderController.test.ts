@@ -1,6 +1,6 @@
 import { ICanvasWrapper } from "../../../CanvasWrapper";
 import { IAsset, TGameAssets, IEntity, IEquip, TBoard, TBoardCoordinates, TCanvasSize, TSize } from "../../../interfaces";
-import { mockCanvas, stubAsset, stubEntity, stubIt } from "../../../jest/helpers"
+import { mockCanvas, stubAsset, stubBoardController, stubEntity, stubIt } from "../../../jest/helpers"
 import BattleRenderController, { IBattleRenderControllerProps, IControllerFactory, ICreateRenders } from "./BattleRenderController"
 import { BoardController } from "./BoardController";
 import { createEntityFactory } from "./EntityRenders";
@@ -60,15 +60,6 @@ function mockCreateRenders() {
         manaBar: mockManaBarRender
     }
     return value;
-}
-
-function stubBoardController(p?: Partial<BoardController>) {
-    const controller = stubIt<BoardController>({
-        addEntity: () => {},
-        render: () => {},
-        ...p
-    });
-    return controller;
 }
 
 function stubControllersFactory(p?: Partial<IControllerFactory>) {

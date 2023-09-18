@@ -202,7 +202,8 @@ export class CanvasController {
                 x: ev.clientX - this.canvasOffset.left,
                 y: ev.clientY - this.canvasOffset.top
             };
-            const boardClick = this.battleRender.clickOnBoard(canvasClick);
+            const boardClick = this.battleRender.boardController
+                .clickOnBoard(canvasClick);
             if (boardClick)
                 this.handleBoardClick(boardClick)
             else {
