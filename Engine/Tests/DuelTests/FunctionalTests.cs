@@ -97,7 +97,7 @@ public class FunctionalTests
     }
 
     [TestMethod]
-    public async Task When_Entity_Is_Moving_Update_Entity_Move(
+    public async Task When_Entity_Is_Moving_Update_Entity_Position(
     ) {
         Coordinate firstMove = new(0, 0);
         Coordinate secondMove = new(7, 0);
@@ -120,7 +120,28 @@ public class FunctionalTests
     }
 
     [TestMethod]
-    public async Task Update_Entities_Moved_At_Propertie_When_Call_Move_Method()
+    public async Task When_Entity_Is_In_The_Target_Cell_Dont_Notify_The_Move() 
+    {
+        Coordinate entityStartAt = new(0, 0);
+        Coordinate targetCell = new(0, 1);
+        Coordinate expected = new(0, 1);
+        var observer = A.Fake<IEventsObserver>();
+        IEntity entity = Utils.FakeEntity("entityOne");
+        IBattle battle = new DuelBuilder()
+            .WithBoard(GameBoard.WithDefaultSize())
+            .WithEventObserver(observer)
+            .Build();
+        battle.AddEntity(entity, entityStartAt);
+        battle.RegisterMove(entity.Id, targetCell);
+        await battle.MoveEntities();
+        await battle.MoveEntities();
+        
+        A.CallTo(() => observer.Moved(An<Dictionary<string, Coordinate>>.Ignored))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [TestMethod]
+    public async Task Update_Entities_Moved_At_Property_When_Call_Move_Method()
     {
         var notifier = A.Fake<IEventsObserver>();
         IBattle battle = new DuelBuilder()
@@ -265,7 +286,7 @@ public class FunctionalTests
     }
 
     [TestMethod]
-    public async Task After_Recover_Entities_Mana_Fill_Field_Mana_Recovered_At() 
+    public async Task After_Recover_Entities_Mana_Fill_Mana_Recovered_At_Property() 
     {
         IBattle battle = new DuelBuilder()
             .Build();

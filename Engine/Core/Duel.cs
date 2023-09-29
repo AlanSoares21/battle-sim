@@ -173,7 +173,7 @@ public class Duel : IBattle
         Coordinate targetCell = _GetTargetCellToMove(curentCell, moveTo);
         Board.Move(id, targetCell);
         moved.Add(id, targetCell);
-        if (targetCell.Equals(curentCell))
+        if (targetCell.Equals(moveTo))
             _moveIntentions.Remove(id);
     }
 
