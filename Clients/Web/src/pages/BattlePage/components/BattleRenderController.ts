@@ -60,6 +60,8 @@ export interface IBattleRenderControllerProps {
 }
 
 export default class BattleRenderController {
+    private canvas: ICanvasWrapper;
+
     private playersData: IPlayerRenderData[] = [];
 
     skillBarController: SkillBarController;
@@ -96,6 +98,7 @@ export default class BattleRenderController {
         createRenders,
         createController
     }: IBattleRenderControllerProps) {
+        this.canvas = canvas;
         this.createRender = createRenders;
         this.assets = assetsData;
         
@@ -242,7 +245,7 @@ export default class BattleRenderController {
             }
         }
         else {
-            // this.playersRenders[index].updatePosition(position);
+            this.boardController.updateEntityPosition(data.id, position);
         }
     }
 
@@ -264,6 +267,7 @@ export default class BattleRenderController {
     }
 
     render() {
+        this.canvas.clear();
         // Enemy life sphere
         if (this.enemyRenders !== undefined) {
             this.enemyRenders.lifeSphere.render();

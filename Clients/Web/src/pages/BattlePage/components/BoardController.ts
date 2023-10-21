@@ -76,7 +76,6 @@ export class BoardController {
             width: this.canvasSize.width / this.board.width,
             height: this.canvasSize.height / this.board.height
         }
-        console.log({cellSize: this.cellSize, startAt: this.startAt, area: this.canvasSize})
         this.pointer = this.renderFactory
             .pointer({canvas: this.canvas, cellSize: this.cellSize});
         this.setPointer({
@@ -102,13 +101,14 @@ export class BoardController {
         };
         this.setPointer(boardClick);
         if (this.entityRenders[this.playerId] !== undefined)
-            this.entityRenders[this.playerId].turnTo(canvasClick);
+            this.entityRenders[this.playerId].turnTo(
+                this.boardToCanvasCoordinate(boardClick)
+            );
         return boardClick;
     }
 
     addEntity(entity: IEntity, position: TBoardCoordinates) {
         const cord = this.boardToCanvasCoordinate(position);
-        console.log(`add entity ${entity.id} in board`, {position, cord});
         this.entityRenders[entity.id] = this.renderFactory.entity({
             isThePlayer: this.playerId === entity.id,
             cellSize: this.cellSize,
@@ -140,6 +140,7 @@ export class BoardController {
         this.fillBackground();
         for (const id in this.entityRenders) {
             this.entityRenders[id].render();
+            this.entityRenders[id].turnTo({x: 0, y: 0});
         }
         this.pointer.render();
     }

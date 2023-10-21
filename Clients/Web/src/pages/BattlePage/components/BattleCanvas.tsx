@@ -286,8 +286,10 @@ export class CanvasController {
         }
     }
 
-    startRenderLoop() {
-        return setInterval(() => {this.battleRender.render()}, 500);
+    render() {
+        this.battleRender.render()
+        // setTimeout(() => {}, timeout)
+        // requestAnimationFrame(this.render);
     }
 }
 
@@ -317,11 +319,11 @@ export const BattleCanvas: React.FC = () => {
         if (canvasController) {
             document.onkeydown = ev => canvasController.handleKey(ev.key);
             console.log("render loop start");
-            const renderLoopInterval = canvasController.startRenderLoop();
-            return () => {
-                clearInterval(renderLoopInterval);
-                console.log("render loop finished");
+            let renderFrame = function() {
+                canvasController.render();
+                requestAnimationFrame(renderFrame);
             };
+            requestAnimationFrame(renderFrame);
         }
     }, [canvasController]);
     

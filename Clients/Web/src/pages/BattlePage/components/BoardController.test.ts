@@ -270,11 +270,12 @@ describe('handling board click', () => {
         const startAt: TCanvasCoordinates =  {x: 500, y: 500};
         const board: TBoard = {width: 10, height: 10};
         const canvasClick = {x: 599, y: 599};
+        const canvasClickAfterBeConverted = {x: 590, y: 590};
 
         const player = stubEntity({id: 'playerId'});
         const playerRender = stubEntityRender({
             turnTo(point) {
-                expect(point).toEqual(canvasClick);
+                expect(point).toEqual(canvasClickAfterBeConverted);
             },
         });
         const spyTurnTo = jest.spyOn(playerRender, 'turnTo');

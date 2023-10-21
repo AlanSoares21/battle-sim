@@ -16,14 +16,15 @@ export type TCanvasTransformations = Array<IScale>;
 
 export interface ICanvasWrapper {
     canvasWidth: () => number;
-
+    
     canvasHeight: () => number;
-
+    
     isOnCanvas: (coordinate: TCanvasCoordinates) => boolean;
     distanceFromOrigin: (coordinate: TCanvasCoordinates) => TCanvasCoordinates;
-
+    
     getSize: () => TCanvasSize;
-
+    
+    clear: () => void;
     drawRect: (
         color: CanvasFillStrokeStyles['fillStyle'], 
         start: TCanvasCoordinates, 
@@ -88,10 +89,18 @@ export interface ICanvasWrapper {
 
 export default class CanvasWrapper implements ICanvasWrapper {
     private context: CanvasRenderingContext2D;
+    private size: TCanvasSize;
     
     constructor(context: CanvasRenderingContext2D) {
         this.context = context;
+        this.size = {
+            height: context.canvas.height,
+            width: context.canvas.width
+        }
     }
+    clear() {
+        this.context.clearRect(0, 0, this.size.width, this.size.height);
+    };
 
     isOnCanvas(coordinate: TCanvasCoordinates): boolean {
         return coordinate.x >= 0 && coordinate.y >= 0
@@ -209,7 +218,6 @@ export default class CanvasWrapper implements ICanvasWrapper {
         },
         tranformations?: TCanvasTransformations
     ) {
-        this.context.beginPath();
         if (tranformations) {
             for (const tranformation of tranformations) {
                 if (tranformation.type === 'Scale') {
@@ -228,7 +236,6 @@ export default class CanvasWrapper implements ICanvasWrapper {
             destination.width,
             destination.height
         );
-        this.context.closePath();
     }
 
     createPattern (image: ImageBitmap) {
@@ -249,6 +256,9 @@ class CanvasWarapperDecorator implements ICanvasWrapper {
 
     constructor(canvasWarapper: ICanvasWrapper) {
         this.canvasWarapper = canvasWarapper;
+    }
+    clear() {
+        this.canvasWarapper.clear();
     }
     
     isOnCanvas(coordinate: TCanvasCoordinates): boolean {

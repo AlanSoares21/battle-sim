@@ -80,8 +80,8 @@ export class EntityRender implements IEntityRender {
 
     turnTo(point: TCoordinates) {
         const direction = determineDirection(this.start, point);
-        this.startAt.x = this.start.x;
-        this.startAt.y = this.start.y;
+        this.startAt.x = this.start.x + 0;
+        this.startAt.y = this.start.y + 0;
         this.assetTransformation = undefined;
         this.chagePostions[direction]();
     }
@@ -134,11 +134,11 @@ export class EntityRender implements IEntityRender {
         let x = 1, y = 1;
         if (horizontal) {
             x = -1;
-            this.startAt.x = -1 * this.start.x;
+            this.startAt.x = (-1 * this.start.x ) - this.cellSize.width;
         }
         if (vertical) {
             y = -1;
-            this.startAt.y = -1 * this.start.y;
+            this.startAt.y = (-1 * this.start.y) - this.cellSize.height;
         }
         this.assetTransformation = {type: 'Scale', x, y};
     }

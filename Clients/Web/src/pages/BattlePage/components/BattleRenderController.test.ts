@@ -152,6 +152,30 @@ it('should call board controller addEntity when add a new player', () => {
     expect(spyAddEntity).toBeCalledTimes(1);
 });
 
+it('should update the entity position when set a entity already seted', () => {
+    const player = mockEntity('myPlayerId');
+    const playerInitialPostition: TBoardCoordinates = {x: 1, y: 2};
+    const playerFinalPostition: TBoardCoordinates = {x: 2, y: 2};
+
+    const boardController = stubBoardController({
+        updateEntityPosition(id, position) {
+            expect(id).toBe(player.id);
+            expect(position).toEqual(playerFinalPostition);
+        }
+    });
+    const spyUpdatePosition = jest.spyOn(boardController, 'updateEntityPosition');
+    
+    const controller = new BattleRenderController(getProperties({
+        createController: stubControllersFactory({
+            boardController: () => boardController
+        })
+    }));
+    controller.setPlayer(player, playerInitialPostition, false);
+    controller.setPlayer(player, playerFinalPostition, false);
+
+    expect(spyUpdatePosition).toBeCalledTimes(1);
+});
+
 it('should create player life sphere', () => {
     const assets = getDefaultAssets();
     const canvasSize: TCanvasSize = {width: 100, height: 100};
